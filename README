@@ -1,0 +1,131 @@
+Installation
+------------
+tar xvzf gnupg-x.y.tgz
+cd gnupg_x-y
+phpize
+make
+make install
+
+This extension requires the gpgme library, which is available at http://www.gnupg.org/(en)/download/index.html#gpgme
+
+
+Notes
+-----
+
+-	This extension requires PHP 5.
+	It was tested with 5.0.5
+
+-	This is a beta version.
+	Don´t use it on production systems.
+	See this release more like a "preview" or something like that.
+
+-	This extension makes currently no write-operations on your keyring.
+	But a backup of them is always a good idea
+
+-	Only the Open_PGP protocol is currently supported.
+	This shouldn´t be a problem for the most people.
+
+-	extending this class is currently not tested.
+
+-	only 1 key per operation is currently supported.
+	so you can´t add x keys for encryption.
+
+-	Whenever you provide a key to a method, you should make sure, that your given pattern is unique.
+	Otherwise it could happen, that the wrong key is selected from the keyring.
+	The best would be to provide the fingerprint, whenever needed.
+
+-	The underlying lib checks for the presence of the gpg-agent.
+	If a passphrase is required for an operation, this agent is asked first.
+	To avoid this, clear the enviroment-variable GPG_AGENT_INFO (see http://de3.php.net/manual/en/function.putenv.php)
+
+-	This extension is class based
+	No "global" constants are defined. Only class constants
+
+		SIG_MODE_NORMAL
+		SIG_MODE_DETACH
+		SIG_MODE_CLEAR
+
+		VALIDITY_UNKNOWN
+		VALIDITY_UNDEFINED
+		VALIDITY_NEVER
+		VALIDITY_MARGINAL
+		VALIDITY_FULL
+		VALIDITY_ULTIMATE
+
+		PROTOCOL_OpenPGP
+		PROTOCOL_CMS
+    
+		SIGSUM_VALID
+		SIGSUM_GREEN
+		SIGSUM_RED
+		SIGSUM_KEY_REVOKED
+		SIGSUM_KEY_EXPIRED
+		SIGSUM_SIG_EXPIRED
+		SIGSUM_KEY_MISSING
+		SIGSUM_CRL_MISSING
+		SIGSUM_CRL_TOO_OLD
+		SIGSUM_BAD_POLICY
+		SIGSUM_SYS_ERROR
+
+
+Methods
+-------
+
+-		__construct()
+		sets up a new gnupg object
+		( new gnupg() )
+
+-		bool setarmor(int armor)
+		turn on/off armor mode
+		0 = off
+		>0 = on	(default)
+
+-		bool setsignmode(int signmode)
+		sets the mode for signing operations
+		see the SIG_MODE_* constants
+		default is SIG_MODE_CLEAR
+
+-		bool setpassphrase(string passphrase)
+		sets the passphrase for all next operations
+
+-		string geterror(void)
+		returns the last errormessage
+
+-		int getprotocol(void)
+		returns the currently used pgp-protocol.
+		atm only PROTOCOL_OpenPGP is supported
+
+-		array keyinfo(string pattern)
+		returns an array with informations about all keys, that matches the given pattern
+
+-		bool setsignerkey(string key)
+		sets the private key for the next sign operation.
+		please note, that the given key must return only 1 result from the keyring
+		it should be the best to provide a fingerprint here
+
+-		bool setencryptkey(string key)
+		sets the public key for next encrypt operation.
+		please note, that the given key must return only 1 result from the keyring
+		it should be the best to provide a fingerprint here
+
+-		bool clearsignerkey(void)
+		removes all keys which are set for signing
+
+-		bool clearencryptkey(void)
+		removes all keys which are set for encryption
+
+-		string sign(string text)
+		signs the given test with the key, which was set with setsignerkey before
+		and returns the signed text
+		the signmode depends on gnupg_setsignmode
+
+-		string encrypt(string text)
+		encrypts the given text with the key, which was set with setencryptkey before
+		and returns the encrypted text
+
+-		array verify(string text [, string &plaintext])
+		verifies the given clearsigned text and returns information about the result in an array
+		if plaintext is passed, it is filled with the plaintext (the text without signature)
+
+-		string decrypt(string enctext)
+		decrypts the given enctext

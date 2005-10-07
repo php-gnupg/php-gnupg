@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.4.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>gnupg</name>
+ <channel>pecl.php.net</channel>
+ <summary>wrapper around the gpgme library</summary>
+ <description>This extension provides methods to interact with gnupg.
+So you can sign, encrypt, verify directly from php</description>
+ <lead>
+  <name>Thilo Raufeisen</name>
+  <user>traufeisen</user>
+  <email>traufeisen@php.net</email>
+  <active>yes</active>
+ </lead>
+ <date>2005-10-07</date>
+ <time>20:17:04</time>
+ <version>
+  <release>0.1</release>
+  <api>0.1</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP License</license>
+ <notes>First release and not feature complete. Don&apos;t use in production enviroments</notes>
+ <contents>
+  <dir name="/">
+   <file md5sum="1f2eefcaf44c8a7533b2ad19c69ede0e" name="examples/clearsign.php" role="doc" />
+   <file md5sum="9ccddfd2c22ccec0fe8b13fd41ccb252" name="examples/decrypt.php" role="doc" />
+   <file md5sum="15c3488ad344ed264ef123d31d49012f" name="examples/encrypt.php" role="doc" />
+   <file md5sum="ba7c637ebaeb12e61d13f2678171cee1" name="examples/keyinfo.php" role="doc" />
+   <file md5sum="7a06adc6cf3139a79a5dfb840d876af1" name="examples/main.php" role="doc" />
+   <file md5sum="d7e45084bed6b4c8c1526056b4e78140" name="examples/verify.php" role="doc" />
+   <file md5sum="180bd17c5bd37dd69bcfe568e7722c02" name="config.m4" role="src" />
+   <file md5sum="d41d8cd98f00b204e9800998ecf8427e" name="EXPERIMENTAL" role="doc" />
+   <file md5sum="39ae229a064d5fe1fa27320ca708d0ec" name="gnupg.c" role="src" />
+   <file md5sum="b4fae3bcb2e182f6758f29542342d332" name="LICENSE" role="doc" />
+   <file md5sum="4d27dece931fbfc08519ca0631845125" name="php_gnupg.h" role="src" />
+   <file md5sum="9f78dcbdab946661590d9ff510bfb0ee" name="README" role="doc" />
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0b1</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <providesextension>gnupg</providesextension>
+ <extsrcrelease />
+ <changelog>
+  <release>
+   <version>
+    <release>0.1</release>
+    <api>0.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-10-07</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>initial release</notes>
+  </release>
+ </changelog>
+</package>
