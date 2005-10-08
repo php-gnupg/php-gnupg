@@ -25,11 +25,14 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "zend_interfaces.h"
 #include "php_gnupg.h"
 
 static int le_gnupg;
+static int le_gnupg_keylistiterator;
 
 static zend_object_handlers gnupg_object_handlers;
+static zend_object_handlers gnupg_keylistiterator_object_handlers;
 
 /* {{{ macros */
 #define GNUPG_FROM_OBJECT(intern, object){			\
@@ -40,7 +43,14 @@ static zend_object_handlers gnupg_object_handlers;
 		RETURN_FALSE; \
 	} \
 }
-
+#define GNUPG_GET_ITERATOR(intern, object){ \
+	ze_gnupg_keylistiterator_object *obj = (ze_gnupg_keylistiterator_object*) zend_object_store_get_object(object TSRMLS_CC); \
+	intern = obj->gnupg_keylistiterator_ptr; \
+	if(!intern){ \
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg iterator object"); \
+		RETURN_FALSE; \
+	}\
+}
 #define GNUPG_ERROR(intern, this){ \
 	zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, (char*)gpg_strerror(intern->err) TSRMLS_DC); \
 	RETURN_FALSE; \
@@ -80,6 +90,27 @@ static void gnupg_object_free_storage(void *object TSRMLS_DC){
 }
 /* }}} */
 
+/* {{{ free_iterator_storage */
+static void gnupg_keylistiterator_object_free_storage(void *object TSRMLS_DC){
+	ze_gnupg_keylistiterator_object *intern = (ze_gnupg_keylistiterator_object *) object;
+	if(!intern){
+		return;
+	}
+	if(intern->gnupg_keylistiterator_ptr){
+		gpgme_op_keylist_end(intern->gnupg_keylistiterator_ptr->ctx);
+		gpgme_key_release(intern->gnupg_keylistiterator_ptr->gpgkey);
+		gpgme_release(intern->gnupg_keylistiterator_ptr->ctx);
+		zval_dtor(&intern->gnupg_keylistiterator_ptr->pattern);
+		efree(intern->gnupg_keylistiterator_ptr);
+	}
+	if(intern->zo.properties){
+		zend_hash_destroy(intern->zo.properties);
+		FREE_HASHTABLE(intern->zo.properties);
+	}
+	efree(intern);
+}
+/* }}} */
+
 /* {{{ objects_new */
 zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
 	ze_gnupg_object *intern;
@@ -98,9 +129,26 @@ zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
 	retval.handle	=	zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_object_free_storage,NULL TSRMLS_CC);
 	retval.handlers	=	(zend_object_handlers *) & gnupg_object_handlers;
 	
-	/* hmmm. better in userspace
-	unsetenv ("GPG_AGENT_INFO");
-	*/
+	return retval;
+}
+/* }}} */
+
+/* {{{ keylistiterator_objects_new */
+zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type TSRMLS_DC){
+	ze_gnupg_keylistiterator_object *intern;
+	zval *tmp;
+	zend_object_value retval;
+	intern =	emalloc(sizeof(ze_gnupg_keylistiterator_object));
+	intern->zo.ce = class_type;
+	intern->zo.in_get = 0;
+	intern->zo.in_set = 0;
+	intern->zo.properties = NULL;
+
+	ALLOC_HASHTABLE(intern->zo.properties);
+	zend_hash_init(intern->zo.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_copy(intern->zo.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_object_free_storage,NULL TSRMLS_CC);
+	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;
 	return retval;
 }
 /* }}} */
@@ -115,13 +163,17 @@ void gnupg_resource_destructor(zend_rsrc_list_entry *rsrc TSRMLS_DC){
 }
 /* }}} */
 
+void gnupg_keylistiterator_resource_destructor(zend_rsrc_list_entry *rsrc TSRMLS_DC){
+
+}
+
 /* {{{ functionlist */
 function_entry gnupg_functions[] = {
 	{NULL, NULL, NULL}	/* Must be the last line in gnupg_functions[] */
 };
 /* }}} */
 
-/* {{{ methodlist */
+/* {{{ methodlist gnupg */
 static zend_function_entry gnupg_methods[] = {
 	PHP_ME_MAPPING(__construct,		gnupg_construct,		NULL)
 	PHP_ME_MAPPING(keyinfo,			gnupg_keyinfo,			NULL)
@@ -142,6 +194,17 @@ static zend_function_entry gnupg_methods[] = {
 };
 /* }}} */
 
+/* {{{ methodlist gnupg_keylistiterator */
+static zend_function_entry gnupg_keylistiterator_methods[] = {
+    PHP_ME_MAPPING(__construct,     gnupg_keylistiterator_construct,        NULL)
+    PHP_ME_MAPPING(current,         gnupg_keylistiterator_current,          NULL)
+    PHP_ME_MAPPING(key,             gnupg_keylistiterator_key,              NULL)
+    PHP_ME_MAPPING(next,            gnupg_keylistiterator_next,             NULL)
+    PHP_ME_MAPPING(rewind,          gnupg_keylistiterator_rewind,           NULL)
+    PHP_ME_MAPPING(valid,           gnupg_keylistiterator_valid,            NULL)
+    {NULL, NULL, NULL}	
+};
+/* }}} */
 /* {{{ class constants */
 static void gnupg_declare_long_constant(const char *const_name, long value TSRMLS_DC){
 #if PHP_MAJOR_VERSION > 5 || PHP_MINOR_VERSION >= 1
@@ -201,6 +264,18 @@ PHP_MINIT_FUNCTION(gnupg)
 	gnupg_class_entry   =   zend_register_internal_class(&ce TSRMLS_CC);
 	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	le_gnupg			=	zend_register_list_destructors_ex(gnupg_resource_destructor, NULL, "ctx", module_number);
+/*
+	zend_class_entry itce;
+*/
+	INIT_CLASS_ENTRY(ce, "gnupg_keylistiterator", gnupg_keylistiterator_methods);
+	
+	ce.create_object 	=	gnupg_keylistiterator_objects_new;
+	gnupg_keylistiterator_class_entry = zend_register_internal_class(&ce TSRMLS_CC);
+	memcpy(&gnupg_keylistiterator_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	le_gnupg_keylistiterator = zend_register_list_destructors_ex(gnupg_keylistiterator_resource_destructor, NULL, "ctx_keylistiterator", module_number);
+	
+	zend_class_implements   (gnupg_keylistiterator_class_entry TSRMLS_DC, 1, zend_ce_iterator);
+	
 	
 	register_gnupgProperties(TSRMLS_CC);
 	gnupg_declare_long_constant("SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL TSRMLS_DC);
@@ -810,6 +885,95 @@ PHP_FUNCTION(gnupg_export){
 	free					(out);
 }
 /* }}} */
+
+PHP_FUNCTION(gnupg_keylistiterator_construct){
+	zval *pattern;
+	
+	gnupg_keylistiterator_object *intern;
+	zval *this = getThis();
+	ze_gnupg_keylistiterator_object *ze_obj;
+
+	gpgme_ctx_t ctx;
+	gpgme_error_t err;
+
+	int args = ZEND_NUM_ARGS();
+	
+	if (zend_parse_parameters(args TSRMLS_CC, "|z", &pattern) == FAILURE){
+		return;
+	}
+	if((err = gpgme_new(&ctx))!=GPG_ERR_NO_ERROR){
+		zend_throw_exception(zend_exception_get_default(),gpg_strerror(err),1 TSRMLS_CC);
+	}
+	if(args < 1){
+		ALLOC_INIT_ZVAL(pattern);
+		ZVAL_EMPTY_STRING(pattern);
+	}
+	ze_obj  =   (ze_gnupg_keylistiterator_object*) zend_object_store_get_object(this TSRMLS_CC);
+	intern  =   emalloc(sizeof(gnupg_keylistiterator_object));
+	intern->ctx	=	ctx;
+
+	intern->pattern = *pattern;
+	zval_copy_ctor(&intern->pattern);
+	ze_obj->gnupg_keylistiterator_ptr   = intern;
+}
+PHP_FUNCTION(gnupg_keylistiterator_current){
+	zval *this = getThis();
+	gnupg_keylistiterator_object *intern;
+	GNUPG_GET_ITERATOR(intern, this);
+	RETURN_STRING(intern->gpgkey->uids[0].uid,1);
+}
+
+PHP_FUNCTION(gnupg_keylistiterator_key){
+	zval *this = getThis();
+    gnupg_keylistiterator_object *intern;
+    GNUPG_GET_ITERATOR(intern, this);
+	RETURN_STRING(intern->gpgkey->subkeys[0].fpr,1);
+}
+
+PHP_FUNCTION(gnupg_keylistiterator_next){
+	zval *this = getThis();
+	gnupg_keylistiterator_object *intern;
+	gpgme_error_t err;
+	GNUPG_GET_ITERATOR(intern, this);
+
+	intern->itkey++;
+	if(err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey)){
+		gpgme_key_release(intern->gpgkey);
+		intern->gpgkey = NULL;
+	}
+	RETURN_TRUE;
+}
+
+PHP_FUNCTION(gnupg_keylistiterator_rewind){
+	zval *this = getThis();
+	gnupg_keylistiterator_object *intern;
+	gpgme_error_t err;
+	GNUPG_GET_ITERATOR(intern, this);
+
+	intern->itkey = 0;
+	if((err = gpgme_op_keylist_start(intern->ctx, Z_STRVAL(intern->pattern), 0)) != GPG_ERR_NO_ERROR){
+		zend_throw_exception(zend_exception_get_default(),gpg_strerror(err),1 TSRMLS_CC);
+	}
+	if((err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey))!=GPG_ERR_NO_ERROR){
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+PHP_FUNCTION(gnupg_keylistiterator_valid){
+	zval *this = getThis();
+	gnupg_keylistiterator_object *intern;
+
+	GNUPG_GET_ITERATOR(intern, this);
+
+	if(intern->gpgkey!=NULL){
+		RETURN_TRUE;
+	}else{
+		RETURN_FALSE;
+	}
+}
+
+
 /*
  * Local variables:
  * tab-width: 4

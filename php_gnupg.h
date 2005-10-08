@@ -22,6 +22,7 @@
 #define PHP_GNUPG_H
 
 extern zend_module_entry gnupg_module_entry;
+extern zend_module_entry gnupg_keyiterator_module_entry;
 #define phpext_gnupg_ptr &gnupg_module_entry
 
 #ifdef PHP_WIN32
@@ -49,16 +50,24 @@ typedef struct _ze_gnupg_object{
 	gnupg_object *gnupg_ptr;
 } ze_gnupg_object;
 
+typedef struct _gnupg_keylistiterator_object{
+	gpgme_ctx_t ctx;
+	gpgme_error_t err;
+	gpgme_key_t gpgkey;
+	int itkey;
+	zval pattern;
+} gnupg_keylistiterator_object;
 
+typedef struct _ze_gnupg_keylistiterator_object{
+	zend_object zo;
+	gnupg_keylistiterator_object *gnupg_keylistiterator_ptr;
+} ze_gnupg_keylistiterator_object;
 
 zend_class_entry *gnupg_class_entry;
+zend_class_entry *gnupg_keylistiterator_class_entry;
 
 PHP_MINIT_FUNCTION(gnupg);
 PHP_MSHUTDOWN_FUNCTION(gnupg);
-/*
-PHP_RINIT_FUNCTION(gnupg);
-PHP_RSHUTDOWN_FUNCTION(gnupg);
-*/
 PHP_MINFO_FUNCTION(gnupg);
 
 PHP_FUNCTION(gnupg_construct);
@@ -76,6 +85,13 @@ PHP_FUNCTION(gnupg_getprotocol);
 PHP_FUNCTION(gnupg_encrypt);
 PHP_FUNCTION(gnupg_decrypt);
 PHP_FUNCTION(gnupg_export);
+
+PHP_FUNCTION(gnupg_keylistiterator_construct);
+PHP_FUNCTION(gnupg_keylistiterator_current);
+PHP_FUNCTION(gnupg_keylistiterator_next);
+PHP_FUNCTION(gnupg_keylistiterator_rewind);
+PHP_FUNCTION(gnupg_keylistiterator_key);
+PHP_FUNCTION(gnupg_keylistiterator_valid);
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)
