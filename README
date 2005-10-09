@@ -129,3 +129,17 @@ Methods
 
 -		string decrypt(string enctext)
 		decrypts the given enctext
+
+-		string encryptsign(string text)
+		encrypts and signs the given text with the keys, whicih are set with setencryptkey and setsignerkey
+
+-		array decryptverify(string text, string &plaintext)
+		verifies the given clearsigned text and returns information about the result in an array
+		the plaintext is passed into $plaintext
+
+
+gnupg_keylistiterator
+---------------------
+This extension comes with an iterator for looping through the keyring
+see examples/keylistiterator.php
+if an argument is passed in the constructor, only keys that are matching this argument gets returned

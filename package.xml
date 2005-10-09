@@ -15,11 +15,11 @@ So you can sign, encrypt, verify directly from php
   </maintainer>
   </maintainers>
  <release>
-  <version>0.1</version>
-  <date>2005-10-07</date>
+  <version>0.2</version>
+  <date>2005-10-09</date>
   <license>PHP License</license>
   <state>beta</state>
-  <notes>First release and not feature complete. Don&apos;t use in production enviroments
+  <notes>added keylistiterator, encryptsign and decryptverify
   </notes>
   <deps>
    <dep type="php" rel="ge" version="5.0"/>
@@ -37,9 +37,16 @@ So you can sign, encrypt, verify directly from php
    <file role="doc" name="examples/encrypt.php"/>
    <file role="doc" name="examples/decrypt.php"/>
    <file role="doc" name="examples/keyinfo.php"/>
+   <file role="doc" name="examples/encryptsign.php" />
   </filelist>
  </release>
  <changelog>
+ 	<release>
+		<version>0.2</version>
+		<date>2005-10-09</date>
+		<state>beta</state>
+		<notes>added keylistiterator, encryptsign and decryptverify</notes>
+	</release>
    <release>
     <version>0.1</version>
     <date>2005-10-07</date>

@@ -54,7 +54,6 @@ typedef struct _gnupg_keylistiterator_object{
 	gpgme_ctx_t ctx;
 	gpgme_error_t err;
 	gpgme_key_t gpgkey;
-	int itkey;
 	zval pattern;
 } gnupg_keylistiterator_object;
 
@@ -83,7 +82,9 @@ PHP_FUNCTION(gnupg_sign);
 PHP_FUNCTION(gnupg_clearsignerkey);
 PHP_FUNCTION(gnupg_getprotocol);
 PHP_FUNCTION(gnupg_encrypt);
+PHP_FUNCTION(gnupg_encryptsign);
 PHP_FUNCTION(gnupg_decrypt);
+PHP_FUNCTION(gnupg_decryptverify);
 PHP_FUNCTION(gnupg_export);
 
 PHP_FUNCTION(gnupg_keylistiterator_construct);

@@ -116,6 +116,10 @@ zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
 	ze_gnupg_object *intern;
 	zval *tmp;
 	zend_object_value retval;
+	gnupg_object *gnupg_ptr;
+	ze_gnupg_object *ze_obj;
+	gpgme_ctx_t ctx;
+	
 	intern	=	emalloc(sizeof(ze_gnupg_object));
 	intern->zo.ce = class_type;
 	intern->zo.in_get = 0;
@@ -128,6 +132,14 @@ zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
 	
 	retval.handle	=	zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_object_free_storage,NULL TSRMLS_CC);
 	retval.handlers	=	(zend_object_handlers *) & gnupg_object_handlers;
+
+    gpgme_new(&ctx);
+    gpgme_set_armor (ctx,1);
+    gnupg_ptr  =   emalloc(sizeof(gnupg_object));
+    gnupg_ptr->ctx         = ctx;
+    gnupg_ptr->encryptkey  = NULL;
+    gnupg_ptr->signmode    = GPGME_SIG_MODE_CLEAR;
+    intern->gnupg_ptr   = gnupg_ptr;
 	
 	return retval;
 }
@@ -138,6 +150,9 @@ zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type
 	ze_gnupg_keylistiterator_object *intern;
 	zval *tmp;
 	zend_object_value retval;
+	gnupg_keylistiterator_object *gnupg_keylistiterator_ptr;
+	gpgme_ctx_t ctx;
+
 	intern =	emalloc(sizeof(ze_gnupg_keylistiterator_object));
 	intern->zo.ce = class_type;
 	intern->zo.in_get = 0;
@@ -149,33 +164,19 @@ zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type
 	zend_hash_copy(intern->zo.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_object_free_storage,NULL TSRMLS_CC);
 	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;
+
+    gpgme_new(&ctx);
+	gnupg_keylistiterator_ptr	=	emalloc(sizeof(gnupg_keylistiterator_object));
+    gnupg_keylistiterator_ptr->ctx =   ctx;
+
+    intern->gnupg_keylistiterator_ptr   = gnupg_keylistiterator_ptr;
+
 	return retval;
 }
 /* }}} */
 
-/* {{{ resource_destructor */
-void gnupg_resource_destructor(zend_rsrc_list_entry *rsrc TSRMLS_DC){
-	/*
-	if(rsrc->ptr){
-		printf("debug");
-	}
-	*/
-}
-/* }}} */
-
-void gnupg_keylistiterator_resource_destructor(zend_rsrc_list_entry *rsrc TSRMLS_DC){
-
-}
-
-/* {{{ functionlist */
-function_entry gnupg_functions[] = {
-	{NULL, NULL, NULL}	/* Must be the last line in gnupg_functions[] */
-};
-/* }}} */
-
 /* {{{ methodlist gnupg */
 static zend_function_entry gnupg_methods[] = {
-	PHP_ME_MAPPING(__construct,		gnupg_construct,		NULL)
 	PHP_ME_MAPPING(keyinfo,			gnupg_keyinfo,			NULL)
 	PHP_ME_MAPPING(verify,			gnupg_verify,			NULL)
 	PHP_ME_MAPPING(getError,		gnupg_geterror,			NULL)
@@ -190,6 +191,8 @@ static zend_function_entry gnupg_methods[] = {
 	PHP_ME_MAPPING(getprotocol,		gnupg_getprotocol,		NULL)
 	PHP_ME_MAPPING(setsignmode,		gnupg_setsignmode,		NULL)
 	PHP_ME_MAPPING(sign,			gnupg_sign,				NULL)
+	PHP_ME_MAPPING(encryptsign,		gnupg_encryptsign,		NULL)
+	PHP_ME_MAPPING(decryptverify,	gnupg_decryptverify,	NULL)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -205,6 +208,7 @@ static zend_function_entry gnupg_keylistiterator_methods[] = {
     {NULL, NULL, NULL}	
 };
 /* }}} */
+
 /* {{{ class constants */
 static void gnupg_declare_long_constant(const char *const_name, long value TSRMLS_DC){
 #if PHP_MAJOR_VERSION > 5 || PHP_MINOR_VERSION >= 1
@@ -233,7 +237,7 @@ zend_module_entry gnupg_module_entry = {
 	STANDARD_MODULE_HEADER,
 #endif
 	"gnupg",
-	gnupg_functions,
+	NULL,
 	PHP_MINIT(gnupg),
 	PHP_MSHUTDOWN(gnupg),
 	NULL,		/* Replace with NULL if there's nothing to do at request start */
@@ -263,16 +267,14 @@ PHP_MINIT_FUNCTION(gnupg)
 	ce.create_object	=	gnupg_objects_new;
 	gnupg_class_entry   =   zend_register_internal_class(&ce TSRMLS_CC);
 	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	le_gnupg			=	zend_register_list_destructors_ex(gnupg_resource_destructor, NULL, "ctx", module_number);
-/*
-	zend_class_entry itce;
-*/
+	le_gnupg			=	zend_register_list_destructors_ex(NULL, NULL, "ctx", module_number);
+	
 	INIT_CLASS_ENTRY(ce, "gnupg_keylistiterator", gnupg_keylistiterator_methods);
 	
 	ce.create_object 	=	gnupg_keylistiterator_objects_new;
 	gnupg_keylistiterator_class_entry = zend_register_internal_class(&ce TSRMLS_CC);
 	memcpy(&gnupg_keylistiterator_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	le_gnupg_keylistiterator = zend_register_list_destructors_ex(gnupg_keylistiterator_resource_destructor, NULL, "ctx_keylistiterator", module_number);
+	le_gnupg_keylistiterator = zend_register_list_destructors_ex(NULL, NULL, "ctx_keylistiterator", module_number);
 	
 	zend_class_implements   (gnupg_keylistiterator_class_entry TSRMLS_DC, 1, zend_ce_iterator);
 	
@@ -341,38 +343,6 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 }
 /* }}} */
 
-/* {{{proto object gnupg_construct([PROTOCOL])
- * constructor.
- * if passed, only GPGME_PROTOCOL_OpenPGP is currently valid
- */
-PHP_FUNCTION(gnupg_construct){
-	gnupg_object *intern;
-	zval *this = getThis();
-	ze_gnupg_object *ze_obj;
-	
-	int protocol = GPGME_PROTOCOL_OpenPGP;
-	gpgme_ctx_t ctx;
-	gpgme_error_t err;
-		
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &protocol) == FAILURE){
-		return;
-	}
-	if(protocol != GPGME_PROTOCOL_OpenPGP){
-		zend_throw_exception(zend_exception_get_default(),"only OpenPGP is currently supported",1 TSRMLS_CC);
-	}
-	if((err = gpgme_new(&ctx))!=GPG_ERR_NO_ERROR){
-		zend_throw_exception(zend_exception_get_default(),gpg_strerror(err),1 TSRMLS_CC);
-	}
-	gpgme_set_armor	(ctx,1);
-	
-	ze_obj	=	(ze_gnupg_object*) zend_object_store_get_object(this TSRMLS_CC); 
-	intern	=	emalloc(sizeof(gnupg_object));
-	intern->ctx			= ctx;
-	intern->encryptkey	= NULL;
-	intern->signmode	= GPGME_SIG_MODE_CLEAR;
-	ze_obj->gnupg_ptr	= intern;
-}
-/* }}} */
 
 /* {{{ proto bool gnupg_setarmor(int armor)
  * turn on/off armor mode
@@ -398,7 +368,6 @@ PHP_FUNCTION(gnupg_setarmor){
 	RETURN_TRUE;
 }
 /* }}} */
-
 
 /* {{{ proto bool gnupg_setsignmode(int signmode)
  * sets the mode for signing operations
@@ -746,12 +715,55 @@ PHP_FUNCTION(gnupg_encrypt){
 	}
 	gpgme_data_release  (in);
 	free (out);
-	/*
-	gpgme_key_release   (gpgme_key);
-	*/
 	RETURN_STRINGL      (userret,ret_size,1);
 }
 /* }}} */
+
+/* {{{ proto string gnupg_encrypt_sign(string text)
+ * encrypts and signs the given text with the keys, which weres set with setencryptkey and setsignkey before
+ * and returns the encrypted text
+ */
+PHP_FUNCTION(gnupg_encryptsign){
+    char *value = NULL;
+    int value_len;
+    char *userret = NULL;
+    int ret_size;
+    zval *this = getThis();
+    gnupg_object *intern;
+    gpgme_data_t in, out;
+	gpgme_sign_result_t sign_result;
+
+    GNUPG_FROM_OBJECT(intern, this);
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
+        return;
+    }
+
+    if(!intern->encryptkey){
+        zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, "no key for encryption set" TSRMLS_DC);
+        RETURN_FALSE;
+    }
+	gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
+    if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
+        GNUPG_ERROR(intern,this);
+    }
+    if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
+        GNUPG_ERROR(intern,this);
+    }
+	if((intern->err = gpgme_op_encrypt_sign(intern->ctx, &intern->encryptkey, GPGME_ENCRYPT_ALWAYS_TRUST, in, out))!=GPG_ERR_NO_ERROR){
+		GNUPG_ERROR(intern,this);
+	}
+	sign_result =	gpgme_op_sign_result (intern->ctx);
+    userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
+    if(ret_size < 1){
+        RETURN_FALSE;
+    }
+    gpgme_data_release  (in);
+    free (out);
+    RETURN_STRINGL      (userret,ret_size,1);
+}
+/* }}} */
+
 
 /* {{{ proto array gnupg_verify(string text [, string &plaintext])
  * verifies the given clearsigned text and returns information about the result in an array
@@ -852,6 +864,64 @@ PHP_FUNCTION(gnupg_decrypt){
 }
 /* }}} */
 
+/* {{{ proto string gnupg_decryptverify(string enctext, string &plaintext)
+ * decrypts the given enctext
+ */
+PHP_FUNCTION(gnupg_decryptverify){
+    char            *enctxt;
+    int             enctxt_len;
+	zval			*plaintext;
+
+    zval            *this = getThis();
+    gnupg_object    *intern;
+
+    char    *userret;
+    int     ret_size;
+
+    gpgme_data_t            in, out;
+    gpgme_verify_result_t   result;
+	gpgme_signature_t       nextsig;
+
+    GNUPG_FROM_OBJECT(intern, this);
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &enctxt, &enctxt_len, &plaintext) == FAILURE){
+        return;
+    }
+
+    gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
+
+    if((intern->err = gpgme_data_new_from_mem (&in, enctxt, enctxt_len, 0))!=GPG_ERR_NO_ERROR){
+        GNUPG_ERROR(intern,this);
+    }
+    if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
+        GNUPG_ERROR(intern,this);
+    }
+    if((intern->err = gpgme_op_decrypt_verify (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
+        GNUPG_ERROR(intern,this);
+    }
+    userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
+	ZVAL_STRINGL			(plaintext,userret,ret_size,1);
+
+	result              =   gpgme_op_verify_result (intern->ctx);
+
+    array_init              (return_value);
+
+    add_assoc_string        (return_value,  "fingerprint",  result->signatures->fpr,        1);
+    add_assoc_long          (return_value,  "validity",     result->signatures->validity    );
+    add_assoc_long          (return_value,  "timestamp",    result->signatures->timestamp   );
+    add_assoc_long          (return_value,  "status",       result->signatures->status      );
+
+    nextsig             =   result->signatures->next;
+    if(nextsig){
+        zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, "multiple signatures found" TSRMLS_DC);
+        RETURN_FALSE;
+    }
+
+    gpgme_data_release      (in);
+    free                    (out);
+}
+/* }}} */
+
 /* {{{ proto string gnupg_export(string pattern)
  * exports the first public key which matches against the given pattern
  */
@@ -888,33 +958,22 @@ PHP_FUNCTION(gnupg_export){
 
 PHP_FUNCTION(gnupg_keylistiterator_construct){
 	zval *pattern;
-	
 	gnupg_keylistiterator_object *intern;
 	zval *this = getThis();
-	ze_gnupg_keylistiterator_object *ze_obj;
-
-	gpgme_ctx_t ctx;
-	gpgme_error_t err;
 
 	int args = ZEND_NUM_ARGS();
-	
-	if (zend_parse_parameters(args TSRMLS_CC, "|z", &pattern) == FAILURE){
-		return;
-	}
-	if((err = gpgme_new(&ctx))!=GPG_ERR_NO_ERROR){
-		zend_throw_exception(zend_exception_get_default(),gpg_strerror(err),1 TSRMLS_CC);
-	}
-	if(args < 1){
-		ALLOC_INIT_ZVAL(pattern);
-		ZVAL_EMPTY_STRING(pattern);
-	}
-	ze_obj  =   (ze_gnupg_keylistiterator_object*) zend_object_store_get_object(this TSRMLS_CC);
-	intern  =   emalloc(sizeof(gnupg_keylistiterator_object));
-	intern->ctx	=	ctx;
 
-	intern->pattern = *pattern;
-	zval_copy_ctor(&intern->pattern);
-	ze_obj->gnupg_keylistiterator_ptr   = intern;
+	GNUPG_GET_ITERATOR(intern, this);
+
+	if(args > 0){
+		if (zend_parse_parameters(args TSRMLS_CC, "|z", &pattern) == FAILURE){
+			return;
+		}
+		intern->pattern = *pattern;
+		zval_copy_ctor(&intern->pattern);
+	}else{
+		convert_to_string(&intern->pattern);
+	}
 }
 PHP_FUNCTION(gnupg_keylistiterator_current){
 	zval *this = getThis();
@@ -936,7 +995,6 @@ PHP_FUNCTION(gnupg_keylistiterator_next){
 	gpgme_error_t err;
 	GNUPG_GET_ITERATOR(intern, this);
 
-	intern->itkey++;
 	if(err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey)){
 		gpgme_key_release(intern->gpgkey);
 		intern->gpgkey = NULL;
@@ -950,7 +1008,6 @@ PHP_FUNCTION(gnupg_keylistiterator_rewind){
 	gpgme_error_t err;
 	GNUPG_GET_ITERATOR(intern, this);
 
-	intern->itkey = 0;
 	if((err = gpgme_op_keylist_start(intern->ctx, Z_STRVAL(intern->pattern), 0)) != GPG_ERR_NO_ERROR){
 		zend_throw_exception(zend_exception_get_default(),gpg_strerror(err),1 TSRMLS_CC);
 	}
