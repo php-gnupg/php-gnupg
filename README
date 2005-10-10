@@ -41,6 +41,9 @@ Notes
 -	This extension is class based
 	No "global" constants are defined. Only class constants
 
+-	To specify a custom location of you keyring, simply store the path in the enviroment-variable GNUPGHOME
+	This should make it easy, to use this extension with the apache-user.
+
 		SIG_MODE_NORMAL
 		SIG_MODE_DETACH
 		SIG_MODE_CLEAR
@@ -126,12 +129,13 @@ Methods
 -		array verify(string text [, string &plaintext])
 		verifies the given clearsigned text and returns information about the result in an array
 		if plaintext is passed, it is filled with the plaintext (the text without signature)
+		currently only cleartext-signatures are supported
 
 -		string decrypt(string enctext)
 		decrypts the given enctext
 
 -		string encryptsign(string text)
-		encrypts and signs the given text with the keys, whicih are set with setencryptkey and setsignerkey
+		encrypts and signs the given text with the keys, which are set with setencryptkey and setsignerkey
 
 -		array decryptverify(string text, string &plaintext)
 		verifies the given clearsigned text and returns information about the result in an array

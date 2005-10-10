@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author: Thilo Raufeisen                                                             |
+  | Author: Thilo Raufeisen <traufeisen@php.net>                         |
   +----------------------------------------------------------------------+
 */
 
@@ -25,16 +25,14 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
-#include "zend_interfaces.h"
 #include "php_gnupg.h"
+#include "php_gnupg_keylistiterator.h"
 
 static int le_gnupg;
-static int le_gnupg_keylistiterator;
 
 static zend_object_handlers gnupg_object_handlers;
-static zend_object_handlers gnupg_keylistiterator_object_handlers;
 
-/* {{{ macros */
+/* {{{ defs */
 #define GNUPG_FROM_OBJECT(intern, object){			\
 	ze_gnupg_object *obj	=	(ze_gnupg_object*) zend_object_store_get_object(object TSRMLS_CC); \
 	intern = obj->gnupg_ptr; \
@@ -42,14 +40,6 @@ static zend_object_handlers gnupg_keylistiterator_object_handlers;
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
 		RETURN_FALSE; \
 	} \
-}
-#define GNUPG_GET_ITERATOR(intern, object){ \
-	ze_gnupg_keylistiterator_object *obj = (ze_gnupg_keylistiterator_object*) zend_object_store_get_object(object TSRMLS_CC); \
-	intern = obj->gnupg_keylistiterator_ptr; \
-	if(!intern){ \
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg iterator object"); \
-		RETURN_FALSE; \
-	}\
 }
 #define GNUPG_ERROR(intern, this){ \
 	zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, (char*)gpg_strerror(intern->err) TSRMLS_DC); \
@@ -82,27 +72,6 @@ static void gnupg_object_free_storage(void *object TSRMLS_DC){
 		gnupg_free_resource_ptr(intern->gnupg_ptr TSRMLS_CC);
 	}
 	intern->gnupg_ptr = NULL;
-	if(intern->zo.properties){
-		zend_hash_destroy(intern->zo.properties);
-		FREE_HASHTABLE(intern->zo.properties);
-	}
-	efree(intern);
-}
-/* }}} */
-
-/* {{{ free_iterator_storage */
-static void gnupg_keylistiterator_object_free_storage(void *object TSRMLS_DC){
-	ze_gnupg_keylistiterator_object *intern = (ze_gnupg_keylistiterator_object *) object;
-	if(!intern){
-		return;
-	}
-	if(intern->gnupg_keylistiterator_ptr){
-		gpgme_op_keylist_end(intern->gnupg_keylistiterator_ptr->ctx);
-		gpgme_key_release(intern->gnupg_keylistiterator_ptr->gpgkey);
-		gpgme_release(intern->gnupg_keylistiterator_ptr->ctx);
-		zval_dtor(&intern->gnupg_keylistiterator_ptr->pattern);
-		efree(intern->gnupg_keylistiterator_ptr);
-	}
 	if(intern->zo.properties){
 		zend_hash_destroy(intern->zo.properties);
 		FREE_HASHTABLE(intern->zo.properties);
@@ -145,67 +114,25 @@ zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
 }
 /* }}} */
 
-/* {{{ keylistiterator_objects_new */
-zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type TSRMLS_DC){
-	ze_gnupg_keylistiterator_object *intern;
-	zval *tmp;
-	zend_object_value retval;
-	gnupg_keylistiterator_object *gnupg_keylistiterator_ptr;
-	gpgme_ctx_t ctx;
-
-	intern =	emalloc(sizeof(ze_gnupg_keylistiterator_object));
-	intern->zo.ce = class_type;
-	intern->zo.in_get = 0;
-	intern->zo.in_set = 0;
-	intern->zo.properties = NULL;
-
-	ALLOC_HASHTABLE(intern->zo.properties);
-	zend_hash_init(intern->zo.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
-	zend_hash_copy(intern->zo.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
-	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_object_free_storage,NULL TSRMLS_CC);
-	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;
-
-    gpgme_new(&ctx);
-	gnupg_keylistiterator_ptr	=	emalloc(sizeof(gnupg_keylistiterator_object));
-    gnupg_keylistiterator_ptr->ctx =   ctx;
-
-    intern->gnupg_keylistiterator_ptr   = gnupg_keylistiterator_ptr;
-
-	return retval;
-}
-/* }}} */
-
 /* {{{ methodlist gnupg */
 static zend_function_entry gnupg_methods[] = {
-	PHP_ME_MAPPING(keyinfo,			gnupg_keyinfo,			NULL)
-	PHP_ME_MAPPING(verify,			gnupg_verify,			NULL)
-	PHP_ME_MAPPING(getError,		gnupg_geterror,			NULL)
-	PHP_ME_MAPPING(setpassphrase,	gnupg_setpassphrase,	NULL)
-	PHP_ME_MAPPING(setsignerkey,	gnupg_setsignerkey,		NULL)
-	PHP_ME_MAPPING(clearsignerkey,	gnupg_clearsignerkey,	NULL)
-	PHP_ME_MAPPING(setencryptkey,	gnupg_setencryptkey,	NULL)
-	PHP_ME_MAPPING(setarmor,		gnupg_setarmor,			NULL)
-	PHP_ME_MAPPING(encrypt,			gnupg_encrypt,			NULL)
-	PHP_ME_MAPPING(decrypt,			gnupg_decrypt,			NULL)
-	PHP_ME_MAPPING(export,			gnupg_export,			NULL)
-	PHP_ME_MAPPING(getprotocol,		gnupg_getprotocol,		NULL)
-	PHP_ME_MAPPING(setsignmode,		gnupg_setsignmode,		NULL)
-	PHP_ME_MAPPING(sign,			gnupg_sign,				NULL)
-	PHP_ME_MAPPING(encryptsign,		gnupg_encryptsign,		NULL)
-	PHP_ME_MAPPING(decryptverify,	gnupg_decryptverify,	NULL)
+	ZEND_ME(gnupg,	keyinfo,		NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	verify,			NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	geterror,		NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	setpassphrase,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	setsignerkey,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	clearsignerkey,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	setencryptkey,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	setarmor,		NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	encrypt,		NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	decrypt,		NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	export,			NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	getprotocol,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	setsignmode,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	sign,			NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	encryptsign,	NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	decryptverify,	NULL,	ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
-};
-/* }}} */
-
-/* {{{ methodlist gnupg_keylistiterator */
-static zend_function_entry gnupg_keylistiterator_methods[] = {
-    PHP_ME_MAPPING(__construct,     gnupg_keylistiterator_construct,        NULL)
-    PHP_ME_MAPPING(current,         gnupg_keylistiterator_current,          NULL)
-    PHP_ME_MAPPING(key,             gnupg_keylistiterator_key,              NULL)
-    PHP_ME_MAPPING(next,            gnupg_keylistiterator_next,             NULL)
-    PHP_ME_MAPPING(rewind,          gnupg_keylistiterator_rewind,           NULL)
-    PHP_ME_MAPPING(valid,           gnupg_keylistiterator_valid,            NULL)
-    {NULL, NULL, NULL}	
 };
 /* }}} */
 
@@ -240,11 +167,11 @@ zend_module_entry gnupg_module_entry = {
 	NULL,
 	PHP_MINIT(gnupg),
 	PHP_MSHUTDOWN(gnupg),
-	NULL,		/* Replace with NULL if there's nothing to do at request start */
-	NULL,	/* Replace with NULL if there's nothing to do at request end */
+	NULL,		
+	NULL,	
 	PHP_MINFO(gnupg),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.1", /* Replace with version number for your extension */
+	"0.2", 
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
@@ -268,16 +195,10 @@ PHP_MINIT_FUNCTION(gnupg)
 	gnupg_class_entry   =   zend_register_internal_class(&ce TSRMLS_CC);
 	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	le_gnupg			=	zend_register_list_destructors_ex(NULL, NULL, "ctx", module_number);
-	
-	INIT_CLASS_ENTRY(ce, "gnupg_keylistiterator", gnupg_keylistiterator_methods);
-	
-	ce.create_object 	=	gnupg_keylistiterator_objects_new;
-	gnupg_keylistiterator_class_entry = zend_register_internal_class(&ce TSRMLS_CC);
-	memcpy(&gnupg_keylistiterator_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	le_gnupg_keylistiterator = zend_register_list_destructors_ex(NULL, NULL, "ctx_keylistiterator", module_number);
-	
-	zend_class_implements   (gnupg_keylistiterator_class_entry TSRMLS_DC, 1, zend_ce_iterator);
-	
+
+	if (SUCCESS != gnupg_keylistiterator_init()){
+		return FAILURE;
+	}
 	
 	register_gnupgProperties(TSRMLS_CC);
 	gnupg_declare_long_constant("SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL TSRMLS_DC);
@@ -755,11 +676,11 @@ PHP_FUNCTION(gnupg_encryptsign){
 	}
 	sign_result =	gpgme_op_sign_result (intern->ctx);
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
-    if(ret_size < 1){
-        RETURN_FALSE;
-    }
     gpgme_data_release  (in);
     free (out);
+	if(ret_size < 1){
+        RETURN_FALSE;
+    }
     RETURN_STRINGL      (userret,ret_size,1);
 }
 /* }}} */
@@ -858,9 +779,12 @@ PHP_FUNCTION(gnupg_decrypt){
 	result = gpgme_op_decrypt_result (intern->ctx);
 
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
-	RETURN_STRINGL			(userret,ret_size,1);
 	gpgme_data_release		(in);
 	free					(out);
+	if(ret_size < 1){
+		RETURN_FALSE;
+	}
+	RETURN_STRINGL			(userret,ret_size,1);
 }
 /* }}} */
 
@@ -955,81 +879,6 @@ PHP_FUNCTION(gnupg_export){
 	free					(out);
 }
 /* }}} */
-
-PHP_FUNCTION(gnupg_keylistiterator_construct){
-	zval *pattern;
-	gnupg_keylistiterator_object *intern;
-	zval *this = getThis();
-
-	int args = ZEND_NUM_ARGS();
-
-	GNUPG_GET_ITERATOR(intern, this);
-
-	if(args > 0){
-		if (zend_parse_parameters(args TSRMLS_CC, "|z", &pattern) == FAILURE){
-			return;
-		}
-		intern->pattern = *pattern;
-		zval_copy_ctor(&intern->pattern);
-	}else{
-		convert_to_string(&intern->pattern);
-	}
-}
-PHP_FUNCTION(gnupg_keylistiterator_current){
-	zval *this = getThis();
-	gnupg_keylistiterator_object *intern;
-	GNUPG_GET_ITERATOR(intern, this);
-	RETURN_STRING(intern->gpgkey->uids[0].uid,1);
-}
-
-PHP_FUNCTION(gnupg_keylistiterator_key){
-	zval *this = getThis();
-    gnupg_keylistiterator_object *intern;
-    GNUPG_GET_ITERATOR(intern, this);
-	RETURN_STRING(intern->gpgkey->subkeys[0].fpr,1);
-}
-
-PHP_FUNCTION(gnupg_keylistiterator_next){
-	zval *this = getThis();
-	gnupg_keylistiterator_object *intern;
-	gpgme_error_t err;
-	GNUPG_GET_ITERATOR(intern, this);
-
-	if(err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey)){
-		gpgme_key_release(intern->gpgkey);
-		intern->gpgkey = NULL;
-	}
-	RETURN_TRUE;
-}
-
-PHP_FUNCTION(gnupg_keylistiterator_rewind){
-	zval *this = getThis();
-	gnupg_keylistiterator_object *intern;
-	gpgme_error_t err;
-	GNUPG_GET_ITERATOR(intern, this);
-
-	if((err = gpgme_op_keylist_start(intern->ctx, Z_STRVAL(intern->pattern), 0)) != GPG_ERR_NO_ERROR){
-		zend_throw_exception(zend_exception_get_default(),gpg_strerror(err),1 TSRMLS_CC);
-	}
-	if((err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey))!=GPG_ERR_NO_ERROR){
-		RETURN_FALSE;
-	}
-	RETURN_TRUE;
-}
-
-PHP_FUNCTION(gnupg_keylistiterator_valid){
-	zval *this = getThis();
-	gnupg_keylistiterator_object *intern;
-
-	GNUPG_GET_ITERATOR(intern, this);
-
-	if(intern->gpgkey!=NULL){
-		RETURN_TRUE;
-	}else{
-		RETURN_FALSE;
-	}
-}
-
 
 /*
  * Local variables:

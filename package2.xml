@@ -16,8 +16,8 @@ So you can sign, encrypt, verify directly from php
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-10-09</date>
- <time>17:39:05</time>
+ <date>2005-10-10</date>
+ <time>19:34:14</time>
  <version>
   <release>0.2</release>
   <api>0.2</api>
@@ -44,8 +44,10 @@ So you can sign, encrypt, verify directly from php
    <file name="config.m4" role="src" />
    <file name="EXPERIMENTAL" role="doc" />
    <file name="gnupg.c" role="src" />
+   <file name="gnupg_keylistiterator.c" role="src" />
    <file name="LICENSE" role="doc" />
    <file name="php_gnupg.h" role="src" />
+   <file name="php_gnupg_keylistiterator.h" role="src" />
    <file name="README" role="doc" />
   </dir> <!-- / -->
  </contents>
@@ -71,7 +73,7 @@ So you can sign, encrypt, verify directly from php
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2005-10-09</date>
+   <date>2005-10-10</date>
    <license uri="http://www.php.net/license">PHP License</license>
    <notes>added keylistiterator, encryptsign and decryptverify
    </notes>

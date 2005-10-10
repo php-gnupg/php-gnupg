@@ -16,7 +16,7 @@ So you can sign, encrypt, verify directly from php
   </maintainers>
  <release>
   <version>0.2</version>
-  <date>2005-10-09</date>
+  <date>2005-10-10</date>
   <license>PHP License</license>
   <state>beta</state>
   <notes>added keylistiterator, encryptsign and decryptverify
@@ -30,7 +30,9 @@ So you can sign, encrypt, verify directly from php
    <file role="doc" name="README"/>
    <file role="src" name="config.m4"/>
    <file role="src" name="php_gnupg.h"/>
+   <file role="src" name="php_gnupg_keylistiterator.h" />
    <file role="src" name="gnupg.c"/>
+   <file role="src" name="gnupg_keylistiterator.c" />
    <file role="doc" name="examples/main.php"/>
    <file role="doc" name="examples/clearsign.php"/>
    <file role="doc" name="examples/verify.php"/>
@@ -43,7 +45,7 @@ So you can sign, encrypt, verify directly from php
  <changelog>
  	<release>
 		<version>0.2</version>
-		<date>2005-10-09</date>
+		<date>2005-10-10</date>
 		<state>beta</state>
 		<notes>added keylistiterator, encryptsign and decryptverify</notes>
 	</release>
