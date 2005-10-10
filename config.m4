@@ -58,5 +58,5 @@ if test "$PHP_GNUPG" != "no"; then
   ])
   PHP_SUBST(GNUPG_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(gnupg, gnupg.c, $ext_shared)
+  PHP_NEW_EXTENSION(gnupg, [gnupg.c gnupg_keylistiterator.c], $ext_shared)
 fi
