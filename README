@@ -17,15 +17,9 @@ Notes
 
 -	This is a beta version.
 	Don´t use it on production systems.
-	See this release more like a "preview" or something like that.
-
--	This extension makes currently no write-operations on your keyring.
-	But a backup of them is always a good idea
 
 -	Only the Open_PGP protocol is currently supported.
 	This shouldn´t be a problem for the most people.
-
--	extending this class is currently not tested.
 
 -	only 1 key per operation is currently supported.
 	so you can´t add x keys for encryption.
@@ -140,6 +134,12 @@ Methods
 -		array decryptverify(string text, string &plaintext)
 		verifies the given clearsigned text and returns information about the result in an array
 		the plaintext is passed into $plaintext
+
+-		string export(string key)
+		returns the given key
+
+-		array import(string key)
+		imports the given key and returns an array with informations about the import-process
 
 
 gnupg_keylistiterator
