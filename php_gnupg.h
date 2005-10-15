@@ -72,6 +72,7 @@ PHP_FUNCTION(gnupg_encryptsign);
 PHP_FUNCTION(gnupg_decrypt);
 PHP_FUNCTION(gnupg_decryptverify);
 PHP_FUNCTION(gnupg_export);
+PHP_FUNCTION(gnupg_import);
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)

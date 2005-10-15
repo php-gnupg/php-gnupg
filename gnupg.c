@@ -33,18 +33,20 @@ static int le_gnupg;
 static zend_object_handlers gnupg_object_handlers;
 
 /* {{{ defs */
-#define GNUPG_FROM_OBJECT(intern, object){			\
-	ze_gnupg_object *obj	=	(ze_gnupg_object*) zend_object_store_get_object(object TSRMLS_CC); \
+#define GNUGP_GETOBJ() \
+	zval *this = getThis(); \
+    gnupg_object *intern; \
+	ze_gnupg_object *obj    =   (ze_gnupg_object*) zend_object_store_get_object(this TSRMLS_CC); \
 	intern = obj->gnupg_ptr; \
-	if(!intern){ \
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
-		RETURN_FALSE; \
-	} \
-}
-#define GNUPG_ERROR(intern, this){ \
-	zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, (char*)gpg_strerror(intern->err) TSRMLS_DC); \
-	RETURN_FALSE; \
-}
+    if(!intern){ \
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
+        RETURN_FALSE; \
+    }
+
+#define GNUPG_ERR(errortxt) \
+	zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, (char*)errortxt TSRMLS_DC); \
+	RETURN_FALSE;
+
 /* }}} */
 
 /* {{{ free_resource */
@@ -127,6 +129,7 @@ static zend_function_entry gnupg_methods[] = {
 	ZEND_ME(gnupg,	encrypt,		NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	decrypt,		NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	export,			NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	import,			NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	getprotocol,	NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	setsignmode,	NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	sign,			NULL,	ZEND_ACC_PUBLIC)
@@ -180,8 +183,6 @@ zend_module_entry gnupg_module_entry = {
 #ifdef COMPILE_DL_GNUPG
 ZEND_GET_MODULE(gnupg)
 #endif
-
-
 
 /* {{{ PHP_MINIT_FUNCTION
  */
@@ -264,7 +265,6 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 }
 /* }}} */
 
-
 /* {{{ proto bool gnupg_setarmor(int armor)
  * turn on/off armor mode
  * 0 = off
@@ -272,10 +272,8 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
  * */
 PHP_FUNCTION(gnupg_setarmor){
 	int	   		 armor;
-	zval	     *this = getThis();
-	gnupg_object *intern;
 
-	GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &armor) == FAILURE){
 		return;
@@ -295,10 +293,8 @@ PHP_FUNCTION(gnupg_setarmor){
  */
 PHP_FUNCTION(gnupg_setsignmode){
 	int			 signmode;
-	zval		 *this = getThis();
-	gnupg_object *intern;
 
-	GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"l", &signmode) == FAILURE){
 		return;
@@ -311,8 +307,7 @@ PHP_FUNCTION(gnupg_setsignmode){
 			RETURN_TRUE;
 			break;
 		default:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid signmode: %i",signmode);
-			RETURN_FALSE; /* not really needed */
+			GNUPG_ERR("invalid signmode");
 			break;
 	}
 }
@@ -323,10 +318,8 @@ PHP_FUNCTION(gnupg_setsignmode){
  */
 PHP_FUNCTION(gnupg_setpassphrase){
 	zval *tmp;
-	zval *this = getThis();
-	gnupg_object *intern;
-	
-	GNUPG_FROM_OBJECT(intern, this);
+
+	GNUGP_GETOBJ();	
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"z", &tmp) == FAILURE){
 		return;
@@ -354,10 +347,8 @@ PHP_FUNCTION(gnupg_geterror){
  * atm only OpenPGP is supported
  */
 PHP_FUNCTION(gnupg_getprotocol){
-	zval *this = getThis();
 	zval *protocol;
-	gnupg_object *intern;
-	GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 	protocol	=	zend_read_property(Z_OBJCE_P(this), this, "protocol", 8, 1 TSRMLS_CC);
 	RETURN_LONG(Z_LVAL_P(protocol));
 }
@@ -372,13 +363,11 @@ PHP_FUNCTION(gnupg_keyinfo)
 	char		*searchkey = NULL;
 	int			*searchkey_len;
 	int			idx;
-	zval		*this = getThis();
 	zval		*subarr;
 	zval		*userid;
 	zval		*userids;
 	zval		*subkey;
 	zval		*subkeys;
-	gnupg_object *intern;
 	
 	gpgme_key_t		gpgkey;
 	gpgme_subkey_t	gpgsubkey;
@@ -387,11 +376,11 @@ PHP_FUNCTION(gnupg_keyinfo)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE){
 		return;
 	}
-	
-	GNUPG_FROM_OBJECT(intern, this);
+
+	GNUGP_GETOBJ()	
 	
 	if((intern->err = gpgme_op_keylist_start(intern->ctx, searchkey, 0)) != GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not init keylist");
 	}
 	
 	array_init(return_value);
@@ -470,25 +459,22 @@ PHP_FUNCTION(gnupg_setsignerkey){
     char	*key_id = NULL;
     int		key_id_len;
 	
-	zval			*this = getThis();
-	gnupg_object	*intern;
-
     gpgme_sign_result_t	result;
 	gpgme_key_t			gpgme_key;
 	
-	GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
         return;
     }
 	if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("get_key failed");
     }
 
 	gpgme_signers_clear	(intern->ctx);
 
 	if((intern->err = gpgme_signers_add(intern->ctx, gpgme_key))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not add signer");
 	}
 	RETURN_TRUE;	
 }
@@ -503,19 +489,16 @@ PHP_FUNCTION(gnupg_setencryptkey){
 	char	*key_id = NULL;
     int		key_id_len;
 
-	zval			*this = getThis();
-	gnupg_object	*intern;
-
     gpgme_sign_result_t	result;
     gpgme_key_t			gpgme_key;
-	
-	GNUPG_FROM_OBJECT(intern, this);
+
+	GNUGP_GETOBJ();	
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
         return;
 	}
 	if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 0)) != GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("get_key failed");
     }
 	if(intern->encryptkey){
 		gpgme_key_release(intern->encryptkey);
@@ -529,10 +512,8 @@ PHP_FUNCTION(gnupg_setencryptkey){
  * removes all keys which are set for signing
  */
 PHP_FUNCTION(gnupg_clearsignerkey){
-	zval			*this = getThis();
-	gnupg_object	*intern;
-	
-	GNUPG_FROM_OBJECT	(intern, this);
+
+	GNUGP_GETOBJ();	
 	
 	gpgme_signers_clear	(intern->ctx);
 	RETURN_TRUE;
@@ -543,10 +524,8 @@ PHP_FUNCTION(gnupg_clearsignerkey){
  * removes all keys which are set for encryption
  */
 PHP_FUNCTION(gnupg_clearencryptkey){
-	zval			*this = getThis();
-	gnupg_object	*intern;
 
-	GNUPG_FROM_OBJECT	(intern, this);
+	GNUGP_GETOBJ();
 	
 	gpgme_key_release   (intern->encryptkey);
 
@@ -563,29 +542,37 @@ PHP_FUNCTION(gnupg_sign){
     char    *value = NULL;
     int     value_len;
 
-    zval    	 *this = getThis();
-    gnupg_object *intern;
-
     char    *userret;
     int     ret_size;
 
     gpgme_data_t in, out;
+	gpgme_sign_result_t result;
 
-    GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
         return;
     }
     gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
     if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create in-data buffer");
     }
     if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create out-data buffer");
     }
     if((intern->err = gpgme_op_sign(intern->ctx, in, out, intern->signmode))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("data signing failed");
     }
+	result		=	gpgme_op_sign_result (intern->ctx);
+	if(result->invalid_signers){
+		GNUPG_ERR("invalid signers found");
+	}
+	if(!result->signatures){
+		GNUPG_ERR("no signature in result");
+	}
+	if(result->signatures->next){
+		GNUPG_ERR("unexpected numbers of signatures created");
+	}
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
     if(ret_size < 1){
         RETURN_FALSE;
@@ -606,12 +593,11 @@ PHP_FUNCTION(gnupg_encrypt){
 	int value_len;
 	char *userret = NULL;
 	int ret_size;
-	zval *this = getThis();
-	gnupg_object *intern;
 
 	gpgme_data_t in, out;
-	
-	GNUPG_FROM_OBJECT(intern, this);
+	gpgme_encrypt_result_t result;
+
+	GNUGP_GETOBJ();	
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
 		return;
@@ -622,13 +608,17 @@ PHP_FUNCTION(gnupg_encrypt){
 		RETURN_FALSE;
 	}
 	if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could no create in-data buffer");
 	}
 	if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create out-data buffer");
 	}
 	if((intern->err = gpgme_op_encrypt(intern->ctx, &intern->encryptkey, GPGME_ENCRYPT_ALWAYS_TRUST, in, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("encrypt failed");
+	}
+	result		=	gpgme_op_encrypt_result (intern->ctx);
+	if (result->invalid_recipients){
+		GNUPG_ERR("Invalid recipient encountered");
 	}
 	userret		=	gpgme_data_release_and_get_mem(out,&ret_size);
 	if(ret_size < 1){
@@ -649,12 +639,11 @@ PHP_FUNCTION(gnupg_encryptsign){
     int value_len;
     char *userret = NULL;
     int ret_size;
-    zval *this = getThis();
-    gnupg_object *intern;
     gpgme_data_t in, out;
+	gpgme_encrypt_result_t result;
 	gpgme_sign_result_t sign_result;
 
-    GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
         return;
@@ -666,15 +655,28 @@ PHP_FUNCTION(gnupg_encryptsign){
     }
 	gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
     if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create in-data buffer");
     }
     if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create out-data buffer");
     }
 	if((intern->err = gpgme_op_encrypt_sign(intern->ctx, &intern->encryptkey, GPGME_ENCRYPT_ALWAYS_TRUST, in, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("encrypt-sign failed");
 	}
+
+	result      =   gpgme_op_encrypt_result (intern->ctx);
+    if (result->invalid_recipients){
+        GNUPG_ERR("Invalid recipient encountered");
+    }
+
 	sign_result =	gpgme_op_sign_result (intern->ctx);
+	if(sign_result->invalid_signers){
+        GNUPG_ERR("invalid signers found");
+    }
+    if(!sign_result->signatures || sign_result->signatures->next){
+        GNUPG_ERR("unexpected numbers of signatures created");
+    }
+	
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
     gpgme_data_release  (in);
     free (out);
@@ -685,7 +687,6 @@ PHP_FUNCTION(gnupg_encryptsign){
 }
 /* }}} */
 
-
 /* {{{ proto array gnupg_verify(string text [, string &plaintext])
  * verifies the given clearsigned text and returns information about the result in an array
  */
@@ -695,31 +696,34 @@ PHP_FUNCTION(gnupg_verify){
 	int 			value_len;
 	int 			tmp;
 	zval			*plaintext;
-	zval 			*this = getThis();
-	gnupg_object	*intern;
 	
 	char	*userret;
 	int		ret_size;
 
 	gpgme_data_t			in, out;
 	gpgme_verify_result_t	result;
-	gpgme_signature_t		nextsig;
-	
-	GNUPG_FROM_OBJECT(intern, this);
+
+	GNUGP_GETOBJ();	
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &value, &value_len, &plaintext) == FAILURE){
 		return;
 	}
 	if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create in-data buffer");
 	}
 	if((intern->err = gpgme_data_new_from_mem (&out, sigtext, 0, 0))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create out-data buffer");
 	}
 	if((intern->err = gpgme_op_verify (intern->ctx, in, NULL, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("verify failed");
 	}
 	result				=	gpgme_op_verify_result (intern->ctx);
+	if(!result->signatures){
+		GNUPG_ERR			("no signature found");
+	}
+	if(result->signatures->next){
+		GNUPG_ERR			("multiple signatures found");
+	}
 	
 	array_init				(return_value);
 
@@ -727,12 +731,6 @@ PHP_FUNCTION(gnupg_verify){
 	add_assoc_long			(return_value,	"validity",		result->signatures->validity	);
 	add_assoc_long			(return_value,	"timestamp",	result->signatures->timestamp	);
 	add_assoc_long			(return_value,	"status",		result->signatures->status		);
-
-	nextsig				=	result->signatures->next;
-	if(nextsig){
-		zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, "multiple signatures found" TSRMLS_DC);
-		RETURN_FALSE;
-	}
 
     userret         	=   gpgme_data_release_and_get_mem(out,&ret_size);
 	if(plaintext){
@@ -750,16 +748,13 @@ PHP_FUNCTION(gnupg_decrypt){
 	char			*enctxt;
 	int				enctxt_len;
 
-	zval 			*this = getThis();
-	gnupg_object	*intern;
-
 	char    *userret;
     int     ret_size;
 	
 	gpgme_data_t			in, out;
 	gpgme_decrypt_result_t	result;
-	  
-	GNUPG_FROM_OBJECT(intern, this);
+	
+	GNUGP_GETOBJ();  
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &enctxt, &enctxt_len) == FAILURE){
 		return;
@@ -768,16 +763,18 @@ PHP_FUNCTION(gnupg_decrypt){
 	gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
 	
 	if((intern->err = gpgme_data_new_from_mem (&in, enctxt, enctxt_len, 0))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create in-data buffer");
 	}
 	if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create out-data buffer");
 	}
 	if((intern->err = gpgme_op_decrypt (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("decrypt failed");
 	}
 	result = gpgme_op_decrypt_result (intern->ctx);
-
+	if (result->unsupported_algorithm){
+		GNUPG_ERR			("unsupported algorithm");
+	}
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release		(in);
 	free					(out);
@@ -796,17 +793,14 @@ PHP_FUNCTION(gnupg_decryptverify){
     int             enctxt_len;
 	zval			*plaintext;
 
-    zval            *this = getThis();
-    gnupg_object    *intern;
-
     char    *userret;
     int     ret_size;
 
     gpgme_data_t            in, out;
-    gpgme_verify_result_t   result;
-	gpgme_signature_t       nextsig;
+	gpgme_decrypt_result_t	decrypt_result;
+	gpgme_verify_result_t	verify_result;
 
-    GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &enctxt, &enctxt_len, &plaintext) == FAILURE){
         return;
@@ -815,31 +809,34 @@ PHP_FUNCTION(gnupg_decryptverify){
     gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
 
     if((intern->err = gpgme_data_new_from_mem (&in, enctxt, enctxt_len, 0))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create in-data buffer");
     }
     if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create out-data buffer");
     }
     if((intern->err = gpgme_op_decrypt_verify (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
-        GNUPG_ERROR(intern,this);
+		GNUPG_ERR("decrypt-verify failed");
     }
     userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	ZVAL_STRINGL			(plaintext,userret,ret_size,1);
-
-	result              =   gpgme_op_verify_result (intern->ctx);
+	decrypt_result		=	gpgme_op_decrypt_result (intern->ctx);
+	if (decrypt_result->unsupported_algorithm){
+		GNUPG_ERR			("unsupported algorithm");
+	}
+	verify_result       =   gpgme_op_verify_result (intern->ctx);
+	if(!verify_result->signatures){
+        GNUPG_ERR           ("no signature found");
+    }
+    if(verify_result->signatures->next){
+        GNUPG_ERR           ("multiple signatures found");
+    }	
 
     array_init              (return_value);
 
-    add_assoc_string        (return_value,  "fingerprint",  result->signatures->fpr,        1);
-    add_assoc_long          (return_value,  "validity",     result->signatures->validity    );
-    add_assoc_long          (return_value,  "timestamp",    result->signatures->timestamp   );
-    add_assoc_long          (return_value,  "status",       result->signatures->status      );
-
-    nextsig             =   result->signatures->next;
-    if(nextsig){
-        zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, "multiple signatures found" TSRMLS_DC);
-        RETURN_FALSE;
-    }
+    add_assoc_string        (return_value,  "fingerprint",  verify_result->signatures->fpr,        1);
+    add_assoc_long          (return_value,  "validity",     verify_result->signatures->validity    );
+    add_assoc_long          (return_value,  "timestamp",    verify_result->signatures->timestamp   );
+    add_assoc_long          (return_value,  "status",       verify_result->signatures->status      );
 
     gpgme_data_release      (in);
     free                    (out);
@@ -855,21 +852,18 @@ PHP_FUNCTION(gnupg_export){
 	char	*userret;
     int		ret_size;
 
-	zval 		 *this = getThis();
-	gnupg_object *intern;
-
 	gpgme_data_t  out;
 
-	GNUPG_FROM_OBJECT(intern, this);
+	GNUGP_GETOBJ();
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE){
 		return;
 	}
 	if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("could not create data buffer");
 	}
 	if((intern->err = gpgme_op_export (intern->ctx, searchkey, 0, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERROR(intern,this);
+		GNUPG_ERR("export failed");
 	}
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	if(ret_size < 1){
@@ -880,6 +874,41 @@ PHP_FUNCTION(gnupg_export){
 }
 /* }}} */
 
+/* {{{ proto array gnupg_import(string key)
+ * imports the given key and returns a status-array
+*/
+PHP_FUNCTION(gnupg_import){
+	char			*importkey = NULL;
+	int				importkey_len;
+	gpgme_data_t	in;
+	gpgme_import_result_t result;
+
+	GNUGP_GETOBJ();
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &importkey, &importkey_len) == FAILURE){
+		return;
+	}
+	if((intern->err = gpgme_data_new_from_mem (&in, importkey, importkey_len, 0))!=GPG_ERR_NO_ERROR){
+		GNUPG_ERR("could not create in-data buffer");
+	}
+	if((intern->err = gpgme_op_import(intern->ctx,in))!=GPG_ERR_NO_ERROR){
+		GNUPG_ERR("import failed");
+	}
+	gpgme_data_release(in);
+	result = gpgme_op_import_result (intern->ctx);
+
+	array_init				(return_value);
+    add_assoc_long          (return_value,  "imported",     	result->imported);
+	add_assoc_long			(return_value,	"unchanged",		result->unchanged);
+	add_assoc_long			(return_value,	"newuserids",		result->new_user_ids);
+	add_assoc_long			(return_value,	"newsubkeys",		result->new_sub_keys);
+	add_assoc_long			(return_value,	"secretimported",	result->secret_imported);
+	add_assoc_long			(return_value,	"secretunchanged",	result->secret_unchanged);
+	add_assoc_long			(return_value,	"newsignatures",	result->new_signatures);
+	add_assoc_long			(return_value,	"skippedkeys",		result->skipped_new_keys);
+	add_assoc_string		(return_value,	"fingerprint",		result->imports->fpr,	1);
+}
+/* }}} */
 /*
  * Local variables:
  * tab-width: 4
