@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.4.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+<package packagerversion="1.4.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
 http://pear.php.net/dtd/tasks-1.0.xsd
 http://pear.php.net/dtd/package-2.0
 http://pear.php.net/dtd/package-2.0.xsd">
@@ -16,11 +16,11 @@ So you can sign, encrypt, verify directly from php
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-10-10</date>
- <time>19:34:14</time>
+ <date>2005-10-15</date>
+ <time>16:39:14</time>
  <version>
-  <release>0.2</release>
-  <api>0.2</api>
+  <release>0.3</release>
+  <api>0.3</api>
  </version>
  <stability>
   <release>beta</release>
@@ -37,6 +37,8 @@ So you can sign, encrypt, verify directly from php
     <file name="decrypt.php" role="doc" />
     <file name="encrypt.php" role="doc" />
     <file name="encryptsign.php" role="doc" />
+    <file name="export.php" role="doc" />
+    <file name="import.php" role="doc" />
     <file name="keyinfo.php" role="doc" />
     <file name="main.php" role="doc" />
     <file name="verify.php" role="doc" />
@@ -64,6 +66,20 @@ So you can sign, encrypt, verify directly from php
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>0.3</release>
+    <api>0.3</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-10-15</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>added import/export methods and better errormessages
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.2</release>
