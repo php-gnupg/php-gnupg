@@ -17,7 +17,7 @@ So you can sign, encrypt, verify directly from php
   <active>yes</active>
  </lead>
  <date>2005-10-15</date>
- <time>16:39:14</time>
+ <time>17:04:44</time>
  <version>
   <release>0.3</release>
   <api>0.3</api>
@@ -27,7 +27,7 @@ So you can sign, encrypt, verify directly from php
   <api>beta</api>
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
- <notes>added keylistiterator, encryptsign and decryptverify
+ <notes>added import/export methods and better errormessages
   
  </notes>
  <contents>

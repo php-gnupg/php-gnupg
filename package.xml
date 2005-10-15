@@ -19,7 +19,7 @@ So you can sign, encrypt, verify directly from php
   <date>2005-10-15</date>
   <license>PHP License</license>
   <state>beta</state>
-  <notes>added keylistiterator, encryptsign and decryptverify
+  <notes>added import/export methods and better errormessages
   </notes>
   <deps>
    <dep type="php" rel="ge" version="5.0"/>
