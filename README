@@ -1,7 +1,7 @@
 Installation
 ------------
 tar xvzf gnupg-x.y.tgz
-cd gnupg_x-y
+cd gnupg-x-y
 phpize
 make
 make install
@@ -12,7 +12,7 @@ This extension requires the gpgme library, which is available at http://www.gnup
 Notes
 -----
 -	This extension requires at least PHP 4.3.0
-	To use this extension in an OOP style, PHP 5 is required
+	To use this extension in an OO style, PHP 5 is required
 
 -	This is a beta version.
 	Don´t use it on production systems.
@@ -34,36 +34,38 @@ Notes
 -	To specify a custom location of you keyring, simply store the path in the enviroment-variable GNUPGHOME
 	This should make it easy, to use this extension with the apache-user.
 
-		SIG_MODE_NORMAL
-		SIG_MODE_DETACH
-		SIG_MODE_CLEAR
+-	Constants:
 
-		VALIDITY_UNKNOWN
-		VALIDITY_UNDEFINED
-		VALIDITY_NEVER
-		VALIDITY_MARGINAL
-		VALIDITY_FULL
-		VALIDITY_ULTIMATE
+		GNUPG_SIG_MODE_NORMAL
+		GNUPG_SIG_MODE_DETACH
+		GNUPG_SIG_MODE_CLEAR
 
-		PROTOCOL_OpenPGP
-		PROTOCOL_CMS
+		GNUPG_VALIDITY_UNKNOWN
+		GNUPG_VALIDITY_UNDEFINED
+		GNUPG_VALIDITY_NEVER
+		GNUPG_VALIDITY_MARGINAL
+		GNUPG_VALIDITY_FULL
+		GNUPG_VALIDITY_ULTIMATE
+
+		GNUPG_PROTOCOL_OpenPGP
+		GNUPG_PROTOCOL_CMS
     
-		SIGSUM_VALID
-		SIGSUM_GREEN
-		SIGSUM_RED
-		SIGSUM_KEY_REVOKED
-		SIGSUM_KEY_EXPIRED
-		SIGSUM_SIG_EXPIRED
-		SIGSUM_KEY_MISSING
-		SIGSUM_CRL_MISSING
-		SIGSUM_CRL_TOO_OLD
-		SIGSUM_BAD_POLICY
-		SIGSUM_SYS_ERROR
+		GNUPG_SIGSUM_VALID
+		GNUPG_SIGSUM_GREEN
+		GNUPG_SIGSUM_RED
+		GNUPG_SIGSUM_KEY_REVOKED
+		GNUPG_SIGSUM_KEY_EXPIRED
+		GNUPG_SIGSUM_SIG_EXPIRED
+		GNUPG_SIGSUM_KEY_MISSING
+		GNUPG_SIGSUM_CRL_MISSING
+		GNUPG_SIGSUM_CRL_TOO_OLD
+		GNUPG_SIGSUM_BAD_POLICY
+		GNUPG_SIGSUM_SYS_ERROR
 
 
 Methods
 -------
-Note: the following explanations are describing the usage of this extension in the OOP style, which is only
+Note: the following explanations are describing the usage of this extension in the OO style, which is only
 available in PHP 5
 To use this extension in a procedural style, simply call "gnupg_init", which returns a resource.
 Pass this resource as the first parameter to each function.
@@ -72,7 +74,6 @@ Example:
 
 $res = gnupg_init();
 gnupg_setarmor($res,1);
-
 
 
 -		__construct()
@@ -89,8 +90,8 @@ gnupg_setarmor($res,1);
 
 -		bool setsignmode(int signmode)
 		sets the mode for signing operations
-		see the SIG_MODE_* constants
-		default is SIG_MODE_CLEAR
+		see the GNUPG_SIG_MODE_* constants
+		default is GNUPG_SIG_MODE_CLEAR
 
 -		bool setpassphrase(string passphrase)
 		sets the passphrase for all next operations
@@ -100,7 +101,7 @@ gnupg_setarmor($res,1);
 
 -		int getprotocol(void)
 		returns the currently used pgp-protocol.
-		atm only PROTOCOL_OpenPGP is supported
+		atm only GNUPG_PROTOCOL_OpenPGP is supported
 
 -		array keyinfo(string pattern)
 		returns an array with informations about all keys, that matches the given pattern
