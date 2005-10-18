@@ -26,36 +26,44 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_gnupg.h"
+
+#ifdef ZEND_ENGINE_2
 #include "php_gnupg_keylistiterator.h"
+#endif
 
 static int le_gnupg;
 
+#ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
+#endif
 
 /* {{{ defs */
-#define GNUGP_GETOBJ() \
+#define GNUPG_GETOBJ() \
 	zval *this = getThis(); \
     gnupg_object *intern; \
-	ze_gnupg_object *obj    =   (ze_gnupg_object*) zend_object_store_get_object(this TSRMLS_CC); \
-	intern = obj->gnupg_ptr; \
-    if(!intern){ \
-        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
-        RETURN_FALSE; \
-    }
-
-#define GNUPG_ERR(errortxt) \
-	zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, (char*)errortxt TSRMLS_DC); \
-	RETURN_FALSE;
-
+	if(this){ \
+		ze_gnupg_object *obj    =   (ze_gnupg_object*) zend_object_store_get_object(this TSRMLS_CC); \
+		intern = obj->gnupg_ptr; \
+	    if(!intern){ \
+    	    php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
+        	RETURN_FALSE; \
+	    } \
+	}
+#define GNUPG_ERR(error) \
+    if(intern){ \
+		intern->errortxt = (char*)error; \
+    }else{ \
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
+    } \
+    RETURN_FALSE;
 /* }}} */
 
 /* {{{ free_resource */
 static void gnupg_free_resource_ptr(gnupg_object *intern TSRMLS_DC){
 	if(intern){
-		
 		if(intern->ctx){
-			gpgme_signers_clear (intern->ctx);
-			gpgme_release(intern->ctx);
+			gpgme_signers_clear	(intern->ctx);
+			gpgme_release		(intern->ctx);
 			intern->ctx = NULL;
 		}
 		zval_dtor(&intern->passphrase);
@@ -64,6 +72,15 @@ static void gnupg_free_resource_ptr(gnupg_object *intern TSRMLS_DC){
 }
 /* }}} */
 
+/* {{{ gnupg_res_dtor */
+static void gnupg_res_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
+    gnupg_object *intern;
+    intern = (gnupg_object *) rsrc->ptr;
+    gnupg_free_resource_ptr(intern TSRMLS_CC);
+}
+/* }}} */
+
+#ifdef ZEND_ENGINE_2
 /* {{{ free_storage */
 static void gnupg_object_free_storage(void *object TSRMLS_DC){
 	ze_gnupg_object * intern = (ze_gnupg_object *) object;
@@ -81,6 +98,7 @@ static void gnupg_object_free_storage(void *object TSRMLS_DC){
 	efree(intern);
 }
 /* }}} */
+
 
 /* {{{ objects_new */
 zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
@@ -137,6 +155,28 @@ static zend_function_entry gnupg_methods[] = {
 	ZEND_ME(gnupg,	decryptverify,	NULL,	ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+#endif  /* ZEND_ENGINE_2 */
+static zend_function_entry gnupg_functions[] = {
+	PHP_FE(gnupg_init,				NULL)
+	PHP_FE(gnupg_keyinfo,			NULL)
+	PHP_FE(gnupg_setsignerkey,		NULL)
+	PHP_FE(gnupg_setpassphrase,		NULL)
+	PHP_FE(gnupg_sign,				NULL)
+	PHP_FE(gnupg_verify,			NULL)
+	PHP_FE(gnupg_clearsignerkey,	NULL)
+	PHP_FE(gnupg_setencryptkey,		NULL)
+	PHP_FE(gnupg_setarmor,			NULL)
+	PHP_FE(gnupg_encrypt,			NULL)
+	PHP_FE(gnupg_decrypt,			NULL)
+	PHP_FE(gnupg_export,			NULL)
+	PHP_FE(gnupg_import,			NULL)
+	PHP_FE(gnupg_getprotocol,		NULL)
+	PHP_FE(gnupg_setsignmode,		NULL)
+	PHP_FE(gnupg_encryptsign,		NULL)
+	PHP_FE(gnupg_decryptverify,		NULL)
+	PHP_FE(gnupg_geterror,			NULL)
+	{NULL, NULL, NULL}
+};
 /* }}} */
 
 /* {{{ class constants */
@@ -154,10 +194,14 @@ static void gnupg_declare_long_constant(const char *const_name, long value TSRML
 /* }}} */
 
 /* {{{ properties */
+/*
 void register_gnupgProperties(TSRMLS_D){
+	#ifdef ZEND_ENGINE_2
 	zend_declare_property_long		(gnupg_class_entry, "protocol", 8, GPGME_PROTOCOL_OpenPGP, ZEND_ACC_PROTECTED TSRMLS_DC);
 	zend_declare_property_string	(gnupg_class_entry, "error", 5, "", ZEND_ACC_PROTECTED TSRMLS_DC);
+	#endif
 }
+*/
 /* }}} */
 
 /* {{{ gnupg_module_entry
@@ -167,14 +211,14 @@ zend_module_entry gnupg_module_entry = {
 	STANDARD_MODULE_HEADER,
 #endif
 	"gnupg",
-	NULL,
+	gnupg_functions,
 	PHP_MINIT(gnupg),
 	PHP_MSHUTDOWN(gnupg),
 	NULL,		
 	NULL,	
 	PHP_MINFO(gnupg),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.2", 
+	"0.4", 
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
@@ -188,42 +232,64 @@ ZEND_GET_MODULE(gnupg)
  */
 PHP_MINIT_FUNCTION(gnupg)
 {
-	zend_class_entry ce; 
-	
-	INIT_CLASS_ENTRY(ce, "gnupg", gnupg_methods);
-	
-	ce.create_object	=	gnupg_objects_new;
-	gnupg_class_entry   =   zend_register_internal_class(&ce TSRMLS_CC);
-	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	le_gnupg			=	zend_register_list_destructors_ex(NULL, NULL, "ctx", module_number);
+	le_gnupg			=	zend_register_list_destructors_ex(gnupg_res_dtor, NULL, "ctx", module_number);
 
+#ifdef ZEND_ENGINE_2
+	zend_class_entry ce;
+
+    INIT_CLASS_ENTRY(ce, "gnupg", gnupg_methods);
+
+    ce.create_object    =   gnupg_objects_new;
+    gnupg_class_entry   =   zend_register_internal_class(&ce TSRMLS_CC);
+    memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	if (SUCCESS != gnupg_keylistiterator_init()){
 		return FAILURE;
 	}
-	
-	register_gnupgProperties(TSRMLS_CC);
-	gnupg_declare_long_constant("SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL TSRMLS_DC);
-	gnupg_declare_long_constant("SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH TSRMLS_DC);
-	gnupg_declare_long_constant("SIG_MODE_CLEAR",             GPGME_SIG_MODE_CLEAR TSRMLS_DC);
-	gnupg_declare_long_constant("VALIDITY_UNKNOWN",           GPGME_VALIDITY_UNKNOWN TSRMLS_DC);
-	gnupg_declare_long_constant("VALIDITY_UNDEFINED",         GPGME_VALIDITY_UNDEFINED TSRMLS_DC);
-	gnupg_declare_long_constant("VALIDITY_NEVER",             GPGME_VALIDITY_NEVER TSRMLS_DC);
-	gnupg_declare_long_constant("VALIDITY_MARGINAL",          GPGME_VALIDITY_MARGINAL TSRMLS_DC);
-	gnupg_declare_long_constant("VALIDITY_FULL",              GPGME_VALIDITY_FULL TSRMLS_DC);
-	gnupg_declare_long_constant("VALIDITY_ULTIMATE",          GPGME_VALIDITY_ULTIMATE TSRMLS_DC);
-	gnupg_declare_long_constant("PROTOCOL_OpenPGP",           GPGME_PROTOCOL_OpenPGP TSRMLS_DC);
-	gnupg_declare_long_constant("PROTOCOL_CMS",               GPGME_PROTOCOL_CMS TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_VALID",               GPGME_SIGSUM_VALID TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_GREEN",               GPGME_SIGSUM_GREEN TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_RED",         		  GPGME_SIGSUM_RED TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_KEY_REVOKED",         GPGME_SIGSUM_KEY_REVOKED TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_KEY_EXPIRED",         GPGME_SIGSUM_KEY_EXPIRED TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_SIG_EXPIRED",         GPGME_SIGSUM_SIG_EXPIRED TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_KEY_MISSING",         GPGME_SIGSUM_KEY_MISSING TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_CRL_MISSING",         GPGME_SIGSUM_CRL_MISSING TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY TSRMLS_DC);
-	gnupg_declare_long_constant("SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR TSRMLS_DC);
+    gnupg_declare_long_constant("SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL TSRMLS_DC);
+    gnupg_declare_long_constant("SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH TSRMLS_DC);
+    gnupg_declare_long_constant("SIG_MODE_CLEAR",             GPGME_SIG_MODE_CLEAR TSRMLS_DC);
+    gnupg_declare_long_constant("VALIDITY_UNKNOWN",           GPGME_VALIDITY_UNKNOWN TSRMLS_DC);
+    gnupg_declare_long_constant("VALIDITY_UNDEFINED",         GPGME_VALIDITY_UNDEFINED TSRMLS_DC);
+    gnupg_declare_long_constant("VALIDITY_NEVER",             GPGME_VALIDITY_NEVER TSRMLS_DC);
+    gnupg_declare_long_constant("VALIDITY_MARGINAL",          GPGME_VALIDITY_MARGINAL TSRMLS_DC);
+    gnupg_declare_long_constant("VALIDITY_FULL",              GPGME_VALIDITY_FULL TSRMLS_DC);
+    gnupg_declare_long_constant("VALIDITY_ULTIMATE",          GPGME_VALIDITY_ULTIMATE TSRMLS_DC);
+    gnupg_declare_long_constant("PROTOCOL_OpenPGP",           GPGME_PROTOCOL_OpenPGP TSRMLS_DC);
+    gnupg_declare_long_constant("PROTOCOL_CMS",               GPGME_PROTOCOL_CMS TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_VALID",               GPGME_SIGSUM_VALID TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_GREEN",               GPGME_SIGSUM_GREEN TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_RED",                 GPGME_SIGSUM_RED TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_KEY_REVOKED",         GPGME_SIGSUM_KEY_REVOKED TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_KEY_EXPIRED",         GPGME_SIGSUM_KEY_EXPIRED TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_SIG_EXPIRED",         GPGME_SIGSUM_SIG_EXPIRED TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_KEY_MISSING",         GPGME_SIGSUM_KEY_MISSING TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_CRL_MISSING",         GPGME_SIGSUM_CRL_MISSING TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY TSRMLS_DC);
+    gnupg_declare_long_constant("SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR TSRMLS_DC);
+#endif
+    REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_CLEAR",             GPGME_SIG_MODE_CLEAR, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_VALIDITY_UNKNOWN",           GPGME_VALIDITY_UNKNOWN, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_VALIDITY_UNDEFINED",         GPGME_VALIDITY_UNDEFINED, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_VALIDITY_NEVER",             GPGME_VALIDITY_NEVER, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_VALIDITY_MARGINAL",          GPGME_VALIDITY_MARGINAL, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_VALIDITY_FULL",              GPGME_VALIDITY_FULL, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_VALIDITY_ULTIMATE",          GPGME_VALIDITY_ULTIMATE, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_PROTOCOL_OpenPGP",           GPGME_PROTOCOL_OpenPGP, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_PROTOCOL_CMS",               GPGME_PROTOCOL_CMS, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_VALID",               GPGME_SIGSUM_VALID, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_GREEN",               GPGME_SIGSUM_GREEN, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_RED",                 GPGME_SIGSUM_RED, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_KEY_REVOKED",         GPGME_SIGSUM_KEY_REVOKED, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_KEY_EXPIRED",         GPGME_SIGSUM_KEY_EXPIRED, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_SIG_EXPIRED",         GPGME_SIGSUM_SIG_EXPIRED, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_KEY_MISSING",         GPGME_SIGSUM_KEY_MISSING, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_CRL_MISSING",         GPGME_SIGSUM_CRL_MISSING, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR, CONST_CS | CONST_PERSISTENT);
 	return SUCCESS;
 }
 /* }}} */
@@ -265,19 +331,43 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 }
 /* }}} */
 
+
+/* {{{ proto resource gnupg_init()
+ * inits gnupg and returns a resource
+*/
+PHP_FUNCTION(gnupg_init){
+	gnupg_object *intern;
+
+	intern	=	emalloc(sizeof(gnupg_object));
+	gpgme_new	(&intern->ctx);	
+	intern->signmode = GPGME_SIG_MODE_CLEAR;
+	intern->encryptkey = NULL;
+	gpgme_set_armor	(intern->ctx,1);
+	ZEND_REGISTER_RESOURCE(return_value,intern,le_gnupg);
+}
+/* }}} */
+
 /* {{{ proto bool gnupg_setarmor(int armor)
  * turn on/off armor mode
  * 0 = off
  * >0 = on
  * */
 PHP_FUNCTION(gnupg_setarmor){
-	int	   		 armor;
+	int		armor;
+	zval	*res;
 
-	GNUGP_GETOBJ();
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &armor) == FAILURE){
-		return;
-	}
+	GNUPG_GETOBJ();
+
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &armor) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &res, &armor) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 
 	if(armor > 1){
 		armor = 1; /*just to make sure */
@@ -293,12 +383,20 @@ PHP_FUNCTION(gnupg_setarmor){
  */
 PHP_FUNCTION(gnupg_setsignmode){
 	int			 signmode;
+	zval		*res;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"l", &signmode) == FAILURE){
-		return;
-	}
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &signmode) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &res, &signmode) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 	switch(signmode){
 		case GPGME_SIG_MODE_NORMAL:
 		case GPGME_SIG_MODE_DETACH:
@@ -318,12 +416,21 @@ PHP_FUNCTION(gnupg_setsignmode){
  */
 PHP_FUNCTION(gnupg_setpassphrase){
 	zval *tmp;
+	zval *res;
 
-	GNUGP_GETOBJ();	
+	GNUPG_GETOBJ();	
 
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"z", &tmp) == FAILURE){
-		return;
-	}
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &tmp) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz", &res, &tmp) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
+
 	intern->passphrase = *tmp;
 	zval_copy_ctor(&intern->passphrase);
 	RETURN_TRUE;
@@ -334,11 +441,21 @@ PHP_FUNCTION(gnupg_setpassphrase){
  * returns the last errormessage
  */
 PHP_FUNCTION(gnupg_geterror){
-	zval *error;
-	zval *this = getThis();
+	zval	*res;
+
+	GNUPG_GETOBJ();
 	
-	error	= zend_read_property(Z_OBJCE_P(this), this, "error", 5, 1 TSRMLS_CC);
-	RETURN_STRINGL(Z_STRVAL_P(error), Z_STRLEN_P(error), 1);
+	if(!this){
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+	}
+	if(!intern->errortxt){
+		RETURN_FALSE;
+	}else{
+		RETURN_STRINGL(intern->errortxt, strlen(intern->errortxt), 1);
+	}
 }
 /* }}} */
 
@@ -347,10 +464,7 @@ PHP_FUNCTION(gnupg_geterror){
  * atm only OpenPGP is supported
  */
 PHP_FUNCTION(gnupg_getprotocol){
-	zval *protocol;
-	GNUGP_GETOBJ();
-	protocol	=	zend_read_property(Z_OBJCE_P(this), this, "protocol", 8, 1 TSRMLS_CC);
-	RETURN_LONG(Z_LVAL_P(protocol));
+	RETURN_LONG(GPGME_PROTOCOL_OpenPGP);
 }
 
 /* }}} */
@@ -368,17 +482,24 @@ PHP_FUNCTION(gnupg_keyinfo)
 	zval		*userids;
 	zval		*subkey;
 	zval		*subkeys;
+	zval		*res;
 	
 	gpgme_key_t		gpgkey;
 	gpgme_subkey_t	gpgsubkey;
 	gpgme_user_id_t gpguserid;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE){
-		return;
-	}
 
-	GNUGP_GETOBJ()	
-	
+	GNUPG_GETOBJ();
+
+	if(this){	
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE){
+			return;
+		}
+	}else{
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &searchkey, &searchkey_len) == FAILURE){
+			return;
+		}
+		ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+	}
 	if((intern->err = gpgme_op_keylist_start(intern->ctx, searchkey, 0)) != GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not init keylist");
 	}
@@ -458,14 +579,22 @@ PHP_FUNCTION(gnupg_keyinfo)
 PHP_FUNCTION(gnupg_setsignerkey){
     char	*key_id = NULL;
     int		key_id_len;
+	zval	*res;
 	
     gpgme_sign_result_t	result;
 	gpgme_key_t			gpgme_key;
 	
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
-        return;
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &key_id, &key_id_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
 	if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR){
 		GNUPG_ERR("get_key failed");
@@ -488,15 +617,24 @@ PHP_FUNCTION(gnupg_setsignerkey){
 PHP_FUNCTION(gnupg_setencryptkey){
 	char	*key_id = NULL;
     int		key_id_len;
+	zval	*res;
 
     gpgme_sign_result_t	result;
     gpgme_key_t			gpgme_key;
 
-	GNUGP_GETOBJ();	
+	GNUPG_GETOBJ();	
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
-        return;
-	}
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &key_id, &key_id_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
+
 	if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 0)) != GPG_ERR_NO_ERROR){
 		GNUPG_ERR("get_key failed");
     }
@@ -512,9 +650,17 @@ PHP_FUNCTION(gnupg_setencryptkey){
  * removes all keys which are set for signing
  */
 PHP_FUNCTION(gnupg_clearsignerkey){
+	zval	*res;
 
-	GNUGP_GETOBJ();	
-	
+	GNUPG_GETOBJ();	
+
+	if(!this){
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+	}
+
 	gpgme_signers_clear	(intern->ctx);
 	RETURN_TRUE;
 }
@@ -524,8 +670,16 @@ PHP_FUNCTION(gnupg_clearsignerkey){
  * removes all keys which are set for encryption
  */
 PHP_FUNCTION(gnupg_clearencryptkey){
+	zval	*res;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
+
+	if(!this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 	
 	gpgme_key_release   (intern->encryptkey);
 
@@ -545,14 +699,24 @@ PHP_FUNCTION(gnupg_sign){
     char    *userret;
     int     ret_size;
 
+	zval	*res;
+
     gpgme_data_t in, out;
 	gpgme_sign_result_t result;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
-        return;
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &value, &value_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
+
     gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
     if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create in-data buffer");
@@ -593,19 +757,25 @@ PHP_FUNCTION(gnupg_encrypt){
 	int value_len;
 	char *userret = NULL;
 	int ret_size;
+	zval *res;
 
 	gpgme_data_t in, out;
 	gpgme_encrypt_result_t result;
 
-	GNUGP_GETOBJ();	
+	GNUPG_GETOBJ();	
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
-		return;
-	}
-	
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &value, &value_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 	if(!intern->encryptkey){
-		zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, "no key for encryption set" TSRMLS_DC);
-		RETURN_FALSE;
+		GNUPG_ERR("no key for encryption set");
 	}
 	if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could no create in-data buffer");
@@ -639,19 +809,27 @@ PHP_FUNCTION(gnupg_encryptsign){
     int value_len;
     char *userret = NULL;
     int ret_size;
+	zval *res;
+
     gpgme_data_t in, out;
 	gpgme_encrypt_result_t result;
 	gpgme_sign_result_t sign_result;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
-        return;
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &value, &value_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
 
     if(!intern->encryptkey){
-        zend_update_property_string(Z_OBJCE_P(this), this, "error", 5, "no key for encryption set" TSRMLS_DC);
-        RETURN_FALSE;
+		GNUPG_ERR("no key for encryption set");
     }
 	gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
     if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
@@ -696,6 +874,7 @@ PHP_FUNCTION(gnupg_verify){
 	int 			value_len;
 	int 			tmp;
 	zval			*plaintext;
+	zval			*res;
 	
 	char	*userret;
 	int		ret_size;
@@ -703,11 +882,19 @@ PHP_FUNCTION(gnupg_verify){
 	gpgme_data_t			in, out;
 	gpgme_verify_result_t	result;
 
-	GNUGP_GETOBJ();	
+	GNUPG_GETOBJ();	
+
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &value, &value_len, &plaintext) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|z", &res, &value, &value_len, &plaintext) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &value, &value_len, &plaintext) == FAILURE){
-		return;
-	}
 	if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create in-data buffer");
 	}
@@ -750,15 +937,24 @@ PHP_FUNCTION(gnupg_decrypt){
 
 	char    *userret;
     int     ret_size;
+
+	zval	*res;
 	
 	gpgme_data_t			in, out;
 	gpgme_decrypt_result_t	result;
 	
-	GNUGP_GETOBJ();  
+	GNUPG_GETOBJ();  
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &enctxt, &enctxt_len) == FAILURE){
-		return;
-	}
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &enctxt, &enctxt_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &enctxt, &enctxt_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 
 	gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
 	
@@ -796,14 +992,23 @@ PHP_FUNCTION(gnupg_decryptverify){
     char    *userret;
     int     ret_size;
 
+	zval	*res;
+
     gpgme_data_t            in, out;
 	gpgme_decrypt_result_t	decrypt_result;
 	gpgme_verify_result_t	verify_result;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &enctxt, &enctxt_len, &plaintext) == FAILURE){
-        return;
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &enctxt, &enctxt_len, &plaintext) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsz", &res, &enctxt, &enctxt_len, &plaintext) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
 
     gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
@@ -852,13 +1057,22 @@ PHP_FUNCTION(gnupg_export){
 	char	*userret;
     int		ret_size;
 
+	zval	*res;
+
 	gpgme_data_t  out;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE){
-		return;
-	}
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &searchkey, &searchkey_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 	if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create data buffer");
 	}
@@ -880,14 +1094,23 @@ PHP_FUNCTION(gnupg_export){
 PHP_FUNCTION(gnupg_import){
 	char			*importkey = NULL;
 	int				importkey_len;
+	zval			*res;
+
 	gpgme_data_t	in;
 	gpgme_import_result_t result;
 
-	GNUGP_GETOBJ();
+	GNUPG_GETOBJ();
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &importkey, &importkey_len) == FAILURE){
-		return;
-	}
+	if(this){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &importkey, &importkey_len) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &importkey, &importkey_len) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
 	if((intern->err = gpgme_data_new_from_mem (&in, importkey, importkey_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create in-data buffer");
 	}

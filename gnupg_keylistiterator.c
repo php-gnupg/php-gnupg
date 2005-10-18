@@ -23,6 +23,9 @@
 #endif
 
 #include "php.h"
+
+#ifdef ZEND_ENGINE_2
+
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "zend_interfaces.h"
@@ -184,7 +187,7 @@ PHP_FUNCTION(gnupg_keylistiterator_valid){
 		RETURN_FALSE;
 	}
 }
-
+#endif /* ZEND_ENGINE_2 */
 
 /*
  * Local variables:

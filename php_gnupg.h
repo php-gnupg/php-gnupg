@@ -41,6 +41,7 @@ typedef struct _gnupg_object{
 	zval passphrase;
 	gpgme_key_t encryptkey;
 	gpgme_error_t err;
+	char* errortxt;
 	int signmode;
 } gnupg_object;
 
@@ -73,6 +74,8 @@ PHP_FUNCTION(gnupg_decrypt);
 PHP_FUNCTION(gnupg_decryptverify);
 PHP_FUNCTION(gnupg_export);
 PHP_FUNCTION(gnupg_import);
+PHP_FUNCTION(gnupg_init);
+
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)

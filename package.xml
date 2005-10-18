@@ -15,14 +15,14 @@ So you can sign, encrypt, verify directly from php
   </maintainer>
   </maintainers>
  <release>
-  <version>0.3</version>
+  <version>0.4</version>
   <date>2005-10-15</date>
   <license>PHP License</license>
   <state>beta</state>
-  <notes>added import/export methods and better errormessages
+  <notes>added procedual usage and lowered min PHP Version to 4.3
   </notes>
   <deps>
-   <dep type="php" rel="ge" version="5.0"/>
+   <dep type="php" rel="ge" version="4.3"/>
   </deps>
   <filelist>
    <file role="doc" name="LICENSE"/>
@@ -45,6 +45,12 @@ So you can sign, encrypt, verify directly from php
   </filelist>
  </release>
  <changelog>
+	<release>
+		<version>0.4</version>
+		<date>2005-10-17</date>
+		<state>beta</state>
+		<notes>added procedual usage and lowered min PHP Version to 4.3</notes>
+	</release>
 	<release>
 		<version>0.3</version>
 		<date>2005-10-15</date>

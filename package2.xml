@@ -16,18 +16,18 @@ So you can sign, encrypt, verify directly from php
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-10-15</date>
- <time>17:04:44</time>
+ <date>2005-10-17</date>
+ <time>23:14:49</time>
  <version>
-  <release>0.3</release>
-  <api>0.3</api>
+  <release>0.4</release>
+  <api>0.4</api>
  </version>
  <stability>
   <release>beta</release>
   <api>beta</api>
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
- <notes>added import/export methods and better errormessages
+ <notes>added procedual usage and lowered min PHP Version to 4.3
   
  </notes>
  <contents>
@@ -56,7 +56,7 @@ So you can sign, encrypt, verify directly from php
  <dependencies>
   <required>
    <php>
-    <min>5.0</min>
+    <min>4.3</min>
    </php>
    <pearinstaller>
     <min>1.4.0b1</min>
@@ -66,6 +66,20 @@ So you can sign, encrypt, verify directly from php
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>0.4</release>
+    <api>0.4</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-10-17</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>added procedual usage and lowered min PHP Version to 4.3
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.3</release>

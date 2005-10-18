@@ -11,9 +11,8 @@ This extension requires the gpgme library, which is available at http://www.gnup
 
 Notes
 -----
-
--	This extension requires PHP 5.
-	It was tested with 5.0.5
+-	This extension requires at least PHP 4.3.0
+	To use this extension in an OOP style, PHP 5 is required
 
 -	This is a beta version.
 	Don´t use it on production systems.
@@ -31,9 +30,6 @@ Notes
 -	The underlying lib checks for the presence of the gpg-agent.
 	If a passphrase is required for an operation, this agent is asked first.
 	To avoid this, clear the enviroment-variable GPG_AGENT_INFO (see http://de3.php.net/manual/en/function.putenv.php)
-
--	This extension is class based
-	No "global" constants are defined. Only class constants
 
 -	To specify a custom location of you keyring, simply store the path in the enviroment-variable GNUPGHOME
 	This should make it easy, to use this extension with the apache-user.
@@ -67,10 +63,24 @@ Notes
 
 Methods
 -------
+Note: the following explanations are describing the usage of this extension in the OOP style, which is only
+available in PHP 5
+To use this extension in a procedural style, simply call "gnupg_init", which returns a resource.
+Pass this resource as the first parameter to each function.
+In procedural style, all methods gets "gnupg_" prefixed. (setarmor becomes gnupg_setarmor)
+Example:
+
+$res = gnupg_init();
+gnupg_setarmor($res,1);
+
+
 
 -		__construct()
 		sets up a new gnupg object
 		( new gnupg() )
+
+-		resource gnupg_init()
+		sets up a new gnupg object for procedural use and returns a resource identifier
 
 -		bool setarmor(int armor)
 		turn on/off armor mode
