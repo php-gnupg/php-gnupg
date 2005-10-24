@@ -79,8 +79,9 @@ static void gnupg_free_resource_ptr(gnupg_object *intern TSRMLS_DC){
             gpgme_release       (intern->ctx);
             intern->ctx = NULL;
         }
-        zval_dtor(&intern->passphrase);
         gnupg_free_encryptkeys(intern);
+		zend_hash_destroy(intern->signkeys);
+		FREE_HASHTABLE(intern->signkeys);
         efree(intern);
     }
 }
@@ -143,6 +144,8 @@ zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
     gnupg_ptr->encryptkeys = NULL;
 	gnupg_ptr->encrypt_size= 0;
     gnupg_ptr->signmode    = GPGME_SIG_MODE_CLEAR;
+	ALLOC_HASHTABLE(gnupg_ptr->signkeys);
+	zend_hash_init(gnupg_ptr->signkeys, 0, NULL, NULL, 0);
     intern->gnupg_ptr	   = gnupg_ptr;
 	
 	return retval;
@@ -154,7 +157,6 @@ static zend_function_entry gnupg_methods[] = {
 	ZEND_ME(gnupg,	keyinfo,			NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	verify,				NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	geterror,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	setpassphrase,		NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	clearsignkeys,		NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	clearencryptkeys,	NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	setarmor,			NULL,	ZEND_ACC_PUBLIC)
@@ -175,7 +177,6 @@ static zend_function_entry gnupg_methods[] = {
 static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_init,				NULL)
 	PHP_FE(gnupg_keyinfo,			NULL)
-	PHP_FE(gnupg_setpassphrase,		NULL)
 	PHP_FE(gnupg_sign,				NULL)
 	PHP_FE(gnupg_verify,			NULL)
 	PHP_FE(gnupg_clearsignkeys,		NULL)
@@ -322,18 +323,29 @@ PHP_MINFO_FUNCTION(gnupg)
 /* {{{ callback func for setting the passphrase
  */
 gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd){
+	char uid[16];
+	int idx;
+	char *passphrase;
+
 	if(last_was_bad){
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Incorrent passphrase");
 		return 1;
 	}
-	if(Z_STRLEN(intern->passphrase) < 1){
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set");
+	for(idx=0;idx<16;idx++){
+		uid[idx] = uid_hint[idx];
+	}
+	uid[16] = '\0';
+	if(zend_hash_find(intern->signkeys,(char *) uid,17,(void **) &passphrase)==FAILURE){
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set 1");
 		return 1;
 	}
-	write (fd, Z_STRVAL(intern->passphrase), Z_STRLEN(intern->passphrase));
+	if(!passphrase){
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set 2");
+        return 1;
+	}
+	write (fd, passphrase, strlen(passphrase));
 	write (fd, "\n", 1);
 	return 0;
-	
 }
 /* }}} */
 
@@ -414,32 +426,6 @@ PHP_FUNCTION(gnupg_setsignmode){
 			GNUPG_ERR("invalid signmode");
 			break;
 	}
-}
-/* }}} */
-
-/* {{{ proto bool gnupg_setpassphrase(string passphrase)
- * sets the passphrase for all next operations
- */
-PHP_FUNCTION(gnupg_setpassphrase){
-	zval *tmp;
-	zval *res;
-
-	GNUPG_GETOBJ();	
-
-	if(this){
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &tmp) == FAILURE){
-            return;
-        }
-    }else{
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz", &res, &tmp) == FAILURE){
-            return;
-        }
-        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
-    }
-
-	intern->passphrase = *tmp;
-	zval_copy_ctor(&intern->passphrase);
-	RETURN_TRUE;
 }
 /* }}} */
 
@@ -581,19 +567,21 @@ PHP_FUNCTION(gnupg_keyinfo)
 PHP_FUNCTION(gnupg_addsignkey){
     char    *key_id = NULL;
     int     key_id_len;
+	char	*passphrase = NULL;
+	int		passphrase_len;
     zval    *res;
 
-    gpgme_sign_result_t result;
     gpgme_key_t         gpgme_key;
+	gpgme_subkey_t		gpgme_subkey;
 
     GNUPG_GETOBJ();
 
     if(this){
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE){
             return;
         }
     }else{
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &key_id, &key_id_len) == FAILURE){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|s", &res, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE){
             return;
         }
         ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
@@ -601,6 +589,15 @@ PHP_FUNCTION(gnupg_addsignkey){
     if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR){
         GNUPG_ERR("get_key failed");
     }
+	if(passphrase){
+		gpgme_subkey	=	gpgme_key->subkeys;
+		while(gpgme_subkey){
+			if(gpgme_subkey->can_sign == 1){
+				zend_hash_add(intern->signkeys, (char *) gpgme_subkey->keyid, (uint) strlen(gpgme_subkey->keyid)+1, passphrase, (uint) passphrase_len+1, NULL);
+			}	
+			gpgme_subkey	=	gpgme_subkey->next;
+		}
+	}
     if((intern->err = gpgme_signers_add(intern->ctx, gpgme_key))!=GPG_ERR_NO_ERROR){
         GNUPG_ERR("could not add signer");
     }

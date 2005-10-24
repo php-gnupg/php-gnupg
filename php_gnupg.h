@@ -38,12 +38,12 @@ extern zend_module_entry gnupg_module_entry;
 
 typedef struct _gnupg_object{
 	gpgme_ctx_t ctx;
-	zval passphrase;
 	gpgme_error_t err;
 	char* errortxt;
 	int signmode;
 	gpgme_key_t *encryptkeys;
 	unsigned int encrypt_size;
+	HashTable *signkeys;
 } gnupg_object;
 
 typedef struct _ze_gnupg_object{
@@ -61,7 +61,6 @@ PHP_FUNCTION(gnupg_construct);
 PHP_FUNCTION(gnupg_keyinfo);
 PHP_FUNCTION(gnupg_verify);
 PHP_FUNCTION(gnupg_geterror);
-PHP_FUNCTION(gnupg_setpassphrase);
 PHP_FUNCTION(gnupg_setsignmode);
 PHP_FUNCTION(gnupg_setarmor);
 PHP_FUNCTION(gnupg_sign);
