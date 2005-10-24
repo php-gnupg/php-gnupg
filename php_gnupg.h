@@ -39,10 +39,11 @@ extern zend_module_entry gnupg_module_entry;
 typedef struct _gnupg_object{
 	gpgme_ctx_t ctx;
 	zval passphrase;
-	gpgme_key_t encryptkey;
 	gpgme_error_t err;
 	char* errortxt;
 	int signmode;
+	gpgme_key_t *encryptkeys;
+	unsigned int encrypt_size;
 } gnupg_object;
 
 typedef struct _ze_gnupg_object{
@@ -61,12 +62,11 @@ PHP_FUNCTION(gnupg_keyinfo);
 PHP_FUNCTION(gnupg_verify);
 PHP_FUNCTION(gnupg_geterror);
 PHP_FUNCTION(gnupg_setpassphrase);
-PHP_FUNCTION(gnupg_setsignerkey);
-PHP_FUNCTION(gnupg_setencryptkey);
 PHP_FUNCTION(gnupg_setsignmode);
 PHP_FUNCTION(gnupg_setarmor);
 PHP_FUNCTION(gnupg_sign);
-PHP_FUNCTION(gnupg_clearsignerkey);
+PHP_FUNCTION(gnupg_clearsignkeys);
+PHP_FUNCTION(gnupg_clearencryptkeys);
 PHP_FUNCTION(gnupg_getprotocol);
 PHP_FUNCTION(gnupg_encrypt);
 PHP_FUNCTION(gnupg_encryptsign);
@@ -75,7 +75,8 @@ PHP_FUNCTION(gnupg_decryptverify);
 PHP_FUNCTION(gnupg_export);
 PHP_FUNCTION(gnupg_import);
 PHP_FUNCTION(gnupg_init);
-
+PHP_FUNCTION(gnupg_addsignkey);
+PHP_FUNCTION(gnupg_addencryptkey);
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)
