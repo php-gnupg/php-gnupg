@@ -44,6 +44,7 @@ typedef struct _gnupg_object{
 	gpgme_key_t *encryptkeys;
 	unsigned int encrypt_size;
 	HashTable *signkeys;
+	HashTable *decryptkeys;
 } gnupg_object;
 
 typedef struct _ze_gnupg_object{
@@ -66,6 +67,7 @@ PHP_FUNCTION(gnupg_setarmor);
 PHP_FUNCTION(gnupg_sign);
 PHP_FUNCTION(gnupg_clearsignkeys);
 PHP_FUNCTION(gnupg_clearencryptkeys);
+PHP_FUNCTION(gnupg_cleardecryptkeys);
 PHP_FUNCTION(gnupg_getprotocol);
 PHP_FUNCTION(gnupg_encrypt);
 PHP_FUNCTION(gnupg_encryptsign);
@@ -76,6 +78,10 @@ PHP_FUNCTION(gnupg_import);
 PHP_FUNCTION(gnupg_init);
 PHP_FUNCTION(gnupg_addsignkey);
 PHP_FUNCTION(gnupg_addencryptkey);
+PHP_FUNCTION(gnupg_adddecryptkey);
+PHP_FUNCTION(gnupg_deletekey);
+PHP_FUNCTION(gnupg_gettrustlist);
+PHP_FUNCTION(gnupg_listsignatures);
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)
