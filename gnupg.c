@@ -705,7 +705,6 @@ PHP_FUNCTION(gnupg_adddecryptkey){
 }
 /* }}} */
 
-
 /* {{{ proto bool gnupg_addencryptkey(string key) */
 PHP_FUNCTION(gnupg_addencryptkey){
     char    *key_id = NULL;
@@ -737,7 +736,7 @@ PHP_FUNCTION(gnupg_addencryptkey){
 }
 /* }}} */
 
-/* {{{ proto bool gnupg_clearsignerkey(void)
+/* {{{ proto bool gnupg_clearsignerkeys(void)
  * removes all keys which are set for signing
  */
 PHP_FUNCTION(gnupg_clearsignkeys){
@@ -756,7 +755,7 @@ PHP_FUNCTION(gnupg_clearsignkeys){
 }
 /* }}} */
 
-/* {{{ proto bool gnupg_clearencryptkey(void)
+/* {{{ proto bool gnupg_clearencryptkeys(void)
  * removes all keys which are set for encryption
  */
 PHP_FUNCTION(gnupg_clearencryptkeys){
@@ -774,7 +773,7 @@ PHP_FUNCTION(gnupg_clearencryptkeys){
 }
 /* }}} */
 
-/* {{{ proto bool gnupg_clearsignerkey(void)
+/* {{{ proto bool gnupg_clearsignerkeys(void)
  * removes all keys which are set for signing
  */
 PHP_FUNCTION(gnupg_cleardecryptkeys){
@@ -969,7 +968,7 @@ PHP_FUNCTION(gnupg_encryptsign){
 PHP_FUNCTION(gnupg_verify){
 	char	*text;
 	int		text_len;
-	zval	*signature;	/* use zval here because the signature can be binary */
+	zval	*signature = NULL;	/* use zval here because the signature can be binary */
 	zval	*plaintext = NULL;
 	zval	*sig_arr;
 
@@ -992,8 +991,7 @@ PHP_FUNCTION(gnupg_verify){
         }
         ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
-
-	if(Z_STRLEN_P(signature) > 0){
+	if(Z_STRVAL_P(signature)){
 		if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0))!=GPG_ERR_NO_ERROR){
 			GNUPG_ERR("could not create signature-databuffer");
 		}
