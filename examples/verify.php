@@ -17,7 +17,7 @@ TmrOEDxc5AihrFREY+IYPp4=
 
 $plaintext	=	false;
 
-$info		=	$gnupg	->	verify	($mailtext,$plaintext);
+$info		=	$gnupg	->	verify	($mailtext,false,$plaintext);
 
 print_r($info);
 echo "\n".$plaintext."\n";

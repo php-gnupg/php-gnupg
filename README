@@ -1,7 +1,7 @@
 Installation
 ------------
 tar xvzf gnupg-x.y.tgz
-cd gnupg-x-y
+cd gnupg-x.y
 phpize
 make
 make install
@@ -12,16 +12,18 @@ This extension requires the gpgme library, which is available at http://www.gnup
 Notes
 -----
 -	This extension requires at least PHP 4.3.0
-	To use this extension in an OO style, PHP 5 is required
+	To use this extension in an OOP style, PHP 5 is required
 
 -	This is a beta version.
 	Don´t use it on production systems.
 
+-	It is now possible to specify multiple keys.
+	see "addsignkey", "addencryptkey" and "adddecryptkey"
+
+-	Verify can now handle all signature-types
+
 -	Only the Open_PGP protocol is currently supported.
 	This shouldn´t be a problem for the most people.
-
--	only 1 key per operation is currently supported.
-	so you can´t add x keys for encryption.
 
 -	Whenever you provide a key to a method, you should make sure, that your given pattern is unique.
 	Otherwise it could happen, that the wrong key is selected from the keyring.
@@ -34,33 +36,31 @@ Notes
 -	To specify a custom location of you keyring, simply store the path in the enviroment-variable GNUPGHOME
 	This should make it easy, to use this extension with the apache-user.
 
--	Constants:
+		SIG_MODE_NORMAL
+		SIG_MODE_DETACH
+		SIG_MODE_CLEAR
 
-		GNUPG_SIG_MODE_NORMAL
-		GNUPG_SIG_MODE_DETACH
-		GNUPG_SIG_MODE_CLEAR
+		VALIDITY_UNKNOWN
+		VALIDITY_UNDEFINED
+		VALIDITY_NEVER
+		VALIDITY_MARGINAL
+		VALIDITY_FULL
+		VALIDITY_ULTIMATE
 
-		GNUPG_VALIDITY_UNKNOWN
-		GNUPG_VALIDITY_UNDEFINED
-		GNUPG_VALIDITY_NEVER
-		GNUPG_VALIDITY_MARGINAL
-		GNUPG_VALIDITY_FULL
-		GNUPG_VALIDITY_ULTIMATE
-
-		GNUPG_PROTOCOL_OpenPGP
-		GNUPG_PROTOCOL_CMS
+		PROTOCOL_OpenPGP
+		PROTOCOL_CMS
     
-		GNUPG_SIGSUM_VALID
-		GNUPG_SIGSUM_GREEN
-		GNUPG_SIGSUM_RED
-		GNUPG_SIGSUM_KEY_REVOKED
-		GNUPG_SIGSUM_KEY_EXPIRED
-		GNUPG_SIGSUM_SIG_EXPIRED
-		GNUPG_SIGSUM_KEY_MISSING
-		GNUPG_SIGSUM_CRL_MISSING
-		GNUPG_SIGSUM_CRL_TOO_OLD
-		GNUPG_SIGSUM_BAD_POLICY
-		GNUPG_SIGSUM_SYS_ERROR
+		SIGSUM_VALID
+		SIGSUM_GREEN
+		SIGSUM_RED
+		SIGSUM_KEY_REVOKED
+		SIGSUM_KEY_EXPIRED
+		SIGSUM_SIG_EXPIRED
+		SIGSUM_KEY_MISSING
+		SIGSUM_CRL_MISSING
+		SIGSUM_CRL_TOO_OLD
+		SIGSUM_BAD_POLICY
+		SIGSUM_SYS_ERROR
 
 
 Methods
@@ -74,6 +74,7 @@ Example:
 
 $res = gnupg_init();
 gnupg_setarmor($res,1);
+
 
 
 -		__construct()
@@ -90,37 +91,36 @@ gnupg_setarmor($res,1);
 
 -		bool setsignmode(int signmode)
 		sets the mode for signing operations
-		see the GNUPG_SIG_MODE_* constants
-		default is GNUPG_SIG_MODE_CLEAR
-
--		bool setpassphrase(string passphrase)
-		sets the passphrase for all next operations
+		see the SIG_MODE_* constants
+		default is SIG_MODE_CLEAR
 
 -		string geterror(void)
 		returns the last errormessage
 
 -		int getprotocol(void)
 		returns the currently used pgp-protocol.
-		atm only GNUPG_PROTOCOL_OpenPGP is supported
+		atm only PROTOCOL_OpenPGP is supported
 
 -		array keyinfo(string pattern)
 		returns an array with informations about all keys, that matches the given pattern
 
--		bool setsignerkey(string key)
-		sets the private key for the next sign operation.
-		please note, that the given key must return only 1 result from the keyring
-		it should be the best to provide a fingerprint here
+-		bool addsignkey(string key [,string passphrase])
+		adds a key for signing. 
 
--		bool setencryptkey(string key)
-		sets the public key for next encrypt operation.
-		please note, that the given key must return only 1 result from the keyring
-		it should be the best to provide a fingerprint here
+-		bool addencryptkey(string key)
+		adds a key for encrypting.
 
--		bool clearsignerkey(void)
+-		bool adddecryptkey(string key (,string passphrase])	
+		adds a key for decrypting
+
+-		bool clearsignerkeys(void)
 		removes all keys which are set for signing
 
--		bool clearencryptkey(void)
+-		bool clearencryptkeys(void)
 		removes all keys which are set for encryption
+
+-		bool cleardecryptkeys(void)
+		removes all key which are set for decryption
 
 -		string sign(string text)
 		signs the given test with the key, which was set with setsignerkey before
@@ -131,19 +131,21 @@ gnupg_setarmor($res,1);
 		encrypts the given text with the key, which was set with setencryptkey before
 		and returns the encrypted text
 
--		array verify(string text [, string &plaintext])
-		verifies the given clearsigned text and returns information about the result in an array
-		if plaintext is passed, it is filled with the plaintext (the text without signature)
-		currently only cleartext-signatures are supported
+-		array verify(string text, string signature [, string &plaintext])
+		verifies the given text with the signature.
+		To verify a clearsigned text, pass false as signature.
+		if plaintext is passed, it is filled with the plaintext (the text without signature).
+		This only makes sense for a clearsigned text
 
 -		string decrypt(string enctext)
 		decrypts the given enctext
+		see adddecryptkey
 
 -		string encryptsign(string text)
-		encrypts and signs the given text with the keys, which are set with setencryptkey and setsignerkey
+		encrypts and signs the given text with the keys, which are set with addencryptkey and addsignerkey
 
 -		array decryptverify(string text, string &plaintext)
-		verifies the given clearsigned text and returns information about the result in an array
+		decrypts and verifies the given text and returns information about the result in an array
 		the plaintext is passed into $plaintext
 
 -		string export(string key)
@@ -152,6 +154,11 @@ gnupg_setarmor($res,1);
 -		array import(string key)
 		imports the given key and returns an array with informations about the import-process
 
+-		array listsignatures(string key)
+		returns an array of informations about the keysignatures
+
+-		array deletekey(string key)
+		deletes a key from the keyring. use with caution!
 
 gnupg_keylistiterator
 ---------------------

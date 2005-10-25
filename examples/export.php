@@ -1,5 +1,5 @@
 <?php
 require_once    (dirname(__FILE__)."/main.php");
-$result	=	$gnupg	->	export($testkey);
+$result	=	$gnupg	->	export($fingerprint);
 print_r($result);
 ?>

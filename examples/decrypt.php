@@ -22,8 +22,7 @@ y9JHAWS6GctPfUHl1ZiS/1hq5s7xcWHsh7KTPwv449OsXIWFitnDH6jCL1sqQPjq
 -----END PGP MESSAGE-----
 
 ';
-
-$gnupg		->	setPassPhrase		($passphrase);
+$gnupg		->	addDecryptKey		($fingerprint,$passphrase);
 $plaintext	=	$gnupg	->	decrypt	($mailtext);
 
 echo "\n".$plaintext."\n";
