@@ -4,7 +4,6 @@
  <name>gnupg</name>
  <summary>wrapper around the gpgme library</summary>
  <description>This extension provides methods to interact with gnupg.
-So you can sign, encrypt, verify directly from php
  </description>
  <maintainers>
   <maintainer>
@@ -15,11 +14,11 @@ So you can sign, encrypt, verify directly from php
   </maintainer>
   </maintainers>
  <release>
-  <version>0.4</version>
-  <date>2005-10-15</date>
+  <version>0.5</version>
+  <date>2005-10-25</date>
   <license>PHP License</license>
   <state>beta</state>
-  <notes>added procedual usage and lowered min PHP Version to 4.3
+  <notes>now supports multiple keys. added getsignatures. verify can now handle all signature types. therefore the API has changed.
   </notes>
   <deps>
    <dep type="php" rel="ge" version="4.3"/>
@@ -45,6 +44,12 @@ So you can sign, encrypt, verify directly from php
   </filelist>
  </release>
  <changelog>
+	<release>
+		<version>0.5</version>
+		<date>2005-10-25</date>
+		<state>beta</state>
+		<notes>now supports multiple keys. added getsignatures. verify can now handle all signature types. therefore the API has changed.</notes>
+	</release>
 	<release>
 		<version>0.4</version>
 		<date>2005-10-17</date>
