@@ -36,21 +36,18 @@ extern zend_module_entry gnupg_module_entry;
 
 #include <gpgme.h>
 
-typedef struct _gnupg_object{
-	gpgme_ctx_t ctx;
-	gpgme_error_t err;
-	char* errortxt;
-	int signmode;
-	gpgme_key_t *encryptkeys;
-	unsigned int encrypt_size;
-	HashTable *signkeys;
-	HashTable *decryptkeys;
-} gnupg_object;
-
-typedef struct _ze_gnupg_object{
+typedef struct gnupg_object{
 	zend_object zo;
-	gnupg_object *gnupg_ptr;
-} ze_gnupg_object;
+	gpgme_ctx_t ctx;
+    gpgme_error_t err;
+    int error_mode;
+    char* errortxt;
+    int signmode;
+    gpgme_key_t *encryptkeys;
+    unsigned int encrypt_size;
+    HashTable *signkeys;
+    HashTable *decryptkeys;
+} gnupg_object;
 
 zend_class_entry *gnupg_class_entry;
 

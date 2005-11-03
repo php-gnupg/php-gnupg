@@ -33,6 +33,8 @@
 
 static int le_gnupg;
 
+#define PHP_GNUPG_VERSION "0.6beta"
+
 #ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
 #endif
@@ -40,19 +42,28 @@ static zend_object_handlers gnupg_object_handlers;
 /* {{{ defs */
 #define GNUPG_GETOBJ() \
 	zval *this = getThis(); \
-    gnupg_object *intern; \
+	gnupg_object *intern; \
 	zval *res; \
 	if(this){ \
-		ze_gnupg_object *obj    =   (ze_gnupg_object*) zend_object_store_get_object(this TSRMLS_CC); \
-		intern = obj->gnupg_ptr; \
-	    if(!intern){ \
-    	    php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
-        	RETURN_FALSE; \
-	    } \
+		intern	=	(gnupg_object*) zend_object_store_get_object(getThis() TSRMLS_CC); \
+		if(!intern){ \
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
+			RETURN_FALSE; \
+		} \
 	}
+
 #define GNUPG_ERR(error) \
     if(intern){ \
-		intern->errortxt = (char*)error; \
+		switch (intern->error_mode) { \
+			case 1: \
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
+				break; \
+			case 2: \
+				zend_throw_exception(zend_exception_get_default(), (char*) error, 0 TSRMLS_CC); \
+				break; \
+			default: \
+				intern->errortxt = (char*)error; \
+		} \
     }else{ \
         php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
     } \
@@ -62,10 +73,11 @@ static zend_object_handlers gnupg_object_handlers;
 /* {{{ free encryptkeys */
 static void gnupg_free_encryptkeys(gnupg_object *intern TSRMLS_DC){
 	if(intern){
-		if(intern->encrypt_size > 0){
-			gpgme_key_release   (*intern->encryptkeys);
-            erealloc(intern->encryptkeys,0);
-        }
+		int idx;
+		for(idx=0;idx<intern->encrypt_size;idx++){
+			gpgme_key_unref (intern->encryptkeys[idx]);
+		}
+		erealloc(intern->encryptkeys,0);
         intern->encryptkeys = NULL;
         intern->encrypt_size = 0;
 	}
@@ -74,7 +86,6 @@ static void gnupg_free_encryptkeys(gnupg_object *intern TSRMLS_DC){
 
 /* {{{ free_resource */
 static void gnupg_free_resource_ptr(gnupg_object *intern TSRMLS_DC){
-    int idx;
     if(intern){
         if(intern->ctx){
             gpgme_signers_clear (intern->ctx);
@@ -86,7 +97,6 @@ static void gnupg_free_resource_ptr(gnupg_object *intern TSRMLS_DC){
 		FREE_HASHTABLE(intern->signkeys);
 		zend_hash_destroy(intern->decryptkeys);
         FREE_HASHTABLE(intern->decryptkeys);
-        efree(intern);
     }
 }
 /* }}} */
@@ -96,15 +106,13 @@ static void gnupg_res_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
     gnupg_object *intern;
     intern = (gnupg_object *) rsrc->ptr;
     gnupg_free_resource_ptr(intern TSRMLS_CC);
+	efree(intern);
 }
 /* }}} */
 
 /* {{{ gnupg_res_init */
-gnupg_object* gnupg_res_init(){
-	gnupg_object *intern;
+static void gnupg_res_init(gnupg_object *intern TSRMLS_DC){
 	gpgme_ctx_t	ctx;
-
-	intern					=	emalloc(sizeof(gnupg_object));
 	gpgme_new					(&ctx);
 	gpgme_set_armor				(ctx,1);
 	intern->ctx				=	ctx;
@@ -116,21 +124,17 @@ gnupg_object* gnupg_res_init(){
     zend_hash_init				(intern->signkeys, 0, NULL, NULL, 0);
     ALLOC_HASHTABLE				(intern->decryptkeys);
     zend_hash_init				(intern->decryptkeys, 0, NULL, NULL, 0);
-	return intern;
+	return;
 }
 /* }}} */
 
 #ifdef ZEND_ENGINE_2
 /* {{{ free_storage */
-static void gnupg_object_free_storage(void *object TSRMLS_DC){
-	ze_gnupg_object * intern = (ze_gnupg_object *) object;
+static void gnupg_obj_dtor(gnupg_object *intern TSRMLS_DC){
 	if(!intern){
 		return;
 	}
-	if(intern->gnupg_ptr){
-		gnupg_free_resource_ptr(intern->gnupg_ptr TSRMLS_CC);
-	}
-	intern->gnupg_ptr = NULL;
+	gnupg_free_resource_ptr(intern TSRMLS_CC);
 	if(intern->zo.properties){
 		zend_hash_destroy(intern->zo.properties);
 		FREE_HASHTABLE(intern->zo.properties);
@@ -141,14 +145,12 @@ static void gnupg_object_free_storage(void *object TSRMLS_DC){
 
 
 /* {{{ objects_new */
-zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
-	ze_gnupg_object *intern;
+zend_object_value gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
+	gnupg_object *intern;
 	zval *tmp;
 	zend_object_value retval;
-	ze_gnupg_object *ze_obj;
-	gpgme_ctx_t ctx;
 	
-	intern					=	emalloc(sizeof(ze_gnupg_object));
+	intern					=	emalloc(sizeof(gnupg_object));
 	intern->zo.ce			=	class_type;
 	intern->zo.in_get		=	0;
 	intern->zo.in_set		=	0;
@@ -158,9 +160,9 @@ zend_object_value gnupg_objects_new(zend_class_entry *class_type TSRMLS_DC){
 	zend_hash_init	(intern->zo.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 	zend_hash_copy	(intern->zo.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 	
-	retval.handle		=	zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_object_free_storage,NULL TSRMLS_CC);
+	retval.handle		=	zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_obj_dtor,NULL TSRMLS_CC);
 	retval.handlers		=	(zend_object_handlers *) & gnupg_object_handlers;
-	intern->gnupg_ptr	=	gnupg_res_init();
+	gnupg_res_init	(intern TSRMLS_CC);
 	
 	return retval;
 }
@@ -249,7 +251,7 @@ zend_module_entry gnupg_module_entry = {
 	NULL,	
 	PHP_MINFO(gnupg),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.5", 
+	PHP_GNUPG_VERSION,
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
@@ -264,13 +266,10 @@ ZEND_GET_MODULE(gnupg)
 PHP_MINIT_FUNCTION(gnupg)
 {
 	le_gnupg			=	zend_register_list_destructors_ex(gnupg_res_dtor, NULL, "ctx", module_number);
-
 #ifdef ZEND_ENGINE_2
 	zend_class_entry ce;
-
     INIT_CLASS_ENTRY(ce, "gnupg", gnupg_methods);
-
-    ce.create_object    =   gnupg_objects_new;
+    ce.create_object    =   gnupg_obj_new;
     gnupg_class_entry   =   zend_register_internal_class(&ce TSRMLS_CC);
     memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	if (SUCCESS != gnupg_keylistiterator_init()){
@@ -340,6 +339,7 @@ PHP_MINFO_FUNCTION(gnupg)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "gnupg support", "enabled");
 	php_info_print_table_row(2,"GPGme Version",gpgme_check_version(NULL));
+	php_info_print_table_row(2,"Extension Version",PHP_GNUPG_VERSION);
 	php_info_print_table_end();
 }
 /* }}} */
@@ -425,9 +425,8 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *sig_arr, zva
 */
 PHP_FUNCTION(gnupg_init){
 	gnupg_object *intern;
-
-	intern	=	gnupg_res_init();
-
+	intern =  emalloc(sizeof(gnupg_object));
+	gnupg_res_init(intern);
 	ZEND_REGISTER_RESOURCE(return_value,intern,le_gnupg);
 }
 /* }}} */
@@ -623,6 +622,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 		add_assoc_zval		(subarr,	"subkeys",	subkeys);
 
 		add_next_index_zval	(return_value, subarr);
+		gpgme_key_unref		(gpgme_key);
 	}
 	return;
 }
@@ -665,6 +665,8 @@ PHP_FUNCTION(gnupg_addsignkey){
     if((intern->err = gpgme_signers_add(intern->ctx, gpgme_key))!=GPG_ERR_NO_ERROR){
         GNUPG_ERR("could not add signer");
     }
+	/* dont need the keyref anymore */
+	gpgme_key_unref(gpgme_key);
     RETURN_TRUE;
 }
 /* }}} */
@@ -701,6 +703,7 @@ PHP_FUNCTION(gnupg_adddecryptkey){
 		}
         gpgme_subkey    =   gpgme_subkey->next;
 	}
+	gpgme_key_unref(gpgme_key);
     RETURN_TRUE;
 }
 /* }}} */
@@ -838,11 +841,13 @@ PHP_FUNCTION(gnupg_sign){
 	}
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
     if(ret_size < 1){
-        RETURN_FALSE;
-    }
+		RETVAL_FALSE;
+    }else{
+		RETVAL_STRINGL	(userret,ret_size,1);
+	}
     gpgme_data_release  (in);
     free                (out);
-    RETURN_STRINGL      (userret,ret_size,1);
+	free				(userret);
 }
 
 /* }}} */
@@ -891,10 +896,11 @@ PHP_FUNCTION(gnupg_encrypt){
 	userret		=	gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release	(in);
     free                (out);
+	RETVAL_STRINGL		(userret,ret_size,1);
+	free				(userret);
 	if(ret_size < 1){
 		RETURN_FALSE;
 	}
-	RETURN_STRINGL      (userret,ret_size,1);
 }
 /* }}} */
 
@@ -948,17 +954,18 @@ PHP_FUNCTION(gnupg_encryptsign){
 	if(sign_result->invalid_signers){
         GNUPG_ERR("invalid signers found");
     }
-    if(!sign_result->signatures || sign_result->signatures->next){
-        GNUPG_ERR("unexpected numbers of signatures created");
+    if(!sign_result->signatures){
+        GNUPG_ERR("could not find a signature");
     }
 	
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
     gpgme_data_release  (in);
     free (out);
+	RETVAL_STRINGL		(userret,ret_size,1);
+	free (userret);
 	if(ret_size < 1){
         RETURN_FALSE;
     }
-    RETURN_STRINGL      (userret,ret_size,1);
 }
 /* }}} */
 
@@ -1025,6 +1032,7 @@ PHP_FUNCTION(gnupg_verify){
     }
     gpgme_data_release      (gpgme_sig);
 	free					(gpgme_text);
+	free					(gpg_plain);
 }
 /* }}} */
 
@@ -1067,15 +1075,16 @@ PHP_FUNCTION(gnupg_decrypt){
 	}
 	result = gpgme_op_decrypt_result (intern->ctx);
 	if (result->unsupported_algorithm){
-		GNUPG_ERR			("unsupported algorithm");
+		GNUPG_ERR("unsupported algorithm");
 	}
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release		(in);
 	free					(out);
+	RETVAL_STRINGL			(userret,ret_size,1);
+	free					(userret);
 	if(ret_size < 1){
-		RETURN_FALSE;
+		RETVAL_FALSE;
 	}
-	RETURN_STRINGL			(userret,ret_size,1);
 }
 /* }}} */
 
@@ -1122,6 +1131,7 @@ PHP_FUNCTION(gnupg_decryptverify){
     }
     userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	ZVAL_STRINGL			(plaintext,userret,ret_size,1);
+	free					(userret);
 	decrypt_result		=	gpgme_op_decrypt_result (intern->ctx);
 	if (decrypt_result->unsupported_algorithm){
 		GNUPG_ERR			("unsupported algorithm");
@@ -1166,11 +1176,12 @@ PHP_FUNCTION(gnupg_export){
 		GNUPG_ERR("export failed");
 	}
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
+	RETVAL_STRINGL          (userret,ret_size,1);
 	if(ret_size < 1){
-		RETURN_FALSE;
+		RETVAL_FALSE;
 	}
-	RETURN_STRINGL          (userret,ret_size,1);
-	free					(out);
+	free(userret);
+	free(out);
 }
 /* }}} */
 
@@ -1247,6 +1258,7 @@ PHP_FUNCTION(gnupg_deletekey){
 	if((intern->err = gpgme_op_delete(intern->ctx,gpgme_key,allow_secret))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("delete failed");
 	}
+	gpgme_key_unref(gpgme_key);
 	RETURN_TRUE;
 }
 /* }}} */
@@ -1351,6 +1363,7 @@ PHP_FUNCTION(gnupg_listsignatures){
 		add_assoc_zval		(return_value,gpgme_userid->uid,sub_arr);
 		gpgme_userid	=	gpgme_userid->next;
 	}
+	gpgme_key_unref(gpgme_key);
 }
 /* }}} */
 
