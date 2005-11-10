@@ -67,7 +67,7 @@ static zend_object_handlers gnupg_object_handlers;
     }else{ \
         php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
     } \
-    RETURN_FALSE;
+    RETVAL_FALSE;
 /* }}} */
 
 /* {{{ free encryptkeys */
@@ -554,6 +554,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 	}
 	if((intern->err = gpgme_op_keylist_start(intern->ctx, searchkey, 0)) != GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not init keylist");
+		return;
 	}
 	
 	array_init(return_value);
@@ -652,6 +653,7 @@ PHP_FUNCTION(gnupg_addsignkey){
     }
     if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR){
         GNUPG_ERR("get_key failed");
+		return;
     }
 	if(passphrase){
 		gpgme_subkey	=	gpgme_key->subkeys;
@@ -664,10 +666,10 @@ PHP_FUNCTION(gnupg_addsignkey){
 	}
     if((intern->err = gpgme_signers_add(intern->ctx, gpgme_key))!=GPG_ERR_NO_ERROR){
         GNUPG_ERR("could not add signer");
-    }
-	/* dont need the keyref anymore */
+    }else{
+		RETVAL_TRUE;
+	}
 	gpgme_key_unref(gpgme_key);
-    RETURN_TRUE;
 }
 /* }}} */
 
@@ -695,6 +697,7 @@ PHP_FUNCTION(gnupg_adddecryptkey){
     }
     if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR){
         GNUPG_ERR("get_key failed");
+		return;
     }
     gpgme_subkey    =   gpgme_key->subkeys;
     while(gpgme_subkey){
@@ -730,6 +733,7 @@ PHP_FUNCTION(gnupg_addencryptkey){
 
     if((intern->err = gpgme_get_key(intern->ctx, key_id, &gpgme_key, 0)) != GPG_ERR_NO_ERROR){
         GNUPG_ERR("get_key failed");
+		return;
     }
     intern->encryptkeys = erealloc(intern->encryptkeys, sizeof(intern->encryptkeys) * (intern->encrypt_size + 1));
 	intern->encryptkeys[intern->encrypt_size] = gpgme_key;
@@ -825,19 +829,31 @@ PHP_FUNCTION(gnupg_sign){
     gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
     if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create in-data buffer");
+		return;
     }
     if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create out-data buffer");
+		gpgme_data_release(in);
+		return;
     }
     if((intern->err = gpgme_op_sign(intern->ctx, in, out, intern->signmode))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("data signing failed");
+		gpgme_data_release(in);
+		gpgme_data_release(out);
+		return;
     }
 	result		=	gpgme_op_sign_result (intern->ctx);
 	if(result->invalid_signers){
 		GNUPG_ERR("invalid signers found");
+		gpgme_data_release(in);
+        gpgme_data_release(out);
+		return;
 	}
 	if(!result->signatures){
 		GNUPG_ERR("no signature in result");
+		gpgme_data_release(in);
+        gpgme_data_release(out);
+        return;
 	}
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
     if(ret_size < 1){
@@ -879,19 +895,29 @@ PHP_FUNCTION(gnupg_encrypt){
     }
 	if(!intern->encryptkeys){
 		GNUPG_ERR("no key for encryption set");
+		return;
 	}
 	if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could no create in-data buffer");
+		return;
 	}
 	if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create out-data buffer");
+		gpgme_data_release(in);
+		return;
 	}
 	if((intern->err = gpgme_op_encrypt(intern->ctx, intern->encryptkeys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out))!=GPG_ERR_NO_ERROR){
         GNUPG_ERR("encrypt failed");
+		gpgme_data_release(in);
+		gpgme_data_release(out);
+		return;
     }
 	result		=	gpgme_op_encrypt_result (intern->ctx);
 	if (result->invalid_recipients){
 		GNUPG_ERR("Invalid recipient encountered");
+		gpgme_data_release(in);
+        gpgme_data_release(out);
+		return;
 	}
 	userret		=	gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release	(in);
@@ -933,29 +959,45 @@ PHP_FUNCTION(gnupg_encryptsign){
 
     if(!intern->encryptkeys){
 		GNUPG_ERR("no key for encryption set");
+		return;
     }
 	gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_cb, intern);
     if((intern->err = gpgme_data_new_from_mem (&in, value, value_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create in-data buffer");
+		return;
     }
     if((intern->err = gpgme_data_new(&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create out-data buffer");
+		gpgme_data_release(in);
+		return;
     }
 	if((intern->err = gpgme_op_encrypt_sign(intern->ctx, intern->encryptkeys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("encrypt-sign failed");
+		gpgme_data_release(in);
+		gpgme_data_release(out);
+		return;
 	}
 
 	result      =   gpgme_op_encrypt_result (intern->ctx);
     if (result->invalid_recipients){
         GNUPG_ERR("Invalid recipient encountered");
+		gpgme_data_release(in);
+        gpgme_data_release(out);
+		return;
     }
 
 	sign_result =	gpgme_op_sign_result (intern->ctx);
 	if(sign_result->invalid_signers){
         GNUPG_ERR("invalid signers found");
+		gpgme_data_release(in);
+        gpgme_data_release(out);
+		return;
     }
     if(!sign_result->signatures){
         GNUPG_ERR("could not find a signature");
+		gpgme_data_release(in);
+        gpgme_data_release(out);
+        return;
     }
 	
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
@@ -1001,9 +1043,12 @@ PHP_FUNCTION(gnupg_verify){
 	if(Z_STRVAL_P(signature)){
 		if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0))!=GPG_ERR_NO_ERROR){
 			GNUPG_ERR("could not create signature-databuffer");
+			return;
 		}
 		if((intern->err = gpgme_data_new (&gpgme_text))!=GPG_ERR_NO_ERROR){
 			GNUPG_ERR("could not create text-databuffer");
+			gpgme_data_release(gpgme_sig);
+			return;
 		}
 	}else{
 		/*	no separate signature was passed
@@ -1013,23 +1058,31 @@ PHP_FUNCTION(gnupg_verify){
 		*/
 		if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, text, text_len, 0))!=GPG_ERR_NO_ERROR){
     	    GNUPG_ERR("could not create signature-databuffer");
+			return;
 	    }
 		if((intern->err = gpgme_data_new_from_mem (&gpgme_text, NULL, 0, 0))!=GPG_ERR_NO_ERROR){
 			GNUPG_ERR("could not create text-databuffer");
+			gpgme_data_release(gpgme_sig);
+			gpgme_data_release(gpgme_text);
+			return;
 		}
 	}
 	if((intern->err = gpgme_op_verify (intern->ctx, gpgme_sig, NULL, gpgme_text))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("verify failed");
+		gpgme_data_release(gpgme_sig);
+		gpgme_data_release(gpgme_text);
+		return;
 	}
 	gpgme_result			=   gpgme_op_verify_result (intern->ctx);
     if(!gpgme_result->signatures){
         GNUPG_ERR           ("no signature found");
-    }
-	gnupg_fetchsignatures	(gpgme_result->signatures,sig_arr,return_value);
-    gpg_plain			=	gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
-    if(plaintext){
-        ZVAL_STRINGL        (plaintext,gpg_plain,gpg_plain_len,1);
-    }
+    }else{
+		gnupg_fetchsignatures	(gpgme_result->signatures,sig_arr,return_value);
+    	gpg_plain			=	gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
+	    if(plaintext){
+    	    ZVAL_STRINGL        (plaintext,gpg_plain,gpg_plain_len,1);
+	    }
+	}
     gpgme_data_release      (gpgme_sig);
 	free					(gpgme_text);
 	free					(gpg_plain);
@@ -1069,14 +1122,22 @@ PHP_FUNCTION(gnupg_decrypt){
 	}
 	if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create out-data buffer");
+		gpgme_data_release(in);
+		return;
 	}
 	if((intern->err = gpgme_op_decrypt (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("decrypt failed");
+		gpgme_data_release(in);
+		gpgme_data_release(out);
+		return;
 	}
 	result = gpgme_op_decrypt_result (intern->ctx);
 	if (result->unsupported_algorithm){
 		GNUPG_ERR("unsupported algorithm");
-	}
+		gpgme_data_release(in);
+		gpgme_data_release(out);
+		return;
+	}	
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release		(in);
 	free					(out);
@@ -1125,9 +1186,14 @@ PHP_FUNCTION(gnupg_decryptverify){
     }
     if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create out-data buffer");
+		gpgme_data_release(in);
+		return;
     }
     if((intern->err = gpgme_op_decrypt_verify (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("decrypt-verify failed");
+		gpgme_data_release(in);
+		gpgme_data_release(out);
+		return;
     }
     userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	ZVAL_STRINGL			(plaintext,userret,ret_size,1);
@@ -1135,10 +1201,16 @@ PHP_FUNCTION(gnupg_decryptverify){
 	decrypt_result		=	gpgme_op_decrypt_result (intern->ctx);
 	if (decrypt_result->unsupported_algorithm){
 		GNUPG_ERR			("unsupported algorithm");
+		gpgme_data_release(in);
+		free(out);
+        return;
 	}
 	verify_result       =   gpgme_op_verify_result (intern->ctx);
 	if(!verify_result->signatures){
         GNUPG_ERR           ("no signature found");
+		gpgme_data_release(in);
+		free(out);
+        return;
     }
 	gnupg_fetchsignatures   (verify_result->signatures,sig_arr,return_value);
     gpgme_data_release      (in);
@@ -1171,9 +1243,12 @@ PHP_FUNCTION(gnupg_export){
     }
 	if((intern->err = gpgme_data_new (&out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create data buffer");
+		return;
 	}
 	if((intern->err = gpgme_op_export (intern->ctx, searchkey, 0, out))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("export failed");
+		gpgme_data_release(out);
+		return;
 	}
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	RETVAL_STRINGL          (userret,ret_size,1);
@@ -1209,9 +1284,12 @@ PHP_FUNCTION(gnupg_import){
     }
 	if((intern->err = gpgme_data_new_from_mem (&in, importkey, importkey_len, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not create in-data buffer");
+		return;
 	}
 	if((intern->err = gpgme_op_import(intern->ctx,in))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("import failed");
+		gpgme_data_release(in);
+		return;
 	}
 	gpgme_data_release(in);
 	result = gpgme_op_import_result (intern->ctx);
@@ -1254,12 +1332,15 @@ PHP_FUNCTION(gnupg_deletekey){
 
 	if((intern->err = gpgme_get_key(intern->ctx, key, &gpgme_key, 0)) != GPG_ERR_NO_ERROR){
         GNUPG_ERR("get_key failed");
+		return;
     }
 	if((intern->err = gpgme_op_delete(intern->ctx,gpgme_key,allow_secret))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("delete failed");
+		RETVAL_FALSE;
+	}else{
+		RETVAL_TRUE;
 	}
 	gpgme_key_unref(gpgme_key);
-	RETURN_TRUE;
 }
 /* }}} */
 
@@ -1287,6 +1368,7 @@ PHP_FUNCTION(gnupg_gettrustlist){
     }
 	if((intern->err = gpgme_op_trustlist_start (intern->ctx, pattern, 0))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not start trustlist");
+		return;
 	}
 	array_init(return_value);
 	while (!(intern->err = gpgme_op_trustlist_next (intern->ctx, &item))){
@@ -1332,12 +1414,16 @@ PHP_FUNCTION(gnupg_listsignatures){
     }
 	if((intern->err = gpgme_set_keylist_mode(intern->ctx,GPGME_KEYLIST_MODE_SIGS))!=GPG_ERR_NO_ERROR){
 		GNUPG_ERR("could not switch to sigmode");
+		return;
 	}
 	if((intern->err = gpgme_get_key(intern->ctx, keyid, &gpgme_key, 0)) != GPG_ERR_NO_ERROR){
         GNUPG_ERR("get_key failed. given key not unique?");
+		return;
     }
 	if(!gpgme_key->uids){
 		GNUPG_ERR("no uids found");
+		gpgme_key_unref(gpgme_key);
+		return;
 	}
 	array_init(return_value);
 	gpgme_userid	=	gpgme_key->uids;

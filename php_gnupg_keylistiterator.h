@@ -39,16 +39,12 @@ extern zend_module_entry gnupg_keyiterator_module_entry;
 extern int  _gnupg_keylistiterator_init(INIT_FUNC_ARGS);
 
 typedef struct _gnupg_keylistiterator_object{
-	gpgme_ctx_t ctx;
-	gpgme_error_t err;
-	gpgme_key_t gpgkey;
-	zval pattern;
-} gnupg_keylistiterator_object;
-
-typedef struct _ze_gnupg_keylistiterator_object{
 	zend_object zo;
-	gnupg_keylistiterator_object *gnupg_keylistiterator_ptr;
-} ze_gnupg_keylistiterator_object;
+	gpgme_ctx_t ctx;
+    gpgme_error_t err;
+    gpgme_key_t gpgkey;
+    zval pattern;
+} gnupg_keylistiterator_object;
 
 zend_class_entry *gnupg_keylistiterator_class_entry;
 
