@@ -16,19 +16,17 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <active>yes</active>
  </lead>
  <date>2005-11-12</date>
- <time>17:52:23</time>
+ <time>19:39:34</time>
  <version>
-  <release>0.6</release>
-  <api>0.6</api>
+  <release>0.6.1</release>
+  <api>0.6.1</api>
  </version>
  <stability>
   <release>beta</release>
   <api>beta</api>
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
- <notes>+ added seterrormode
-- various memory optimizations
-  
+ <notes>fixed zts build
  </notes>
  <contents>
   <dir name="/">
@@ -66,6 +64,20 @@ http://pear.php.net/dtd/package-2.0.xsd">
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>0.6.1</release>
+    <api>0.6.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-11-12</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>fixed zts build
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.6</release>

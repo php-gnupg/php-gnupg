@@ -14,13 +14,11 @@
   </maintainer>
   </maintainers>
  <release>
-  <version>0.6</version>
+  <version>0.6.1</version>
   <date>2005-11-12</date>
   <license>PHP License</license>
   <state>beta</state>
-  <notes>+ added seterrormode
-- various memory optimizations
-  </notes>
+  <notes>fixed zts build</notes>
   <deps>
    <dep type="php" rel="ge" version="4.3"/>
   </deps>
@@ -45,6 +43,12 @@
   </filelist>
  </release>
  <changelog>
+	<release>
+        <version>0.6.1</version>
+        <date>2005-11-12</date>
+        <state>beta</state>
+        <notes>fixed zts build</notes>
+    </release>
 	<release>
 		<version>0.6</version>
 		<date>2005-11-12</date>
