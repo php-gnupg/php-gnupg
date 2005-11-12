@@ -54,7 +54,7 @@ static zend_object_handlers gnupg_object_handlers;
 
 #define GNUPG_ERR(error) \
     if(intern){ \
-		switch (intern->error_mode) { \
+		switch (intern->errormode) { \
 			case 1: \
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
 				break; \
@@ -77,7 +77,7 @@ static void gnupg_free_encryptkeys(gnupg_object *intern TSRMLS_DC){
 		for(idx=0;idx<intern->encrypt_size;idx++){
 			gpgme_key_unref (intern->encryptkeys[idx]);
 		}
-		erealloc(intern->encryptkeys,0);
+		efree(erealloc(intern->encryptkeys,0));	
         intern->encryptkeys = NULL;
         intern->encrypt_size = 0;
 	}
@@ -120,6 +120,7 @@ static void gnupg_res_init(gnupg_object *intern TSRMLS_DC){
 	intern->encrypt_size	=	0;
 	intern->signmode		=	GPGME_SIG_MODE_CLEAR;
 	intern->errortxt		=	NULL;
+	intern->errormode		=	3;
 	ALLOC_HASHTABLE				(intern->signkeys);
     zend_hash_init				(intern->signkeys, 0, NULL, NULL, 0);
     ALLOC_HASHTABLE				(intern->decryptkeys);
@@ -192,6 +193,7 @@ static zend_function_entry gnupg_methods[] = {
 	ZEND_ME(gnupg,	deletekey,			NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	gettrustlist,		NULL,	ZEND_ACC_PUBLIC)
 	ZEND_ME(gnupg,	listsignatures,		NULL,	ZEND_ACC_PUBLIC)
+	ZEND_ME(gnupg,	seterrormode,		NULL,	ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 #endif  /* ZEND_ENGINE_2 */
@@ -219,6 +221,7 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_deletekey,			NULL)
 	PHP_FE(gnupg_gettrustlist,		NULL)
 	PHP_FE(gnupg_listsignatures,	NULL)
+	PHP_FE(gnupg_seterrormode,		NULL)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -297,6 +300,9 @@ PHP_MINIT_FUNCTION(gnupg)
     gnupg_declare_long_constant("SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD TSRMLS_DC);
     gnupg_declare_long_constant("SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY TSRMLS_DC);
     gnupg_declare_long_constant("SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR TSRMLS_DC);
+	gnupg_declare_long_constant("ERROR_WARNING",              1);
+	gnupg_declare_long_constant("ERROR_EXCEPTION",            2);
+	gnupg_declare_long_constant("ERROR_SILENT",            	  3);
 #endif
     REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH, CONST_CS | CONST_PERSISTENT);
@@ -320,6 +326,9 @@ PHP_MINIT_FUNCTION(gnupg)
     REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("GNUPG_SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("GNUPG_ERROR_WARNING",              1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("GNUPG_ERROR_EXCEPTION",            2, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("GNUPG_ERROR_SILENT",               3, CONST_CS | CONST_PERSISTENT);
 	return SUCCESS;
 }
 /* }}} */
@@ -461,6 +470,39 @@ PHP_FUNCTION(gnupg_setarmor){
 }
 /* }}} */
 
+/* {{{ proto bool gnupg_seterrormode(int errormde) */
+PHP_FUNCTION(gnupg_seterrormode){
+	int errormode;
+
+	GNUPG_GETOBJ();
+
+	if(this){
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &errormode) == FAILURE){
+            return;
+        }
+    }else{
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &res, &errormode) == FAILURE){
+            return;
+        }
+        ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
+    }
+
+	switch(errormode){
+		case 1:		/* warning */
+		case 3:		/* silent */
+			intern->errormode = errormode;
+			break;
+#ifdef ZEND_ENGINE_2
+		case 2:		/* exception */
+			intern->errormode = errormode;
+			break;
+#endif
+		default:
+			GNUPG_ERROR("invalid errormode");
+	}
+}
+/* }}} */
+
 /* {{{ proto bool gnupg_setsignmode(int signmode)
  * sets the mode for signing operations
  */
@@ -484,10 +526,11 @@ PHP_FUNCTION(gnupg_setsignmode){
 		case GPGME_SIG_MODE_DETACH:
 		case GPGME_SIG_MODE_CLEAR:
 			intern->signmode = signmode;
-			RETURN_TRUE;
+			RETVAL_TRUE;
 			break;
 		default:
 			GNUPG_ERR("invalid signmode");
+			RETVAL_FALSE;
 			break;
 	}
 }

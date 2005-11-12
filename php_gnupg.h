@@ -40,7 +40,7 @@ typedef struct gnupg_object{
 	zend_object zo;
 	gpgme_ctx_t ctx;
     gpgme_error_t err;
-    int error_mode;
+    int errormode;
     char* errortxt;
     int signmode;
     gpgme_key_t *encryptkeys;
@@ -79,6 +79,7 @@ PHP_FUNCTION(gnupg_adddecryptkey);
 PHP_FUNCTION(gnupg_deletekey);
 PHP_FUNCTION(gnupg_gettrustlist);
 PHP_FUNCTION(gnupg_listsignatures);
+PHP_FUNCTION(gnupg_seterrormode);
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)
