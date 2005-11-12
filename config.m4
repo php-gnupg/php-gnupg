@@ -21,7 +21,7 @@ if test "$PHP_GNUPG" != "no"; then
   
   if test -z "$GNUPG_DIR"; then
     AC_MSG_RESULT([not found])
-    AC_MSG_ERROR([Please reinstall the gnupg distribution])
+    AC_MSG_ERROR([Please reinstall the gpgme distribution])
   fi
 
   PHP_ADD_INCLUDE($GNUPG_DIR/include)
