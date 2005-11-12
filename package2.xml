@@ -15,18 +15,19 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-10-25</date>
- <time>21:45:37</time>
+ <date>2005-11-12</date>
+ <time>17:52:23</time>
  <version>
-  <release>0.5</release>
-  <api>0.5</api>
+  <release>0.6</release>
+  <api>0.6</api>
  </version>
  <stability>
   <release>beta</release>
   <api>beta</api>
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
- <notes>now supports multiple keys. added getsignatures. verify can now handle all signature types. therefore the API has changed.
+ <notes>+ added seterrormode
+- various memory optimizations
   
  </notes>
  <contents>
@@ -65,6 +66,21 @@ http://pear.php.net/dtd/package-2.0.xsd">
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>0.6</release>
+    <api>0.6</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-11-12</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>+ added seterrormode
+- various memory optimizations
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.5</release>
