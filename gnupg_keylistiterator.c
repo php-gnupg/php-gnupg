@@ -113,7 +113,7 @@ int _gnupg_keylistiterator_init(INIT_FUNC_ARGS)
 	memcpy(&gnupg_keylistiterator_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	le_gnupg_keylistiterator = zend_register_list_destructors_ex(NULL, NULL, "ctx_keylistiterator", module_number);
 	
-	zend_class_implements   (gnupg_keylistiterator_class_entry TSRMLS_DC, 1, zend_ce_iterator);
+	zend_class_implements   (gnupg_keylistiterator_class_entry TSRMLS_CC, 1, zend_ce_iterator);
 	
 	return SUCCESS;
 }

@@ -74,9 +74,14 @@ static zend_object_handlers gnupg_object_handlers;
 static void gnupg_free_encryptkeys(gnupg_object *intern TSRMLS_DC){
 	if(intern){
 		int idx;
+		/* loop through all encryptkeys and unref them in the gpgme-lib */
 		for(idx=0;idx<intern->encrypt_size;idx++){
 			gpgme_key_unref (intern->encryptkeys[idx]);
 		}
+		/* it´s an odd-thing, but other solutions makes problems :
+		*  erealloc(x,0) gives a segfault with PHP 4 and debug enabled
+		*  efree(x) alone ends in a segfault
+		*/
 		efree(erealloc(intern->encryptkeys,0));	
         intern->encryptkeys = NULL;
         intern->encrypt_size = 0;
@@ -88,11 +93,13 @@ static void gnupg_free_encryptkeys(gnupg_object *intern TSRMLS_DC){
 static void gnupg_free_resource_ptr(gnupg_object *intern TSRMLS_DC){
     if(intern){
         if(intern->ctx){
+			/* clear all signers from the gpgme-lib and finally release it */
             gpgme_signers_clear (intern->ctx);
             gpgme_release       (intern->ctx);
             intern->ctx = NULL;
         }
-        gnupg_free_encryptkeys(intern);
+		/* basic cleanup */
+        gnupg_free_encryptkeys(intern TSRMLS_CC);
 		zend_hash_destroy(intern->signkeys);
 		FREE_HASHTABLE(intern->signkeys);
 		zend_hash_destroy(intern->decryptkeys);
@@ -112,6 +119,7 @@ static void gnupg_res_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
 
 /* {{{ gnupg_res_init */
 static void gnupg_res_init(gnupg_object *intern TSRMLS_DC){
+	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
 	gpgme_new					(&ctx);
 	gpgme_set_armor				(ctx,1);
@@ -278,31 +286,31 @@ PHP_MINIT_FUNCTION(gnupg)
 	if (SUCCESS != gnupg_keylistiterator_init()){
 		return FAILURE;
 	}
-    gnupg_declare_long_constant("SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL TSRMLS_DC);
-    gnupg_declare_long_constant("SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH TSRMLS_DC);
-    gnupg_declare_long_constant("SIG_MODE_CLEAR",             GPGME_SIG_MODE_CLEAR TSRMLS_DC);
-    gnupg_declare_long_constant("VALIDITY_UNKNOWN",           GPGME_VALIDITY_UNKNOWN TSRMLS_DC);
-    gnupg_declare_long_constant("VALIDITY_UNDEFINED",         GPGME_VALIDITY_UNDEFINED TSRMLS_DC);
-    gnupg_declare_long_constant("VALIDITY_NEVER",             GPGME_VALIDITY_NEVER TSRMLS_DC);
-    gnupg_declare_long_constant("VALIDITY_MARGINAL",          GPGME_VALIDITY_MARGINAL TSRMLS_DC);
-    gnupg_declare_long_constant("VALIDITY_FULL",              GPGME_VALIDITY_FULL TSRMLS_DC);
-    gnupg_declare_long_constant("VALIDITY_ULTIMATE",          GPGME_VALIDITY_ULTIMATE TSRMLS_DC);
-    gnupg_declare_long_constant("PROTOCOL_OpenPGP",           GPGME_PROTOCOL_OpenPGP TSRMLS_DC);
-    gnupg_declare_long_constant("PROTOCOL_CMS",               GPGME_PROTOCOL_CMS TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_VALID",               GPGME_SIGSUM_VALID TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_GREEN",               GPGME_SIGSUM_GREEN TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_RED",                 GPGME_SIGSUM_RED TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_KEY_REVOKED",         GPGME_SIGSUM_KEY_REVOKED TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_KEY_EXPIRED",         GPGME_SIGSUM_KEY_EXPIRED TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_SIG_EXPIRED",         GPGME_SIGSUM_SIG_EXPIRED TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_KEY_MISSING",         GPGME_SIGSUM_KEY_MISSING TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_CRL_MISSING",         GPGME_SIGSUM_CRL_MISSING TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY TSRMLS_DC);
-    gnupg_declare_long_constant("SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR TSRMLS_DC);
-	gnupg_declare_long_constant("ERROR_WARNING",              1);
-	gnupg_declare_long_constant("ERROR_EXCEPTION",            2);
-	gnupg_declare_long_constant("ERROR_SILENT",            	  3);
+    gnupg_declare_long_constant("SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL TSRMLS_CC);
+    gnupg_declare_long_constant("SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH TSRMLS_CC);
+    gnupg_declare_long_constant("SIG_MODE_CLEAR",             GPGME_SIG_MODE_CLEAR TSRMLS_CC);
+    gnupg_declare_long_constant("VALIDITY_UNKNOWN",           GPGME_VALIDITY_UNKNOWN TSRMLS_CC);
+    gnupg_declare_long_constant("VALIDITY_UNDEFINED",         GPGME_VALIDITY_UNDEFINED TSRMLS_CC);
+    gnupg_declare_long_constant("VALIDITY_NEVER",             GPGME_VALIDITY_NEVER TSRMLS_CC);
+    gnupg_declare_long_constant("VALIDITY_MARGINAL",          GPGME_VALIDITY_MARGINAL TSRMLS_CC);
+    gnupg_declare_long_constant("VALIDITY_FULL",              GPGME_VALIDITY_FULL TSRMLS_CC);
+    gnupg_declare_long_constant("VALIDITY_ULTIMATE",          GPGME_VALIDITY_ULTIMATE TSRMLS_CC);
+    gnupg_declare_long_constant("PROTOCOL_OpenPGP",           GPGME_PROTOCOL_OpenPGP TSRMLS_CC);
+    gnupg_declare_long_constant("PROTOCOL_CMS",               GPGME_PROTOCOL_CMS TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_VALID",               GPGME_SIGSUM_VALID TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_GREEN",               GPGME_SIGSUM_GREEN TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_RED",                 GPGME_SIGSUM_RED TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_KEY_REVOKED",         GPGME_SIGSUM_KEY_REVOKED TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_KEY_EXPIRED",         GPGME_SIGSUM_KEY_EXPIRED TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_SIG_EXPIRED",         GPGME_SIGSUM_SIG_EXPIRED TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_KEY_MISSING",         GPGME_SIGSUM_KEY_MISSING TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_CRL_MISSING",         GPGME_SIGSUM_CRL_MISSING TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_CRL_TOO_OLD",         GPGME_SIGSUM_CRL_TOO_OLD TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_BAD_POLICY",          GPGME_SIGSUM_BAD_POLICY TSRMLS_CC);
+    gnupg_declare_long_constant("SIGSUM_SYS_ERROR",           GPGME_SIGSUM_SYS_ERROR TSRMLS_CC);
+	gnupg_declare_long_constant("ERROR_WARNING",              1 TSRMLS_CC);
+	gnupg_declare_long_constant("ERROR_EXCEPTION",            2 TSRMLS_CC);
+	gnupg_declare_long_constant("ERROR_SILENT",            	  3 TSRMLS_CC);
 #endif
     REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_NORMAL",            GPGME_SIG_MODE_NORMAL, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("GNUPG_SIG_MODE_DETACH",            GPGME_SIG_MODE_DETACH, CONST_CS | CONST_PERSISTENT);
@@ -355,7 +363,7 @@ PHP_MINFO_FUNCTION(gnupg)
 
 /* {{{ callback func for setting the passphrase */
 
-gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd){
+gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd TSRMLS_DC){
 	char uid[16];
 	int idx;
 	char *passphrase = NULL;
@@ -382,7 +390,7 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 	return 0;
 }
 
-gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd){
+gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd TSRMLS_DC){
     char uid[16];
     int idx;
     char *passphrase = NULL;
@@ -435,7 +443,7 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *sig_arr, zva
 PHP_FUNCTION(gnupg_init){
 	gnupg_object *intern;
 	intern =  emalloc(sizeof(gnupg_object));
-	gnupg_res_init(intern);
+	gnupg_res_init(intern TSRMLS_CC);
 	ZEND_REGISTER_RESOURCE(return_value,intern,le_gnupg);
 }
 /* }}} */
@@ -817,7 +825,7 @@ PHP_FUNCTION(gnupg_clearencryptkeys){
         }
         ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
-	gnupg_free_encryptkeys(intern);	
+	gnupg_free_encryptkeys(intern TSRMLS_CC);	
 
     RETURN_TRUE;
 }
