@@ -1354,7 +1354,9 @@ PHP_FUNCTION(gnupg_import){
 	add_assoc_long			(return_value,	"secretunchanged",	result->secret_unchanged);
 	add_assoc_long			(return_value,	"newsignatures",	result->new_signatures);
 	add_assoc_long			(return_value,	"skippedkeys",		result->skipped_new_keys);
-	add_assoc_string		(return_value,	"fingerprint",		result->imports->fpr,	1);
+	if(result->imports && result->imports->fpr){
+		add_assoc_string		(return_value,	"fingerprint",		result->imports->fpr,	1);
+	}
 }
 /* }}} */
 
