@@ -15,18 +15,20 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-11-12</date>
- <time>19:39:34</time>
+ <date>2005-11-28</date>
+ <time>21:26:57</time>
  <version>
-  <release>0.6.1</release>
-  <api>0.6.1</api>
+  <release>0.7</release>
+  <api>0.7</api>
  </version>
  <stability>
   <release>beta</release>
   <api>beta</api>
  </stability>
- <license uri="http://www.php.net/license">PHP License</license>
- <notes>fixed zts build
+ <license>PHP License 3.01</license>
+ <notes>changed licence to PHP Licence 3.01
+fixed error during keyimport when the keyring is not writeable
+fixed error when an invalid errormode is passed to seterrormode
  </notes>
  <contents>
   <dir name="/">
@@ -66,6 +68,22 @@ http://pear.php.net/dtd/package-2.0.xsd">
  <changelog>
   <release>
    <version>
+    <release>0.7</release>
+    <api>0.7</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-11-28</date>
+   <license>PHP License 3.01</license>
+   <notes>changed licence to PHP Licence 3.01
+fixed error during keyimport when the keyring is not writeable
+fixed error when an invalid errormode is passed to seterrormode
+   </notes>
+  </release>
+  <release>
+   <version>
     <release>0.6.1</release>
     <api>0.6.1</api>
    </version>
@@ -74,7 +92,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-11-12</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>fixed zts build
    </notes>
   </release>
@@ -88,7 +106,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-11-12</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>+ added seterrormode
 - various memory optimizations
    </notes>
@@ -103,7 +121,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-10-25</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>now supports multiple keys. added getsignatures. verify can now handle all signature types. therefore the API has changed.
    </notes>
   </release>
@@ -117,7 +135,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-10-17</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>added procedual usage and lowered min PHP Version to 4.3
    </notes>
   </release>
@@ -131,7 +149,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-10-15</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>added import/export methods and better errormessages
    </notes>
   </release>
@@ -145,7 +163,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-10-10</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>added keylistiterator, encryptsign and decryptverify
    </notes>
   </release>
@@ -159,7 +177,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>beta</api>
    </stability>
    <date>2005-10-07</date>
-   <license uri="http://www.php.net/license">PHP License</license>
+   <license>PHP License 3.01</license>
    <notes>initial release
     
    </notes>

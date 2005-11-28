@@ -14,11 +14,13 @@
   </maintainer>
   </maintainers>
  <release>
-  <version>0.6.1</version>
-  <date>2005-11-12</date>
-  <license>PHP License</license>
+  <version>0.7</version>
+  <date>2005-11-28</date>
+  <license>PHP License 3.01</license>
   <state>beta</state>
-  <notes>fixed zts build</notes>
+  <notes>changed licence to PHP Licence 3.01
+fixed error during keyimport when the keyring is not writeable
+fixed error when an invalid errormode is passed to seterrormode</notes>
   <deps>
    <dep type="php" rel="ge" version="4.3"/>
   </deps>
@@ -43,6 +45,14 @@
   </filelist>
  </release>
  <changelog>
+	<release>
+		<version>0.7</version>
+		<date>2005-11-28</date>
+		<state>beta</state>
+		<notes>changed licence to PHP Licence 3.01
+fixed error during keyimport when the keyring is not writeable
+fixed error when an invalid errormode is passed to seterrormode</notes>
+	</release>
 	<release>
         <version>0.6.1</version>
         <date>2005-11-12</date>
