@@ -33,7 +33,7 @@
 
 static int le_gnupg;
 
-#define PHP_GNUPG_VERSION "0.6beta"
+#define PHP_GNUPG_VERSION "0.7beta"
 
 #ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
@@ -506,7 +506,7 @@ PHP_FUNCTION(gnupg_seterrormode){
 			break;
 #endif
 		default:
-			GNUPG_ERROR("invalid errormode");
+			GNUPG_ERR("invalid errormode");
 	}
 }
 /* }}} */
