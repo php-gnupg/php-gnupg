@@ -15,8 +15,8 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-11-28</date>
- <time>21:26:57</time>
+ <date>2005-11-29</date>
+ <time>21:52:40</time>
  <version>
   <release>0.7</release>
   <api>0.7</api>
@@ -25,8 +25,8 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <release>beta</release>
   <api>beta</api>
  </stability>
- <license>PHP License 3.01</license>
- <notes>changed licence to PHP Licence 3.01
+ <license>BSD, revised</license>
+ <notes>changed licence to BSD, revised
 fixed error during keyimport when the keyring is not writeable
 fixed error when an invalid errormode is passed to seterrormode
  </notes>
@@ -75,9 +75,9 @@ fixed error when an invalid errormode is passed to seterrormode
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2005-11-28</date>
-   <license>PHP License 3.01</license>
-   <notes>changed licence to PHP Licence 3.01
+   <date>2005-11-29</date>
+   <license>BSD, revised</license>
+   <notes>changed licence to BSD, revised
 fixed error during keyimport when the keyring is not writeable
 fixed error when an invalid errormode is passed to seterrormode
    </notes>
@@ -92,7 +92,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-11-12</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>fixed zts build
    </notes>
   </release>
@@ -106,7 +106,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-11-12</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>+ added seterrormode
 - various memory optimizations
    </notes>
@@ -121,7 +121,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-10-25</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>now supports multiple keys. added getsignatures. verify can now handle all signature types. therefore the API has changed.
    </notes>
   </release>
@@ -135,7 +135,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-10-17</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>added procedual usage and lowered min PHP Version to 4.3
    </notes>
   </release>
@@ -149,7 +149,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-10-15</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>added import/export methods and better errormessages
    </notes>
   </release>
@@ -163,7 +163,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-10-10</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>added keylistiterator, encryptsign and decryptverify
    </notes>
   </release>
@@ -177,7 +177,7 @@ fixed error when an invalid errormode is passed to seterrormode
     <api>beta</api>
    </stability>
    <date>2005-10-07</date>
-   <license>PHP License 3.01</license>
+   <license>BSD, revised</license>
    <notes>initial release
     
    </notes>

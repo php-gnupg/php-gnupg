@@ -15,10 +15,10 @@
   </maintainers>
  <release>
   <version>0.7</version>
-  <date>2005-11-28</date>
-  <license>PHP License 3.01</license>
+  <date>2005-11-29</date>
+  <license>BSD, revised</license>
   <state>beta</state>
-  <notes>changed licence to PHP Licence 3.01
+  <notes>changed licence to BSD, revised
 fixed error during keyimport when the keyring is not writeable
 fixed error when an invalid errormode is passed to seterrormode</notes>
   <deps>
@@ -47,9 +47,9 @@ fixed error when an invalid errormode is passed to seterrormode</notes>
  <changelog>
 	<release>
 		<version>0.7</version>
-		<date>2005-11-28</date>
+		<date>2005-11-29</date>
 		<state>beta</state>
-		<notes>changed licence to PHP Licence 3.01
+		<notes>changed licence to BSD, revised
 fixed error during keyimport when the keyring is not writeable
 fixed error when an invalid errormode is passed to seterrormode</notes>
 	</release>
