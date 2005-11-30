@@ -70,8 +70,6 @@ zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type
 
 	intern =	emalloc(sizeof(gnupg_keylistiterator_object));
 	intern->zo.ce = class_type;
-	intern->zo.in_get = 0;
-	intern->zo.in_set = 0;
 	intern->zo.properties = NULL;
 	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_dtor,NULL TSRMLS_CC);
 	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;

@@ -155,8 +155,6 @@ zend_object_value gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
 	
 	intern					=	emalloc(sizeof(gnupg_object));
 	intern->zo.ce			=	class_type;
-	intern->zo.in_get		=	0;
-	intern->zo.in_set		=	0;
 	intern->zo.properties	=	NULL;
 	
 	ALLOC_HASHTABLE	(intern->zo.properties);
