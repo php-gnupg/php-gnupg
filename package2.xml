@@ -15,20 +15,18 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-11-29</date>
- <time>21:52:40</time>
+ <date>2005-12-29</date>
+ <time>20:49:15</time>
  <version>
-  <release>0.7</release>
-  <api>0.7</api>
+  <release>1.0</release>
+  <api>1.0</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license>BSD, revised</license>
- <notes>changed licence to BSD, revised
-fixed error during keyimport when the keyring is not writeable
-fixed error when an invalid errormode is passed to seterrormode
+ <notes>bump to stable
  </notes>
  <contents>
   <dir name="/">
@@ -66,6 +64,34 @@ fixed error when an invalid errormode is passed to seterrormode
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>1.0</release>
+    <api>1.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2005-12-29</date>
+   <license>BSD, revised</license>
+   <notes>bump to stable
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.7.1</release>
+    <api>0.7.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2005-12-01</date>
+   <license>BSD, revised</license>
+   <notes>fixed PHP 5.1 build
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.7</release>

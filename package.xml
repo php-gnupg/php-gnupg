@@ -14,13 +14,11 @@
   </maintainer>
   </maintainers>
  <release>
-  <version>0.7</version>
-  <date>2005-11-29</date>
+  <version>1.0</version>
+  <date>2005-12-29</date>
   <license>BSD, revised</license>
-  <state>beta</state>
-  <notes>changed licence to BSD, revised
-fixed error during keyimport when the keyring is not writeable
-fixed error when an invalid errormode is passed to seterrormode</notes>
+  <state>stable</state>
+  <notes>bump to stable</notes>
   <deps>
    <dep type="php" rel="ge" version="4.3"/>
   </deps>
@@ -45,6 +43,18 @@ fixed error when an invalid errormode is passed to seterrormode</notes>
   </filelist>
  </release>
  <changelog>
+	<release>
+		<version>1.0</version>
+		<date>2005-12-29</date>
+		<state>stable</state>
+		<notes>bump to stable</notes>
+	</release>
+    <release>
+        <version>0.7.1</version>
+        <date>2005-12-01</date>
+        <state>beta</state>
+        <notes>fixed PHP 5.1 build</notes>
+    </release>
 	<release>
 		<version>0.7</version>
 		<date>2005-11-29</date>
