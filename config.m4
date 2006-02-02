@@ -2,11 +2,11 @@ dnl $Id$
 dnl config.m4 for extension gnupg
 
 PHP_ARG_WITH(gnupg, for gnupg support,
-[  --with-gnupg             Include gnupg support])
+[  --with-gnupg[=DIR]       Include gnupg support])
 
 if test "$PHP_GNUPG" != "no"; then
-  SEARCH_PATH="/usr/local /usr" 
-  SEARCH_FOR="/include/gpgme.h"  
+  SEARCH_PATH="/usr/local/include /usr/include /usr/local/include/gpgme/ /usr/include/gpgme/"
+  SEARCH_FOR="gpgme.h"
   if test -r $PHP_GNUPG/$SEARCH_FOR; then
     GNUPG_DIR=$PHP_GNUPG
   else
