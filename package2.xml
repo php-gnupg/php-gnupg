@@ -15,18 +15,19 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2005-12-29</date>
- <time>20:49:15</time>
+ <date>2006-03-16</date>
+ <time>16:50:53</time>
  <version>
-  <release>1.0</release>
-  <api>1.0</api>
+  <release>1.1</release>
+  <api>1.1</api>
  </version>
  <stability>
   <release>stable</release>
   <api>stable</api>
  </stability>
  <license>BSD, revised</license>
- <notes>bump to stable
+ <notes>improved PHP4 compatibility
+passphrase-errors now takes care of the errormode
  </notes>
  <contents>
   <dir name="/">
@@ -64,6 +65,21 @@ http://pear.php.net/dtd/package-2.0.xsd">
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>1.1</release>
+    <api>1.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2006-03-16</date>
+   <license>BSD, revised</license>
+   <notes>improved PHP4 compatibility
+passphrase-errors now takes care of the errormode
+   </notes>
+  </release>
   <release>
    <version>
     <release>1.0</release>

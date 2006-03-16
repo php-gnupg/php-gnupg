@@ -6,7 +6,7 @@
   | modification, are permitted provided that the conditions mentioned |
   | in the accompanying LICENSE file are met.                          |
   +--------------------------------------------------------------------+
-  | Copyright (c) 2005, Thilo Raufeisen <traufeisen@php.net>           |
+  | Copyright (c) 2006, Thilo Raufeisen <traufeisen@php.net>           |
   +--------------------------------------------------------------------+
 */
 

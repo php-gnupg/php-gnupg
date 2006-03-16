@@ -6,7 +6,7 @@
   | modification, are permitted provided that the conditions mentioned |
   | in the accompanying LICENSE file are met.                          |
   +--------------------------------------------------------------------+
-  | Copyright (c) 2005, Thilo Raufeisen <traufeisen@php.net>           |
+  | Copyright (c) 2006, Thilo Raufeisen <traufeisen@php.net>           |
   +--------------------------------------------------------------------+
 */
 
@@ -27,24 +27,26 @@
 
 static int le_gnupg;
 
-#define PHP_GNUPG_VERSION "0.7beta"
+#define PHP_GNUPG_VERSION "1.1"
 
 #ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
 #endif
 
 /* {{{ defs */
+#ifdef ZEND_ENGINE_2
+
 #define GNUPG_GETOBJ() \
-	zval *this = getThis(); \
-	gnupg_object *intern; \
-	zval *res; \
-	if(this){ \
-		intern	=	(gnupg_object*) zend_object_store_get_object(getThis() TSRMLS_CC); \
-		if(!intern){ \
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
-			RETURN_FALSE; \
-		} \
-	}
+    zval *this = getThis(); \
+    gnupg_object *intern; \
+    zval *res; \
+    if(this){ \
+        intern  =   (gnupg_object*) zend_object_store_get_object(getThis() TSRMLS_CC); \
+        if(!intern){ \
+            php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
+            RETURN_FALSE; \
+        } \
+    }
 
 #define GNUPG_ERR(error) \
     if(intern){ \
@@ -61,7 +63,26 @@ static zend_object_handlers gnupg_object_handlers;
     }else{ \
         php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
     } \
-    RETVAL_FALSE;
+	if(return_value){ \
+	    RETVAL_FALSE; \
+	}
+#else
+#define GNUPG_ERR(error) \
+	if(intern && intern->errormode!=1) { \
+		intern->errortxt = (char*)error; \
+	}else{ \
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
+	} \
+	if(return_value){ \
+		RETVAL_FALSE; \
+	}
+
+#define GNUPG_GETOBJ() \
+	zval *this = NULL; \
+	zval *res; \
+	gnupg_object *intern;
+
+#endif
 /* }}} */
 
 /* {{{ free encryptkeys */
@@ -196,7 +217,24 @@ static zend_function_entry gnupg_methods[] = {
 	ZEND_ME(gnupg,	seterrormode,		NULL,	ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
+
+/* {{{ class constants */
+static void gnupg_declare_long_constant(const char *const_name, long value TSRMLS_DC){
+#if PHP_MAJOR_VERSION > 5 || PHP_MINOR_VERSION >= 1
+    zend_declare_class_constant_long(gnupg_class_entry, (char*)const_name, strlen(const_name), value TSRMLS_CC);
+#else
+    zval *constant = malloc(sizeof(*constant));
+    ZVAL_LONG(constant,value);
+    INIT_PZVAL(constant);
+    zend_hash_update(&gnupg_class_entry->constants_table, (char*)const_name, strlen(const_name)+1, &constant, sizeof(zval*), NULL);
+#endif
+}
+/* }}} */
+
 #endif  /* ZEND_ENGINE_2 */
+
+/* {{{ functionlist gnupg */
 static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_init,				NULL)
 	PHP_FE(gnupg_keyinfo,			NULL)
@@ -224,20 +262,6 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_seterrormode,		NULL)
 	{NULL, NULL, NULL}
 };
-/* }}} */
-
-/* {{{ class constants */
-static void gnupg_declare_long_constant(const char *const_name, long value TSRMLS_DC){
-#if PHP_MAJOR_VERSION > 5 || PHP_MINOR_VERSION >= 1
-    zend_declare_class_constant_long(gnupg_class_entry, (char*)const_name, strlen(const_name), value TSRMLS_CC);
-#else
-    zval *constant = malloc(sizeof(*constant));
-    ZVAL_LONG(constant,value);
-    INIT_PZVAL(constant);
-    zend_hash_update(&gnupg_class_entry->constants_table, (char*)const_name, strlen(const_name)+1, &constant, sizeof(zval*), NULL);
-#endif
-
-}
 /* }}} */
 
 /* {{{ gnupg_module_entry
@@ -359,9 +383,10 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 	char uid[16];
 	int idx;
 	char *passphrase = NULL;
+	zval *return_value = NULL;
 
 	if(last_was_bad){
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Incorrent passphrase");
+		GNUPG_ERR("Incorrent passphrase");
 		return 1;
 	}
 	for(idx=0;idx<16;idx++){
@@ -369,11 +394,11 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 	}
 	uid[16] = '\0';
 	if(zend_hash_find(intern->signkeys,(char *) uid,17,(void **) &passphrase)==FAILURE){
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set");
+		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
 	if(!passphrase){
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set");
+		GNUPG_ERR("no passphrase set");
         return 1;
 	}
 	
@@ -386,9 +411,10 @@ gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint,
     char uid[16];
     int idx;
     char *passphrase = NULL;
+	zval *return_value = NULL;
 
     if(last_was_bad){
-        php_error_docref(NULL TSRMLS_CC, E_WARNING, "Incorrent passphrase");
+		GNUPG_ERR("Incorrent passphrase");
         return 1;
     }
     for(idx=0;idx<16;idx++){
@@ -396,11 +422,11 @@ gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint,
     }
     uid[16] = '\0';
     if(zend_hash_find(intern->decryptkeys,(char *) uid,17,(void **) &passphrase)==FAILURE){
-        php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set");
+		GNUPG_ERR("no passphrase set");
         return 1;
     }
     if(!passphrase){
-        php_error_docref(NULL TSRMLS_CC, E_WARNING, "no passphrase set");
+		GNUPG_ERR("no passphrase set");
         return 1;
     }
     write (fd, passphrase, strlen(passphrase));
@@ -880,9 +906,12 @@ PHP_FUNCTION(gnupg_sign){
 		return;
     }
     if((intern->err = gpgme_op_sign(intern->ctx, in, out, intern->signmode))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERR("data signing failed");
+		if(!intern->errortxt){
+			GNUPG_ERR("data signing failed");
+		}
 		gpgme_data_release(in);
 		gpgme_data_release(out);
+		RETVAL_FALSE;
 		return;
     }
 	result		=	gpgme_op_sign_result (intern->ctx);
@@ -1015,9 +1044,12 @@ PHP_FUNCTION(gnupg_encryptsign){
 		return;
     }
 	if((intern->err = gpgme_op_encrypt_sign(intern->ctx, intern->encryptkeys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERR("encrypt-sign failed");
+		if(!intern->errortxt){
+			GNUPG_ERR("encrypt-sign failed");
+		}
 		gpgme_data_release(in);
 		gpgme_data_release(out);
+		RETVAL_FALSE;
 		return;
 	}
 
@@ -1096,7 +1128,7 @@ PHP_FUNCTION(gnupg_verify){
 	}else{
 		/*	no separate signature was passed
 		*	so we assume that it is a clearsigned message
-		*	text no becomes the signature
+		*	text now becomes the signature
 		*	creating the text-databuffer is still needed
 		*/
 		if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, text, text_len, 0))!=GPG_ERR_NO_ERROR){
@@ -1169,9 +1201,12 @@ PHP_FUNCTION(gnupg_decrypt){
 		return;
 	}
 	if((intern->err = gpgme_op_decrypt (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERR("decrypt failed");
+		if(!intern->errortxt){
+			GNUPG_ERR("decrypt failed");
+		}
 		gpgme_data_release(in);
 		gpgme_data_release(out);
+		RETVAL_FALSE;
 		return;
 	}
 	result = gpgme_op_decrypt_result (intern->ctx);
@@ -1233,9 +1268,12 @@ PHP_FUNCTION(gnupg_decryptverify){
 		return;
     }
     if((intern->err = gpgme_op_decrypt_verify (intern->ctx, in, out))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERR("decrypt-verify failed");
+		if(!intern->errortxt){
+			GNUPG_ERR("decrypt-verify failed");
+		}
 		gpgme_data_release(in);
 		gpgme_data_release(out);
+		RETVAL_FALSE;
 		return;
     }
     userret             =   gpgme_data_release_and_get_mem(out,&ret_size);

@@ -14,11 +14,12 @@
   </maintainer>
   </maintainers>
  <release>
-  <version>1.0</version>
-  <date>2005-12-29</date>
+  <version>1.1</version>
+  <date>2006-03-16</date>
   <license>BSD, revised</license>
   <state>stable</state>
-  <notes>bump to stable</notes>
+  <notes>improved PHP4 compatibility
+passphrase-errors now takes care of the errormode</notes>
   <deps>
    <dep type="php" rel="ge" version="4.3"/>
   </deps>
@@ -43,6 +44,13 @@
   </filelist>
  </release>
  <changelog>
+	<release>
+		<version>1.1</version>
+		<date>2006-03-16</date>
+		<state>stable</state>
+		<notes>improved PHP4 compatibility
+passphrase-errors now takes care of the errormode</notes>
+	</release>
 	<release>
 		<version>1.0</version>
 		<date>2005-12-29</date>
