@@ -27,7 +27,7 @@
 
 static int le_gnupg;
 
-#define PHP_GNUPG_VERSION "1.1"
+#define PHP_GNUPG_VERSION "1.2"
 
 #ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
@@ -446,7 +446,7 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *sig_arr, zva
         add_assoc_long      (sig_arr,  "validity",     gpgme_signatures->validity    );
         add_assoc_long      (sig_arr,  "timestamp",    gpgme_signatures->timestamp   );
         add_assoc_long      (sig_arr,  "status",       gpgme_signatures->status      );
-
+		add_assoc_long		(sig_arr,  "summary",	   gpgme_signatures->summary     );
         add_next_index_zval (main_arr, sig_arr);
 
         gpgme_signatures    =   gpgme_signatures->next;
@@ -1090,77 +1090,86 @@ PHP_FUNCTION(gnupg_encryptsign){
  * verifies the given clearsigned text and returns information about the result in an array
  */
 PHP_FUNCTION(gnupg_verify){
-	char	*text;
-	int		text_len;
-	zval	*signature = NULL;	/* use zval here because the signature can be binary */
-	zval	*plaintext = NULL;
-	zval	*sig_arr;
+    gpgme_data_t                gpgme_text, gpgme_sig;
+    gpgme_verify_result_t       gpgme_result;
+    zval                        *signature_array;
+
+	zval	*signed_text	=	NULL; /* text without the signature, if its a detached one, or the text incl the sig */
+	zval	*signature		=	NULL; /* signature, if its a detached one */
+	zval	*plain_text		=	NULL; /* signed_text without the signature if its not a detached sig */
 
 	char	*gpg_plain;
-	size_t	gpg_plain_len;
-
-	gpgme_data_t			gpgme_text, gpgme_sig;
-	gpgme_verify_result_t	gpgme_result;
-	gpgme_signature_t		gpgme_signatures;
+	int		gpg_plain_len;
 
 	GNUPG_GETOBJ();
 
 	if(this){
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz|z", &text, &text_len, &signature, &plaintext) == FAILURE){
-            return;
-        }
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz|z", &signed_text, &signature, &plain_text) == FAILURE){
+			return;
+		}
     }else{
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsz|z", &res, &text, &text_len, &signature, &plaintext) == FAILURE){
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rzz|z", &res, &signed_text, &signature, &plain_text) == FAILURE){
             return;
         }
         ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);
     }
-	if(Z_STRVAL_P(signature)){
-		if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0))!=GPG_ERR_NO_ERROR){
-			GNUPG_ERR("could not create signature-databuffer");
-			return;
-		}
-		if((intern->err = gpgme_data_new (&gpgme_text))!=GPG_ERR_NO_ERROR){
-			GNUPG_ERR("could not create text-databuffer");
-			gpgme_data_release(gpgme_sig);
-			return;
-		}
-	}else{
-		/*	no separate signature was passed
-		*	so we assume that it is a clearsigned message
-		*	text now becomes the signature
-		*	creating the text-databuffer is still needed
-		*/
-		if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, text, text_len, 0))!=GPG_ERR_NO_ERROR){
-    	    GNUPG_ERR("could not create signature-databuffer");
-			return;
+	if(Z_STRVAL_P(signature)){		/* detached signature */
+		/* setup signature-databuffer for gpgme */
+	    if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0))!=GPG_ERR_NO_ERROR){
+       		GNUPG_ERR               ("could not create signature-databuffer");
+	        return;
 	    }
-		if((intern->err = gpgme_data_new_from_mem (&gpgme_text, NULL, 0, 0))!=GPG_ERR_NO_ERROR){
-			GNUPG_ERR("could not create text-databuffer");
-			gpgme_data_release(gpgme_sig);
-			gpgme_data_release(gpgme_text);
-			return;
-		}
+		/* and the text */
+	    if((intern->err = gpgme_data_new_from_mem (&gpgme_text, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0))!=GPG_ERR_NO_ERROR){
+	        GNUPG_ERR               ("could not create text-databuffer");
+       		gpgme_data_release      (gpgme_sig);
+	        gpgme_data_release      (gpgme_text);
+       		return;
+	    }
+		/* now verify sig + text */
+	    if((intern->err = gpgme_op_verify (intern->ctx, gpgme_sig, gpgme_text, NULL))!=GPG_ERR_NO_ERROR){
+       		GNUPG_ERR               ("verify failed");
+	        gpgme_data_release      (gpgme_sig);
+	        gpgme_data_release      (gpgme_text);
+	        return;
+	    }
+	}else{							/* clearsign or normal signature */
+    	if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0))!=GPG_ERR_NO_ERROR){
+        	GNUPG_ERR               ("could not create signature-databuffer");
+	        return;
+    	}
+		/* set a NULL databuffer for gpgme */
+	    if((intern->err = gpgme_data_new_from_mem (&gpgme_text, NULL, 0, 0))!=GPG_ERR_NO_ERROR){
+    	    GNUPG_ERR               ("could not create text-databuffer");
+        	gpgme_data_release      (gpgme_sig);
+	        gpgme_data_release      (gpgme_text);
+    	    return;
+	    }
+		/* and verify the 'signature' */
+    	if((intern->err = gpgme_op_verify (intern->ctx, gpgme_sig, NULL, gpgme_text))!=GPG_ERR_NO_ERROR){
+        	GNUPG_ERR               ("verify failed");
+	        gpgme_data_release      (gpgme_sig);
+    	    gpgme_data_release      (gpgme_text);
+        	return;
+	    }
 	}
-	if((intern->err = gpgme_op_verify (intern->ctx, gpgme_sig, NULL, gpgme_text))!=GPG_ERR_NO_ERROR){
-		GNUPG_ERR("verify failed");
-		gpgme_data_release(gpgme_sig);
-		gpgme_data_release(gpgme_text);
-		return;
-	}
-	gpgme_result			=   gpgme_op_verify_result (intern->ctx);
+	/* now get the result */
+	gpgme_result            =   	gpgme_op_verify_result (intern->ctx);
     if(!gpgme_result->signatures){
-        GNUPG_ERR           ("no signature found");
+        GNUPG_ERR               	("no signature found");
     }else{
-		gnupg_fetchsignatures	(gpgme_result->signatures,sig_arr,return_value);
-    	gpg_plain			=	gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
-	    if(plaintext){
-    	    ZVAL_STRINGL        (plaintext,gpg_plain,gpg_plain_len,1);
-	    }
-	}
-    gpgme_data_release      (gpgme_sig);
-	free					(gpgme_text);
-	free					(gpg_plain);
+		/* fetch all signatures in an array */
+        gnupg_fetchsignatures   	(gpgme_result->signatures,signature_array,return_value);
+		/* get a 'plain' version of the text without a signature */
+		gpg_plain			=		gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
+        if(gpg_plain && gpg_plain_len > 0){
+            ZVAL_STRINGL        	(plain_text, gpg_plain,gpg_plain_len,1);
+        }
+        free                    	(gpg_plain);
+        gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
+    }
+    gpgme_data_release          	(gpgme_sig);
+    free                        	(gpgme_text);
 }
 /* }}} */
 
