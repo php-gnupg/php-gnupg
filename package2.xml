@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.4.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+<package packagerversion="1.4.9" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
 http://pear.php.net/dtd/tasks-1.0.xsd
 http://pear.php.net/dtd/package-2.0
 http://pear.php.net/dtd/package-2.0.xsd">
@@ -15,19 +15,19 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2006-03-16</date>
- <time>16:50:53</time>
+ <date>2006-05-23</date>
+ <time>21:25:00</time>
  <version>
-  <release>1.1</release>
-  <api>1.1</api>
+  <release>1.2</release>
+  <api>1.2</api>
  </version>
  <stability>
   <release>stable</release>
   <api>stable</api>
  </stability>
  <license>BSD, revised</license>
- <notes>improved PHP4 compatibility
-passphrase-errors now takes care of the errormode
+ <notes>fixed bug #7587 (gnupg_verify fails with detached signature)
+added &quot;summary&quot; into signature-array
  </notes>
  <contents>
   <dir name="/">
@@ -41,7 +41,21 @@ passphrase-errors now takes care of the errormode
     <file name="keyinfo.php" role="doc" />
     <file name="main.php" role="doc" />
     <file name="verify.php" role="doc" />
-   </dir> <!-- //examples -->
+   </dir> <!-- /examples -->
+   <dir name="tests">
+    <file name="0001_gnupg_import_oo.phpt" role="test" />
+    <file name="gnupg_encryptsign_oo.phpt" role="test" />
+    <file name="gnupg_encrypt_oo.phpt" role="test" />
+    <file name="gnupg_export_oo.phpt" role="test" />
+    <file name="gnupg_keyinfo_oo.phpt" role="test" />
+    <file name="gnupg_listsignatures_oo.phpt" role="test" />
+    <file name="gnupg_sign_clear_oo.phpt" role="test" />
+    <file name="gnupg_sign_detach_nonarmor.phpt" role="test" />
+    <file name="gnupg_sign_detach_oo.phpt" role="test" />
+    <file name="gnupg_sign_normal.phpt" role="test" />
+    <file name="gnupg_sign_normal_nonarmor.phpt" role="test" />
+    <file name="vars.inc" role="test" />
+   </dir> <!-- /tests -->
    <file name="config.m4" role="src" />
    <file name="EXPERIMENTAL" role="doc" />
    <file name="gnupg.c" role="src" />
@@ -65,6 +79,21 @@ passphrase-errors now takes care of the errormode
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>1.2</release>
+    <api>1.2</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2006-05-23</date>
+   <license>BSD, revised</license>
+   <notes>fixed bug #7587 (gnupg_verify fails with detached signature)
+added &quot;summary&quot; into signature-array
+   </notes>
+  </release>
   <release>
    <version>
     <release>1.1</release>

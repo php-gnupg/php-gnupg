@@ -14,12 +14,12 @@
   </maintainer>
   </maintainers>
  <release>
-  <version>1.1</version>
-  <date>2006-03-16</date>
+  <version>1.2</version>
+  <date>2006-05-23</date>
   <license>BSD, revised</license>
   <state>stable</state>
-  <notes>improved PHP4 compatibility
-passphrase-errors now takes care of the errormode</notes>
+  <notes>fixed bug #7587 (gnupg_verify fails with detached signature)
+added "summary" into signature-array</notes>
   <deps>
    <dep type="php" rel="ge" version="4.3"/>
   </deps>
@@ -32,18 +32,41 @@ passphrase-errors now takes care of the errormode</notes>
    <file role="src" name="php_gnupg_keylistiterator.h" />
    <file role="src" name="gnupg.c"/>
    <file role="src" name="gnupg_keylistiterator.c" />
-   <file role="doc" name="examples/main.php"/>
-   <file role="doc" name="examples/clearsign.php"/>
-   <file role="doc" name="examples/verify.php"/>
-   <file role="doc" name="examples/encrypt.php"/>
-   <file role="doc" name="examples/decrypt.php"/>
-   <file role="doc" name="examples/keyinfo.php"/>
-   <file role="doc" name="examples/encryptsign.php" />
-   <file role="doc" name="examples/export.php" />
-   <file role="doc" name="examples/import.php" />
+   <dir name="examples">
+	<file role="doc" name="main.php"/>
+    <file role="doc" name="clearsign.php"/>
+    <file role="doc" name="verify.php"/>
+    <file role="doc" name="encrypt.php"/>
+    <file role="doc" name="decrypt.php"/>
+    <file role="doc" name="keyinfo.php"/>
+    <file role="doc" name="encryptsign.php" />
+    <file role="doc" name="export.php" />
+    <file role="doc" name="import.php" />
+   </dir>
+   <dir name="tests">
+	<file role="test" name="0001_gnupg_import_oo.phpt" />
+    <file role="test" name="gnupg_encrypt_oo.phpt" />
+    <file role="test" name="gnupg_encryptsign_oo.phpt" />
+    <file role="test" name="gnupg_export_oo.phpt" />
+    <file role="test" name="gnupg_keyinfo_oo.phpt" />
+    <file role="test" name="gnupg_listsignatures_oo.phpt" />
+    <file role="test" name="gnupg_sign_clear_oo.phpt" />
+    <file role="test" name="gnupg_sign_detach_nonarmor.phpt" />
+    <file role="test" name="gnupg_sign_detach_oo.phpt" />
+    <file role="test" name="gnupg_sign_normal_nonarmor.phpt" />
+    <file role="test" name="gnupg_sign_normal.phpt" />
+    <file role="test" name="vars.inc" />
+   </dir>
   </filelist>
  </release>
  <changelog>
+	<release>
+		<version>1.2</version>
+		<date>2006-05-23</date>
+		<state>stable</state>
+		<notes>fixed bug #7587 (gnupg_verify fails with detached signature)
+added "summary" into signature-array</notes>
+	</release>
 	<release>
 		<version>1.1</version>
 		<date>2006-03-16</date>
