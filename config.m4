@@ -24,7 +24,7 @@ if test "$PHP_GNUPG" != "no"; then
     AC_MSG_ERROR([Please reinstall the gpgme distribution])
   fi
 
-  PHP_ADD_INCLUDE($GNUPG_DIR/include)
+  PHP_ADD_INCLUDE($GNUPG_DIR)
 
   LIBNAME=gpgme
   LIBSYMBOL=gpgme_check_version

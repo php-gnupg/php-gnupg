@@ -1,6 +1,6 @@
 <?php
 putenv("GNUPGHOME=".dirname(__FILE__));
-
+error_reporting (E_ALL);
 $fingerprint = "64DF06E42FCF2094590CDEEE2E96F141B3DD2B2E";
 $passphrase  = "blabla";
 

@@ -1162,7 +1162,7 @@ PHP_FUNCTION(gnupg_verify){
         gnupg_fetchsignatures   	(gpgme_result->signatures,signature_array,return_value);
 		/* get a 'plain' version of the text without a signature */
 		gpg_plain			=		gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
-        if(gpg_plain && gpg_plain_len > 0){
+        if(gpg_plain && gpg_plain_len > 0 && plain_text){
             ZVAL_STRINGL        	(plain_text, gpg_plain,gpg_plain_len,1);
         }
         free                    	(gpg_plain);
