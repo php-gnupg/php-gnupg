@@ -3,18 +3,18 @@ encryptsign and decryptverify a text
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");
-$gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> addencryptkey($fingerprint);
-$gpg -> addsignkey($fingerprint, $passphrase);
-$enc = $gpg -> encryptsign($plaintext);
+$gpg = gnupg_init();
+gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
+gnupg_addencryptkey($gpg, $fingerprint);
+gnupg_addsignkey($gpg, $fingerprint, $passphrase);
+$enc = gnupg_encryptsign($gpg, $plaintext);
 
 $gpg = NULL;
 $plaintext = false;
 
-$gpg = new gnupg();
-$gpg -> adddecryptkey($fingerprint, $passphrase);
-$ret = $gpg -> decryptverify ($enc, $plaintext);
+$gpg = gnupg_init();
+gnupg_adddecryptkey($gpg, $fingerprint, $passphrase);
+$ret = gnupg_decryptverify ($gpg, $enc, $plaintext);
 
 var_dump($ret);
 var_dump($plaintext);

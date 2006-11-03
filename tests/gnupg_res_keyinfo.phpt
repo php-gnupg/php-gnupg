@@ -3,9 +3,9 @@ get keyinfo
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");
-$gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$ret = $gpg -> keyinfo($fingerprint);
+$gpg = gnupg_init();
+gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
+$ret = gnupg_keyinfo($gpg, $fingerprint);
 var_dump($ret);
 ?>
 --EXPECT--

@@ -1,5 +1,7 @@
 --TEST--
 encrypt and decrypt a text
+--SKIPIF--
+<?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");

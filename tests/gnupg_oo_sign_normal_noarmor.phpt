@@ -1,22 +1,26 @@
 --TEST--n
-sign a text with sigmode SIG_MODE_CLEAR
+sign a text with mode SIG_MODE_NORMAL and without armored output
+--SKIPIF--
+<?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");
 $gpg = new gnupg();
 $gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> setsignmode(gnupg::SIG_MODE_CLEAR);
+$gpg -> setarmor(0);
+$gpg -> setsignmode(gnupg::SIG_MODE_NORMAL);
 $gpg -> addsignkey($fingerprint, $passphrase);
 $ret = $gpg -> sign($plaintext);
 
 $gpg = NULL;
 
 $gpg = new gnupg();
-$tmp = false;
-$ret = $gpg -> verify($ret, false, $tmp);
+//$ret = $gpg -> verify($plaintext, $ret);
+$plaintext = false;
+$ret = $gpg -> verify($ret, false, $plaintext);
 
 var_dump($ret);
-var_dump($tmp);
+var_dump($plaintext);
 ?>
 --EXPECTF--
 array(1) {
@@ -34,5 +38,4 @@ array(1) {
     int(0)
   }
 }
-string(8) "foo bar
-"
+string(7) "foo bar"

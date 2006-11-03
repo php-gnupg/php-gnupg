@@ -1,5 +1,7 @@
 --TEST--n
 sign a text with mode SIG_MODE_NORMAL
+--SKIPIF--
+<?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");

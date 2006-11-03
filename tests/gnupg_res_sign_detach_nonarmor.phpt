@@ -1,19 +1,20 @@
 --TEST--n
-sign a text with mode SIG_MODE_DETACH
+sign a text with mode SIG_MODE_DETACH and without armored output
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");
-$gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> setsignmode(gnupg::SIG_MODE_DETACH);
-$gpg -> addsignkey($fingerprint, $passphrase);
-$ret = $gpg -> sign($plaintext);
+$gpg = gnupg_init();
+gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
+gnupg_setarmor($gpg, 0);
+gnupg_setsignmode($gpg, GNUPG_SIG_MODE_DETACH);
+gnupg_addsignkey($gpg, $fingerprint, $passphrase);
+$ret = gnupg_sign($gpg, $plaintext);
 
 $gpg = NULL;
 
-$gpg = new gnupg();
+$gpg = gnupg_init();
 $tmp = false;
-$ret = $gpg -> verify($plaintext, $ret);
+$ret = gnupg_verify($gpg, $plaintext, $ret);
 
 var_dump($ret);
 var_dump($plaintext);

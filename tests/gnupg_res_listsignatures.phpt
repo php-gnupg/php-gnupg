@@ -3,9 +3,9 @@ list signatures
 --FILE--
 <?php
 require_once(dirname(__FILE__)."/vars.inc");
-$gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$ret = $gpg -> listsignatures($fingerprint);
+$gpg = gnupg_init();
+gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
+$ret = gnupg_listsignatures($gpg, $fingerprint);
 var_dump($ret);
 ?>
 --EXPECT--
