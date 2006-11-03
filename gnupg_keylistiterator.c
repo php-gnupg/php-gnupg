@@ -82,12 +82,12 @@ zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type
 
 /* {{{ methodlist gnupg_keylistiterator */
 static zend_function_entry gnupg_keylistiterator_methods[] = {
-	ZEND_ME(gnupg_keylistiterator,	__construct,	NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg_keylistiterator,	current,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg_keylistiterator,	key,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg_keylistiterator,	next,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg_keylistiterator,	rewind,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg_keylistiterator,	valid,			NULL,	ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator,	__construct,	NULL,	ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator,	current,		NULL,	ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator,	key,			NULL,	ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator,	next,			NULL,	ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator,	rewind,			NULL,	ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator,	valid,			NULL,	ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}	
 };
 /* }}} */
@@ -112,7 +112,7 @@ int _gnupg_keylistiterator_init(INIT_FUNC_ARGS)
 /* }}} */
 
 
-PHP_FUNCTION(gnupg_keylistiterator___construct){
+PHP_METHOD(gnupg_keylistiterator,__construct){
 	zval *pattern;
 
 	int args = ZEND_NUM_ARGS();
@@ -129,19 +129,19 @@ PHP_FUNCTION(gnupg_keylistiterator___construct){
 		ZVAL_EMPTY_STRING(&intern->pattern);
 	}
 }
-PHP_FUNCTION(gnupg_keylistiterator_current){
+PHP_METHOD(gnupg_keylistiterator,current){
 	GNUPG_GET_ITERATOR();
 	
 	RETURN_STRING(intern->gpgkey->uids[0].uid,1);
 }
 
-PHP_FUNCTION(gnupg_keylistiterator_key){
+PHP_METHOD(gnupg_keylistiterator,key){
     GNUPG_GET_ITERATOR();
 	
 	RETURN_STRING(intern->gpgkey->subkeys[0].fpr,1);
 }
 
-PHP_FUNCTION(gnupg_keylistiterator_next){
+PHP_METHOD(gnupg_keylistiterator,next){
 	GNUPG_GET_ITERATOR();
 
 	if(intern->gpgkey){
@@ -155,7 +155,7 @@ PHP_FUNCTION(gnupg_keylistiterator_next){
 	RETURN_TRUE;
 }
 
-PHP_FUNCTION(gnupg_keylistiterator_rewind){
+PHP_METHOD(gnupg_keylistiterator,rewind){
 	GNUPG_GET_ITERATOR();
 
 	if((intern->err = gpgme_op_keylist_start(intern->ctx, Z_STRVAL(intern->pattern), 0)) != GPG_ERR_NO_ERROR){
@@ -167,7 +167,7 @@ PHP_FUNCTION(gnupg_keylistiterator_rewind){
 	RETURN_TRUE;
 }
 
-PHP_FUNCTION(gnupg_keylistiterator_valid){
+PHP_METHOD(gnupg_keylistiterator,valid){
 	GNUPG_GET_ITERATOR();
 
 	if(intern->gpgkey!=NULL){

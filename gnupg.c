@@ -192,29 +192,29 @@ zend_object_value gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
 
 /* {{{ methodlist gnupg */
 static zend_function_entry gnupg_methods[] = {
-	ZEND_ME(gnupg,	keyinfo,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	verify,				NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	geterror,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	clearsignkeys,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	clearencryptkeys,	NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	cleardecryptkeys,	NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	setarmor,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	encrypt,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	decrypt,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	export,				NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	import,				NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	getprotocol,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	setsignmode,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	sign,				NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	encryptsign,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	decryptverify,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	addsignkey,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	addencryptkey,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	adddecryptkey,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	deletekey,			NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	gettrustlist,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	listsignatures,		NULL,	ZEND_ACC_PUBLIC)
-	ZEND_ME(gnupg,	seterrormode,		NULL,	ZEND_ACC_PUBLIC)
+    PHP_FALIAS(keyinfo,             gnupg_keyinfo,          NULL)
+    PHP_FALIAS(verify,              gnupg_verify,           NULL)
+    PHP_FALIAS(geterror,            gnupg_geterror,         NULL)
+    PHP_FALIAS(clearsignkeys,       gnupg_clearsignkeys,    NULL)
+    PHP_FALIAS(clearencryptkeys,    gnupg_clearencryptkeys, NULL)
+    PHP_FALIAS(cleardecryptkeys,    gnupg_cleardecryptkeys, NULL)
+    PHP_FALIAS(setarmor,            gnupg_setarmor,         NULL)
+    PHP_FALIAS(encrypt,             gnupg_encrypt,          NULL)
+    PHP_FALIAS(decrypt,             gnupg_decrypt,          NULL)
+    PHP_FALIAS(export,              gnupg_export,           NULL)
+    PHP_FALIAS(import,              gnupg_import,           NULL)
+    PHP_FALIAS(getprotocol,         gnupg_getprotocol,      NULL)
+    PHP_FALIAS(setsignmode,         gnupg_setsignmode,      NULL)
+    PHP_FALIAS(sign,                gnupg_sign,             NULL)
+    PHP_FALIAS(encryptsign,         gnupg_encryptsign,      NULL)
+    PHP_FALIAS(decryptverify,       gnupg_decryptverify,    NULL)
+    PHP_FALIAS(addsignkey,          gnupg_addsignkey,       NULL)
+    PHP_FALIAS(addencryptkey,       gnupg_addencryptkey,    NULL)
+    PHP_FALIAS(adddecryptkey,       gnupg_adddecryptkey,    NULL)
+    PHP_FALIAS(deletekey,           gnupg_deletekey,        NULL)
+    PHP_FALIAS(gettrustlist,        gnupg_gettrustlist,     NULL)
+    PHP_FALIAS(listsignatures,      gnupg_listsignatures,   NULL)
+    PHP_FALIAS(seterrormode,        gnupg_seterrormode,     NULL)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -804,7 +804,7 @@ PHP_FUNCTION(gnupg_addencryptkey){
         GNUPG_ERR("get_key failed");
 		return;
     }
-    intern->encryptkeys = erealloc(intern->encryptkeys, sizeof(intern->encryptkeys) * (intern->encrypt_size + 1));
+    intern->encryptkeys = erealloc(intern->encryptkeys, sizeof(intern->encryptkeys) * (intern->encrypt_size + 2));
 	intern->encryptkeys[intern->encrypt_size] = gpgme_key;
 	intern->encrypt_size++;
 	intern->encryptkeys[intern->encrypt_size] = NULL;
@@ -1416,7 +1416,7 @@ PHP_FUNCTION(gnupg_deletekey){
             return;
         }
     }else{
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &key, &key_len, &allow_secret) == FAILURE){
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|l", &res, &key, &key_len, &allow_secret) == FAILURE){
             return;
         }
         ZEND_FETCH_RESOURCE(intern,gnupg_object *, &res, -1, "ctx", le_gnupg);

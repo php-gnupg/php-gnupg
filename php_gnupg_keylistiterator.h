@@ -42,12 +42,13 @@ typedef struct _gnupg_keylistiterator_object{
 
 zend_class_entry *gnupg_keylistiterator_class_entry;
 
-PHP_FUNCTION(gnupg_keylistiterator___construct);
-PHP_FUNCTION(gnupg_keylistiterator_current);
-PHP_FUNCTION(gnupg_keylistiterator_next);
-PHP_FUNCTION(gnupg_keylistiterator_rewind);
-PHP_FUNCTION(gnupg_keylistiterator_key);
-PHP_FUNCTION(gnupg_keylistiterator_valid);
+PHP_METHOD(gnupg_keylistiterator, __construct);
+PHP_METHOD(gnupg_keylistiterator, current);
+PHP_METHOD(gnupg_keylistiterator, next);
+PHP_METHOD(gnupg_keylistiterator, rewind);
+PHP_METHOD(gnupg_keylistiterator, key);
+PHP_METHOD(gnupg_keylistiterator, valid);
+
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)
