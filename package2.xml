@@ -15,47 +15,49 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>traufeisen@php.net</email>
   <active>yes</active>
  </lead>
- <date>2006-05-23</date>
- <time>21:25:00</time>
+ <date>2006-11-06</date>
+ <time>15:53:22</time>
  <version>
-  <release>1.2</release>
-  <api>1.2</api>
+  <release>1.3</release>
+  <api>1.3</api>
  </version>
  <stability>
   <release>stable</release>
   <api>stable</api>
  </stability>
  <license>BSD, revised</license>
- <notes>fixed bug #7587 (gnupg_verify fails with detached signature)
-added &quot;summary&quot; into signature-array
+ <notes>PHP 5.2 compatibility
+gnupg_deletekey now allows deleting a secret key in procedural usage
+raised min version to 4.4
  </notes>
  <contents>
   <dir name="/">
-   <dir name="examples">
-    <file name="clearsign.php" role="doc" />
-    <file name="decrypt.php" role="doc" />
-    <file name="encrypt.php" role="doc" />
-    <file name="encryptsign.php" role="doc" />
-    <file name="export.php" role="doc" />
-    <file name="import.php" role="doc" />
-    <file name="keyinfo.php" role="doc" />
-    <file name="main.php" role="doc" />
-    <file name="verify.php" role="doc" />
-   </dir> <!-- /examples -->
    <dir name="tests">
-    <file name="0001_gnupg_import_oo.phpt" role="test" />
-    <file name="gnupg_encryptsign_oo.phpt" role="test" />
-    <file name="gnupg_encrypt_oo.phpt" role="test" />
-    <file name="gnupg_export_oo.phpt" role="test" />
-    <file name="gnupg_keyinfo_oo.phpt" role="test" />
-    <file name="gnupg_listsignatures_oo.phpt" role="test" />
-    <file name="gnupg_sign_clear_oo.phpt" role="test" />
-    <file name="gnupg_sign_detach_nonarmor.phpt" role="test" />
-    <file name="gnupg_sign_detach_oo.phpt" role="test" />
-    <file name="gnupg_sign_normal.phpt" role="test" />
-    <file name="gnupg_sign_normal_nonarmor.phpt" role="test" />
-    <file name="vars.inc" role="test" />
-   </dir> <!-- /tests -->
+    <file name="gnupg_oo_0001_import.phpt" role="test" />
+    <file name="gnupg_oo_encrypt.phpt" role="test" />
+    <file name="gnupg_oo_encryptsign.phpt" role="test" />
+    <file name="gnupg_oo_export.phpt" role="test" />
+    <file name="gnupg_oo_keyinfo.phpt" role="test" />
+    <file name="gnupg_oo_listsignatures.phpt" role="test" />
+    <file name="gnupg_oo_sign_clear.phpt" role="test" />
+    <file name="gnupg_oo_sign_detach.phpt" role="test" />
+    <file name="gnupg_oo_sign_detach_nonarmor.phpt" role="test" />
+    <file name="gnupg_oo_sign_normal.phpt" role="test" />
+    <file name="gnupg_oo_sign_normal_noarmor.phpt" role="test" />
+    <file name="gnupg_oo_zzz_deletekey.phpt" role="test" />
+    <file name="gnupg_res_0001_import.phpt" role="test" />
+    <file name="gnupg_res_encrypt.phpt" role="test" />
+    <file name="gnupg_res_encryptsign.phpt" role="test" />
+    <file name="gnupg_res_export.phpt" role="test" />
+    <file name="gnupg_res_keyinfo.phpt" role="test" />
+    <file name="gnupg_res_listsignatures.phpt" role="test" />
+    <file name="gnupg_res_sign_clear.phpt" role="test" />
+    <file name="gnupg_res_sign_detach.phpt" role="test" />
+    <file name="gnupg_res_sign_detach_nonarmor.phpt" role="test" />
+    <file name="gnupg_res_sign_normal.phpt" role="test" />
+    <file name="gnupg_res_sign_normal_noarmor.phpt" role="test" />
+    <file name="gnupg_res_zzz_deletekey.phpt" role="test" />
+   </dir> <!-- //tests -->
    <file name="config.m4" role="src" />
    <file name="EXPERIMENTAL" role="doc" />
    <file name="gnupg.c" role="src" />
@@ -69,7 +71,7 @@ added &quot;summary&quot; into signature-array
  <dependencies>
   <required>
    <php>
-    <min>4.3</min>
+    <min>4.4</min>
    </php>
    <pearinstaller>
     <min>1.4.0b1</min>
@@ -79,6 +81,22 @@ added &quot;summary&quot; into signature-array
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>1.3</release>
+    <api>1.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2006-11-06</date>
+   <license>BSD, revised</license>
+   <notes>PHP 5.2 compatibility
+gnupg_deletekey now allows deleting a secret key in procedural usage
+bumped min version to 4.4
+   </notes>
+  </release>
   <release>
    <version>
     <release>1.2</release>

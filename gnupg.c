@@ -27,7 +27,7 @@
 
 static int le_gnupg;
 
-#define PHP_GNUPG_VERSION "1.2"
+#define PHP_GNUPG_VERSION "1.3"
 
 #ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
