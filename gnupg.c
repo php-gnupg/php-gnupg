@@ -27,7 +27,7 @@
 
 static int le_gnupg;
 
-#define PHP_GNUPG_VERSION "1.3"
+#define PHP_GNUPG_VERSION "1.3.1"
 
 #ifdef ZEND_ENGINE_2
 static zend_object_handlers gnupg_object_handlers;
@@ -934,7 +934,6 @@ PHP_FUNCTION(gnupg_sign){
 		RETVAL_STRINGL	(userret,ret_size,1);
 	}
     gpgme_data_release  (in);
-    free                (out);
 	free				(userret);
 }
 
@@ -993,7 +992,6 @@ PHP_FUNCTION(gnupg_encrypt){
 	}
 	userret		=	gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release	(in);
-    free                (out);
 	RETVAL_STRINGL		(userret,ret_size,1);
 	free				(userret);
 	if(ret_size < 1){
@@ -1077,7 +1075,6 @@ PHP_FUNCTION(gnupg_encryptsign){
 	
     userret     =   gpgme_data_release_and_get_mem(out,&ret_size);
     gpgme_data_release  (in);
-    free (out);
 	RETVAL_STRINGL		(userret,ret_size,1);
 	free (userret);
 	if(ret_size < 1){
@@ -1166,10 +1163,8 @@ PHP_FUNCTION(gnupg_verify){
             ZVAL_STRINGL        	(plain_text, gpg_plain,gpg_plain_len,1);
         }
         free                    	(gpg_plain);
-        gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
     }
     gpgme_data_release          	(gpgme_sig);
-    free                        	(gpgme_text);
 }
 /* }}} */
 
@@ -1227,7 +1222,6 @@ PHP_FUNCTION(gnupg_decrypt){
 	}	
 	userret             =   gpgme_data_release_and_get_mem(out,&ret_size);
 	gpgme_data_release		(in);
-	free					(out);
 	RETVAL_STRINGL			(userret,ret_size,1);
 	free					(userret);
 	if(ret_size < 1){
@@ -1292,7 +1286,6 @@ PHP_FUNCTION(gnupg_decryptverify){
 	if (decrypt_result->unsupported_algorithm){
 		GNUPG_ERR			("unsupported algorithm");
 		gpgme_data_release(in);
-		free(out);
         return;
 	}
 	verify_result       =   gpgme_op_verify_result (intern->ctx);
@@ -1304,7 +1297,6 @@ PHP_FUNCTION(gnupg_decryptverify){
     }
 	gnupg_fetchsignatures   (verify_result->signatures,sig_arr,return_value);
     gpgme_data_release      (in);
-    free                    (out);
 }
 /* }}} */
 
@@ -1346,7 +1338,6 @@ PHP_FUNCTION(gnupg_export){
 		RETVAL_FALSE;
 	}
 	free(userret);
-	free(out);
 }
 /* }}} */
 

@@ -70,7 +70,9 @@ array(1) {
         bool(false)
       }
       [1]=>
-      array(10) {
+      array(11) {
+        ["fingerprint"]=>
+        string(40) "A3437D3651E27CF9864198F0BFE8D07DDACDEAC8"
         ["keyid"]=>
         string(16) "BFE8D07DDACDEAC8"
         ["timestamp"]=>
