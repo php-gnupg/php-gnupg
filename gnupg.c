@@ -1095,7 +1095,7 @@ PHP_FUNCTION(gnupg_verify){
 	zval	*plain_text		=	NULL; /* signed_text without the signature if its not a detached sig */
 
 	char	*gpg_plain;
-	int		gpg_plain_len;
+	size_t	gpg_plain_len;
 
 	GNUPG_GETOBJ();
 
