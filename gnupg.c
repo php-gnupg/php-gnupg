@@ -471,7 +471,7 @@ PHP_FUNCTION(gnupg_init){
  * >0 = on
  * */
 PHP_FUNCTION(gnupg_setarmor){
-	int		armor;
+	long		armor;
 
 	GNUPG_GETOBJ();
 
@@ -497,7 +497,7 @@ PHP_FUNCTION(gnupg_setarmor){
 
 /* {{{ proto bool gnupg_seterrormode(int errormde) */
 PHP_FUNCTION(gnupg_seterrormode){
-	int errormode;
+	long errormode;
 
 	GNUPG_GETOBJ();
 
@@ -532,7 +532,7 @@ PHP_FUNCTION(gnupg_seterrormode){
  * sets the mode for signing operations
  */
 PHP_FUNCTION(gnupg_setsignmode){
-	int			 signmode;
+	long			 signmode;
 
 	GNUPG_GETOBJ();
 
@@ -1395,7 +1395,7 @@ PHP_FUNCTION(gnupg_import){
 PHP_FUNCTION(gnupg_deletekey){
 	char	*key;
 	int		key_len;
-	int		allow_secret = 0;
+	long	allow_secret = 0;
 
 	gpgme_key_t	gpgme_key;
 
