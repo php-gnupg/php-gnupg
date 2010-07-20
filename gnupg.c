@@ -134,6 +134,7 @@ static void gnupg_res_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
 static void gnupg_res_init(gnupg_object *intern TSRMLS_DC){
 	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
+	gpgme_check_version			(NULL);
 	gpgme_new					(&ctx);
 	gpgme_set_armor				(ctx,1);
 	intern->ctx				=	ctx;
