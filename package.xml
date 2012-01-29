@@ -55,6 +55,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <file name="gnupg_res_sign_normal.phpt" role="test" />
     <file name="gnupg_res_sign_normal_noarmor.phpt" role="test" />
     <file name="gnupg_res_zzz_deletekey.phpt" role="test" />
+    <file name="vars.inc" role="test" />
    </dir> <!-- //tests -->
    <file name="config.m4" role="src" />
    <file name="EXPERIMENTAL" role="doc" />

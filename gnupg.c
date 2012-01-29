@@ -173,13 +173,17 @@ zend_object_value gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
 	zval *tmp;
 	zend_object_value retval;
 	
-	intern					=	emalloc(sizeof(gnupg_object));
+	intern					=	ecalloc(1, sizeof(gnupg_object));
 	intern->zo.ce			=	class_type;
+
+#if PHP_VERSION_ID < 50399
 	intern->zo.properties	=	NULL;
-	
 	ALLOC_HASHTABLE	(intern->zo.properties);
 	zend_hash_init	(intern->zo.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 	zend_hash_copy	(intern->zo.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+#else	
+	object_properties_init(&intern->zo, class_type);
+#endif
 	
 	retval.handle		=	zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_obj_dtor,NULL TSRMLS_CC);
 	retval.handlers		=	(zend_object_handlers *) & gnupg_object_handlers;

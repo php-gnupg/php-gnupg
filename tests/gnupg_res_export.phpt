@@ -9,8 +9,8 @@ $ret = gnupg_export($gpg, $fingerprint);
 var_dump($ret);
 ?>
 --EXPECTF--
-string(1336) "-----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v1.4.3 (GNU/Linux)
+string(%d) "-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.%d.%d (GNU/Linux)
 
 mQGiBENQAKwRBADpy828KU+0SuoetJTrJ5dR86PiO3CsH8K6QRP7wY82Eh/9NTJ3
 afRj0FNPaVSP0NciPeM4G4uFoQ3lsIf+FBEPXH1D97/XigWObU8K6ha2/s8wU98z
