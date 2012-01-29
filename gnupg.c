@@ -18,6 +18,7 @@
 
 #include "php.h"
 #include "php_ini.h"
+#include "zend_exceptions.h"
 #include "ext/standard/info.h"
 #include "php_gnupg.h"
 
@@ -53,7 +54,7 @@ static zend_object_handlers gnupg_object_handlers;
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
 				break; \
 			case 2: \
-				zend_throw_exception(zend_exception_get_default(), (char*) error, 0 TSRMLS_CC); \
+				zend_throw_exception(zend_exception_get_default(TSRMLS_C), (char*) error, 0 TSRMLS_CC); \
 				break; \
 			default: \
 				intern->errortxt = (char*)error; \
@@ -170,7 +171,9 @@ static void gnupg_obj_dtor(gnupg_object *intern TSRMLS_DC){
 /* {{{ objects_new */
 zend_object_value gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
 	gnupg_object *intern;
+#if PHP_VERSION_ID < 50399
 	zval *tmp;
+#endif
 	zend_object_value retval;
 	
 	intern					=	ecalloc(1, sizeof(gnupg_object));
@@ -383,7 +386,7 @@ PHP_MINFO_FUNCTION(gnupg)
 /* {{{ callback func for setting the passphrase */
 
 gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd TSRMLS_DC){
-	char uid[16];
+	char uid[17];
 	int idx;
 	char *passphrase = NULL;
 	zval *return_value = NULL;
@@ -411,7 +414,7 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
 }
 
 gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd TSRMLS_DC){
-    char uid[16];
+    char uid[17];
     int idx;
     char *passphrase = NULL;
 	zval *return_value = NULL;
@@ -1248,7 +1251,6 @@ PHP_FUNCTION(gnupg_decryptverify){
     gpgme_data_t            in, out;
 	gpgme_decrypt_result_t	decrypt_result;
 	gpgme_verify_result_t	verify_result;
-	gpgme_signature_t       gpg_signatures;
 
 	GNUPG_GETOBJ();
 
@@ -1482,7 +1484,6 @@ PHP_FUNCTION(gnupg_listsignatures){
 	zval	*sig_arr;
 
 	gpgme_key_t		gpgme_key;
-	gpgme_subkey_t	gpgme_subkey;
 	gpgme_user_id_t	gpgme_userid;
 	gpgme_key_sig_t	gpgme_signature;
 
