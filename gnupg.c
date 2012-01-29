@@ -137,6 +137,9 @@ static void gnupg_res_init(gnupg_object *intern TSRMLS_DC){
 	gpgme_ctx_t	ctx;
 	gpgme_check_version			(NULL);
 	gpgme_new					(&ctx);
+#ifdef GNUPG_PATH
+	gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
+#endif
 	gpgme_set_armor				(ctx,1);
 	intern->ctx				=	ctx;
 	intern->encryptkeys		=	NULL;
