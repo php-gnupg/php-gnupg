@@ -1481,7 +1481,7 @@ PHP_FUNCTION(gnupg_gettrustlist){
 /* {{{ proto array gnupg_listsignatures(string keyid) */
 PHP_FUNCTION(gnupg_listsignatures){
 	char	*keyid;
-	char	keyid_len;
+	int	keyid_len;
 
 	zval	*sub_arr;
 	zval	*sig_arr;
