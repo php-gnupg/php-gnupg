@@ -164,7 +164,7 @@ PHP_METHOD(gnupg_keylistiterator,rewind){
 	GNUPG_GET_ITERATOR();
 
 	if((intern->err = gpgme_op_keylist_start(intern->ctx, Z_STRVAL(intern->pattern), 0)) != GPG_ERR_NO_ERROR){
-		zend_throw_exception(zend_exception_get_default(TSRMLS_C),gpg_strerror(intern->err),1 TSRMLS_CC);
+		zend_throw_exception(zend_exception_get_default(TSRMLS_C),(char *)gpg_strerror(intern->err),1 TSRMLS_CC);
 	}
 	if((intern->err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey))!=GPG_ERR_NO_ERROR){
 		RETURN_FALSE;
