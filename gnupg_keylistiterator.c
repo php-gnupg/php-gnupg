@@ -55,6 +55,9 @@ static void gnupg_keylistiterator_dtor(gnupg_keylistiterator_object *intern TSRM
 /*
 	zval_dtor(&intern->pattern);
 */	
+#if ZEND_MODULE_API_NO >= 20100525
+	intern->zo.properties_table = NULL;
+#endif
 	if(intern->zo.properties){
 		zend_hash_destroy(intern->zo.properties);
 		FREE_HASHTABLE(intern->zo.properties);
@@ -71,7 +74,8 @@ zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type
 
 	intern =	emalloc(sizeof(gnupg_keylistiterator_object));
 	intern->zo.ce = class_type;
-	intern->zo.properties = NULL;
+	
+	zend_object_std_init(&intern->zo, class_type TSRMLS_CC);
 	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_dtor,NULL TSRMLS_CC);
 	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;
 
