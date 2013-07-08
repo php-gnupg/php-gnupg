@@ -7,6 +7,7 @@
   | in the accompanying LICENSE file are met.                          |
   +--------------------------------------------------------------------+
   | Copyright (c) 2006, Thilo Raufeisen <traufeisen@php.net>           |
+  | Copyright (c) 2013, Jim Jagielski <jimjag@php.net>                 |
   +--------------------------------------------------------------------+
 */
 

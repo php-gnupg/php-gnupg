@@ -7,6 +7,7 @@
   | in the accompanying LICENSE file are met.                          |
   +--------------------------------------------------------------------+
   | Copyright (c) 2006, Thilo Raufeisen <traufeisen@php.net>           |
+  | Copyright (c) 2013, Jim Jagielski <jimjag@php.net>                 |
   +--------------------------------------------------------------------+
 */
 
@@ -18,7 +19,7 @@
 extern zend_module_entry gnupg_module_entry;
 #define phpext_gnupg_ptr &gnupg_module_entry
 
-#define PHP_GNUPG_VERSION "1.3.2-dev"
+#define PHP_GNUPG_VERSION "1.3.3-dev"
 
 #ifdef PHP_WIN32
 #define PHP_GNUPG_API __declspec(dllexport)

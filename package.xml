@@ -10,9 +10,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
  
  </description>
  <lead>
-  <name>Thilo Raufeisen</name>
-  <user>traufeisen</user>
-  <email>traufeisen@php.net</email>
+  <name>Jim Jagielski</name>
+  <user>jimjag</user>
+  <email>jimjag@php.net</email>
   <active>yes</active>
  </lead>
  <date>2010-07-20</date>
