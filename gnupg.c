@@ -412,9 +412,12 @@ gpgme_error_t passphrase_cb (gnupg_object *intern, const char *uid_hint, const c
         return 1;
 	}
 	
-	write (fd, passphrase, strlen(passphrase));
-	write (fd, "\n", 1);
-	return 0;
+	if (write (fd, passphrase, strlen(passphrase))==strlen(passphrase)
+		&& write (fd, "\n", 1)==1) {
+		return 0;
+	}
+	GNUPG_ERR("write failed");
+	return 1;
 }
 
 gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint, const char *passphrase_info,int last_was_bad, int fd TSRMLS_DC){
@@ -439,9 +442,12 @@ gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint,
 		GNUPG_ERR("no passphrase set");
         return 1;
     }
-    write (fd, passphrase, strlen(passphrase));
-    write (fd, "\n", 1);
-    return 0;
+	if (write (fd, passphrase, strlen(passphrase))==strlen(passphrase)
+		&& write (fd, "\n", 1)==1) {
+		return 0;
+	}
+	GNUPG_ERR("write failed");
+	return 1;
 }
 
 /* }}} */
