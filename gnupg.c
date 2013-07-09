@@ -453,7 +453,9 @@ gpgme_error_t passphrase_decrypt_cb (gnupg_object *intern, const char *uid_hint,
 /* }}} */
 
 /* {{{ gnupg_fetchsignatures */
-int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *sig_arr, zval *main_arr){
+int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *main_arr){
+	zval *sig_arr;
+
 	array_init              (main_arr);
     while(gpgme_signatures){
         ALLOC_INIT_ZVAL     (sig_arr);
@@ -1105,7 +1107,6 @@ PHP_FUNCTION(gnupg_encryptsign){
 PHP_FUNCTION(gnupg_verify){
     gpgme_data_t                gpgme_text, gpgme_sig;
     gpgme_verify_result_t       gpgme_result;
-    zval                        *signature_array;
 
 	zval	*signed_text	=	NULL; /* text without the signature, if its a detached one, or the text incl the sig */
 	zval	*signature		=	NULL; /* signature, if its a detached one */
@@ -1172,7 +1173,7 @@ PHP_FUNCTION(gnupg_verify){
         GNUPG_ERR               	("no signature found");
     }else{
 		/* fetch all signatures in an array */
-        gnupg_fetchsignatures   	(gpgme_result->signatures,signature_array,return_value);
+        gnupg_fetchsignatures   	(gpgme_result->signatures, return_value);
 		/* get a 'plain' version of the text without a signature */
 		gpg_plain			=		gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
         if(gpg_plain && gpg_plain_len > 0 && plain_text){
@@ -1253,7 +1254,6 @@ PHP_FUNCTION(gnupg_decryptverify){
     char    *enctxt;
     int     enctxt_len;
 	zval	*plaintext;
-	zval    *sig_arr;
 
     char    *userret;
     size_t  ret_size;
@@ -1310,7 +1310,7 @@ PHP_FUNCTION(gnupg_decryptverify){
 		free(out);
         return;
     }
-	gnupg_fetchsignatures   (verify_result->signatures,sig_arr,return_value);
+	gnupg_fetchsignatures   (verify_result->signatures, return_value);
     gpgme_data_release      (in);
 }
 /* }}} */
