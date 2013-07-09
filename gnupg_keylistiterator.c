@@ -35,7 +35,7 @@ static zend_object_handlers gnupg_keylistiterator_object_handlers;
 /* {{{ defs */
 #define GNUPG_GET_ITERATOR() \
     zval *this = getThis(); \
-    gnupg_keylistiterator_object *intern; \
+    gnupg_keylistiterator_object *intern = NULL; \
     if(this){ \
         intern  =   (gnupg_keylistiterator_object*) zend_object_store_get_object(getThis() TSRMLS_CC); \
         if(!intern){ \
