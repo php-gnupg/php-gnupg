@@ -136,12 +136,15 @@ static void gnupg_res_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC) {
 static void gnupg_res_init(gnupg_object *intern TSRMLS_DC){
 	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
+	gpgme_error_t err;
 	gpgme_check_version			(NULL);
-	gpgme_new					(&ctx);
+	err =						gpgme_new(&ctx);
+	if(err == GPG_ERR_NO_ERROR) {
 #ifdef GNUPG_PATH
-	gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
+		gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
 #endif
-	gpgme_set_armor				(ctx,1);
+		gpgme_set_armor				(ctx,1);
+	}
 	intern->ctx				=	ctx;
 	intern->encryptkeys		=	NULL;
 	intern->encrypt_size	=	0;

@@ -80,6 +80,7 @@ zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type
 	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_dtor,NULL TSRMLS_CC);
 	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;
 
+	gpgme_check_version(NULL);
     gpgme_new(&ctx);
 	intern->ctx		=	ctx;
 	return retval;
