@@ -15,8 +15,8 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>jimjag@php.net</email>
   <active>yes</active>
  </lead>
- <date>2013-XX-XX</date>
- <time>XX:XX:00</time>
+ <date>2013-07-17</date>
+ <time>07:35:00</time>
  <version>
   <release>1.3.3</release>
   <api>1.3.3</api>
