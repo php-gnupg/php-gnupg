@@ -89,7 +89,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <release>stable</release>
     <api>stable</api>
    </stability>
-   <date>2013-XX-XX</date>
+   <date>2013-07-17</date>
    <license>BSD, revised</license>
    <notes>Fix compatibility with PHP 5.4 and 5.5
    </notes>
