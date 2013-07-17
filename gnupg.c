@@ -1307,7 +1307,6 @@ PHP_FUNCTION(gnupg_decryptverify){
 	if(!verify_result->signatures){
         GNUPG_ERR           ("no signature found");
 		gpgme_data_release(in);
-		free(out);
         return;
     }
 	gnupg_fetchsignatures   (verify_result->signatures, return_value);
