@@ -41,7 +41,7 @@ typedef struct _gnupg_keylistiterator_object{
     zval pattern;
 } gnupg_keylistiterator_object;
 
-zend_class_entry *gnupg_keylistiterator_class_entry;
+static zend_class_entry *gnupg_keylistiterator_class_entry;
 
 PHP_METHOD(gnupg_keylistiterator, __construct);
 PHP_METHOD(gnupg_keylistiterator, current);

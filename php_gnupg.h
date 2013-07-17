@@ -46,7 +46,7 @@ typedef struct gnupg_object{
     HashTable *decryptkeys;
 } gnupg_object;
 
-zend_class_entry *gnupg_class_entry;
+static zend_class_entry *gnupg_class_entry;
 
 PHP_MINIT_FUNCTION(gnupg);
 PHP_MSHUTDOWN_FUNCTION(gnupg);
