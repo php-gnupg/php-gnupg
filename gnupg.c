@@ -1393,7 +1393,7 @@ PHP_FUNCTION(gnupg_import){
 	result = gpgme_op_import_result (intern->ctx);
 	
 	if(result->imports->result != GPG_ERR_NO_ERROR){
-		RETURN_FALSE();
+		RETURN_FALSE;
 	}
 	array_init				(return_value);
     add_assoc_long          (return_value,  "imported",     	result->imported);
