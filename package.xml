@@ -26,9 +26,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <api>stable</api>
  </stability>
  <license>BSD, revised</license>
- <notes>Fix compatibility with PHP 5.4, 5.5 and 5.6
-  iterator fix
-  bug #65342
+ <notes>Compilation bug
  </notes>
  <contents>
   <dir name="/">
