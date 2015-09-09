@@ -1391,8 +1391,8 @@ PHP_FUNCTION(gnupg_import){
 	}
 	gpgme_data_release(in);
 	result = gpgme_op_import_result (intern->ctx);
-	
-	if(result->imports->result != GPG_ERR_NO_ERROR){
+
+	if(!result || !result->imports || result->imports->result != GPG_ERR_NO_ERROR){
 		RETURN_FALSE;
 	}
 	array_init				(return_value);
