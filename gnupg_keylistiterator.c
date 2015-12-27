@@ -19,8 +19,6 @@
 
 #include "php.h"
 
-#ifdef ZEND_ENGINE_2
-
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "zend_interfaces.h"
@@ -37,7 +35,7 @@ static zend_object_handlers gnupg_keylistiterator_object_handlers;
     zval *this = getThis(); \
     gnupg_keylistiterator_object *intern = NULL; \
     if(this){ \
-        intern  =   (gnupg_keylistiterator_object*) zend_object_store_get_object(getThis() TSRMLS_CC); \
+        intern  =   Z_KEYLISTITERATORO_P(getThis() TSRMLS_CC); \
         if(!intern){ \
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
             RETURN_FALSE; \
@@ -46,44 +44,36 @@ static zend_object_handlers gnupg_keylistiterator_object_handlers;
 /* }}} */
 
 /* {{{ free_iterator_storage */
-static void gnupg_keylistiterator_dtor(gnupg_keylistiterator_object *intern TSRMLS_DC){
-	if(!intern){
-		return;
-	}
+static void gnupg_keylistiterator_dtor(zend_object *z_obj TSRMLS_DC){
+	gnupg_keylistiterator_object *intern;
+	intern = keylistiterator_object_from_obj(z_obj);
+
 	gpgme_op_keylist_end(intern->ctx);
 	gpgme_key_release(intern->gpgkey);
 	gpgme_release(intern->ctx);
 /*
 	zval_dtor(&intern->pattern);
-*/	
-#if ZEND_MODULE_API_NO >= 20100525
-	intern->zo.properties_table = NULL;
-#endif
-	if(intern->zo.properties){
-		zend_hash_destroy(intern->zo.properties);
-		FREE_HASHTABLE(intern->zo.properties);
-	}
+*/
+	zend_object_std_dtor(&intern->zo);
 	efree(intern);
 }
 /* }}} */
 
 /* {{{ keylistiterator_objects_new */
-zend_object_value gnupg_keylistiterator_objects_new(zend_class_entry *class_type TSRMLS_DC){
+static zend_object* gnupg_keylistiterator_objects_new(zend_class_entry *class_type TSRMLS_DC){
 	gnupg_keylistiterator_object *intern;
-	zend_object_value retval;
 	gpgme_ctx_t ctx;
 
-	intern =	emalloc(sizeof(gnupg_keylistiterator_object));
-	intern->zo.ce = class_type;
-	
-	zend_object_std_init(&intern->zo, class_type TSRMLS_CC);
-	retval.handle   =   zend_objects_store_put(intern,NULL,(zend_objects_free_object_storage_t) gnupg_keylistiterator_dtor,NULL TSRMLS_CC);
-	retval.handlers	=	(zend_object_handlers *) & gnupg_keylistiterator_object_handlers;
+	intern	= ecalloc(1, sizeof(gnupg_keylistiterator_object) + zend_object_properties_size(class_type));
+
+	zend_object_std_init(&intern->zo, class_type);
+	object_properties_init(&intern->zo, class_type);
+	intern->zo.handlers = &gnupg_keylistiterator_object_handlers;
 
 	gpgme_check_version(NULL);
     gpgme_new(&ctx);
 	intern->ctx		=	ctx;
-	return retval;
+	return &intern->zo;
 }
 /* }}} */
 
@@ -95,7 +85,7 @@ static zend_function_entry gnupg_keylistiterator_methods[] = {
 	PHP_ME(gnupg_keylistiterator,	next,			NULL,	ZEND_ACC_PUBLIC)
 	PHP_ME(gnupg_keylistiterator,	rewind,			NULL,	ZEND_ACC_PUBLIC)
 	PHP_ME(gnupg_keylistiterator,	valid,			NULL,	ZEND_ACC_PUBLIC)
-    {NULL, NULL, NULL}	
+    {NULL, NULL, NULL}
 };
 /* }}} */
 
@@ -103,24 +93,24 @@ static zend_function_entry gnupg_keylistiterator_methods[] = {
  */
 int _gnupg_keylistiterator_init(INIT_FUNC_ARGS)
 {
-	zend_class_entry ce; 
-	
+	zend_class_entry ce;
+
 	INIT_CLASS_ENTRY(ce, "gnupg_keylistiterator", gnupg_keylistiterator_methods);
-	
+
 	ce.create_object 	=	gnupg_keylistiterator_objects_new;
 	gnupg_keylistiterator_class_entry = zend_register_internal_class(&ce TSRMLS_CC);
 	memcpy(&gnupg_keylistiterator_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	le_gnupg_keylistiterator = zend_register_list_destructors_ex(NULL, NULL, "ctx_keylistiterator", module_number);
-	
+
 	zend_class_implements   (gnupg_keylistiterator_class_entry TSRMLS_CC, 1, zend_ce_iterator);
-	
+
 	return SUCCESS;
 }
 /* }}} */
 
 
 PHP_METHOD(gnupg_keylistiterator,__construct){
-	zval *pattern;
+	zval *pattern = NULL;
 
 	int args = ZEND_NUM_ARGS();
 
@@ -138,14 +128,14 @@ PHP_METHOD(gnupg_keylistiterator,__construct){
 }
 PHP_METHOD(gnupg_keylistiterator,current){
 	GNUPG_GET_ITERATOR();
-	
-	RETURN_STRING(intern->gpgkey->uids[0].uid,1);
+
+	RETURN_STRING(intern->gpgkey->uids[0].uid);
 }
 
 PHP_METHOD(gnupg_keylistiterator,key){
     GNUPG_GET_ITERATOR();
-	
-	RETURN_STRING(intern->gpgkey->subkeys[0].fpr,1);
+
+	RETURN_STRING(intern->gpgkey->subkeys[0].fpr);
 }
 
 PHP_METHOD(gnupg_keylistiterator,next){
@@ -183,7 +173,6 @@ PHP_METHOD(gnupg_keylistiterator,valid){
 		RETURN_FALSE;
 	}
 }
-#endif /* ZEND_ENGINE_2 */
 
 /*
  * Local variables:

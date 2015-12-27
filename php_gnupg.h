@@ -34,7 +34,6 @@ extern zend_module_entry gnupg_module_entry;
 #include <gpgme.h>
 
 typedef struct gnupg_object{
-	zend_object zo;
 	gpgme_ctx_t ctx;
     gpgme_error_t err;
     int errormode;
@@ -44,9 +43,20 @@ typedef struct gnupg_object{
     unsigned int encrypt_size;
     HashTable *signkeys;
     HashTable *decryptkeys;
+	zend_object zo;
 } gnupg_object;
 
 static zend_class_entry *gnupg_class_entry;
+
+static inline gnupg_object *gnupg_object_from_obj(zend_object *obj) /* {{{ */ {
+    return (gnupg_object*)((char*)(obj) - XtOffsetOf(gnupg_object, zo));
+}
+/* }}} */
+
+static inline gnupg_object *Z_GNUPGO_P(zval *zv) /* {{{ */ {
+	return gnupg_object_from_obj(Z_OBJ_P((zv)));
+}
+/* }}} */
 
 PHP_MINIT_FUNCTION(gnupg);
 PHP_MSHUTDOWN_FUNCTION(gnupg);
