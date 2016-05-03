@@ -161,6 +161,13 @@ static zend_object* gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
 }
 /* }}} */
 
+/* {{{ arginfo gnupg_decryptverify */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_decryptverify, 0, 0, 2)
+    ZEND_ARG_INFO(0, enctext)
+    ZEND_ARG_INFO(1, plaintext)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ methodlist gnupg */
 static zend_function_entry gnupg_methods[] = {
     PHP_FALIAS(keyinfo,             gnupg_keyinfo,          NULL)
@@ -178,7 +185,7 @@ static zend_function_entry gnupg_methods[] = {
     PHP_FALIAS(setsignmode,         gnupg_setsignmode,      NULL)
     PHP_FALIAS(sign,                gnupg_sign,             NULL)
     PHP_FALIAS(encryptsign,         gnupg_encryptsign,      NULL)
-    PHP_FALIAS(decryptverify,       gnupg_decryptverify,    NULL)
+    PHP_FALIAS(decryptverify,       gnupg_decryptverify,    arginfo_gnupg_decryptverify)
     PHP_FALIAS(addsignkey,          gnupg_addsignkey,       NULL)
     PHP_FALIAS(addencryptkey,       gnupg_addencryptkey,    NULL)
     PHP_FALIAS(adddecryptkey,       gnupg_adddecryptkey,    NULL)
@@ -214,7 +221,7 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_getprotocol,		NULL)
 	PHP_FE(gnupg_setsignmode,		NULL)
 	PHP_FE(gnupg_encryptsign,		NULL)
-	PHP_FE(gnupg_decryptverify,		NULL)
+	PHP_FE(gnupg_decryptverify,		arginfo_gnupg_decryptverify)
 	PHP_FE(gnupg_geterror,			NULL)
 	PHP_FE(gnupg_addsignkey,		NULL)
 	PHP_FE(gnupg_addencryptkey,		NULL)
@@ -1217,6 +1224,7 @@ PHP_FUNCTION(gnupg_decryptverify){
         }
 		intern = (gnupg_object *) zend_fetch_resource(Z_RES_P(res), "ctx", le_gnupg);
     }
+    ZVAL_DEREF(plaintext);
 
     gpgme_set_passphrase_cb (intern->ctx, (void*) passphrase_decrypt_cb, intern);
 
