@@ -1,5 +1,15 @@
 dnl $Id$
 dnl config.m4 for extension gnupg
+AC_CANONICAL_HOST
+case $host_os in
+   *BSD*)
+        GNUPG_DL=""
+        ;;
+    *)
+        GNUPG_DL="-ldl"
+        ;;
+esac
+ 
 
 PHP_ARG_WITH(gnupg, for gnupg support,
 [  --with-gnupg[=dir]       Include gnupg support])
@@ -36,7 +46,7 @@ if test "$PHP_GNUPG" != "no"; then
   ],[
     AC_MSG_ERROR([wrong gpgme lib version or lib not found])
   ],[
-    -L$GNUPG_DIR/lib -lm -ldl
+    -L$GNUPG_DIR/lib -lm $GNUPG_DL
   ])
   PHP_SUBST(GNUPG_SHARED_LIBADD)
 
