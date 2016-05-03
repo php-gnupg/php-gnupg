@@ -161,8 +161,17 @@ static zend_object* gnupg_obj_new(zend_class_entry *class_type TSRMLS_DC){
 }
 /* }}} */
 
-/* {{{ arginfo gnupg_decryptverify */
-ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_decryptverify, 0, 0, 2)
+
+/* {{{ arginfo gnupg_verify_method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_verify_method, 0, 0, 2)
+    ZEND_ARG_INFO(0, text)
+    ZEND_ARG_INFO(0, signature)
+    ZEND_ARG_INFO(1, plaintext)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo gnupg_decryptverify_method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_decryptverify_method, 0, 0, 2)
     ZEND_ARG_INFO(0, enctext)
     ZEND_ARG_INFO(1, plaintext)
 ZEND_END_ARG_INFO()
@@ -171,7 +180,7 @@ ZEND_END_ARG_INFO()
 /* {{{ methodlist gnupg */
 static zend_function_entry gnupg_methods[] = {
     PHP_FALIAS(keyinfo,             gnupg_keyinfo,          NULL)
-    PHP_FALIAS(verify,              gnupg_verify,           NULL)
+    PHP_FALIAS(verify,              gnupg_verify,           arginfo_gnupg_verify_method)
     PHP_FALIAS(geterror,            gnupg_geterror,         NULL)
     PHP_FALIAS(clearsignkeys,       gnupg_clearsignkeys,    NULL)
     PHP_FALIAS(clearencryptkeys,    gnupg_clearencryptkeys, NULL)
@@ -185,7 +194,7 @@ static zend_function_entry gnupg_methods[] = {
     PHP_FALIAS(setsignmode,         gnupg_setsignmode,      NULL)
     PHP_FALIAS(sign,                gnupg_sign,             NULL)
     PHP_FALIAS(encryptsign,         gnupg_encryptsign,      NULL)
-    PHP_FALIAS(decryptverify,       gnupg_decryptverify,    arginfo_gnupg_decryptverify)
+    PHP_FALIAS(decryptverify,       gnupg_decryptverify,    arginfo_gnupg_decryptverify_method)
     PHP_FALIAS(addsignkey,          gnupg_addsignkey,       NULL)
     PHP_FALIAS(addencryptkey,       gnupg_addencryptkey,    NULL)
     PHP_FALIAS(adddecryptkey,       gnupg_adddecryptkey,    NULL)
@@ -203,13 +212,29 @@ static void gnupg_declare_long_constant(const char *const_name, long value TSRML
 }
 /* }}} */
 
+/* {{{ arginfo gnupg_verify_method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_verify_function, 0, 0, 3)
+    ZEND_ARG_INFO(0, res)
+    ZEND_ARG_INFO(0, text)
+    ZEND_ARG_INFO(0, signature)
+    ZEND_ARG_INFO(1, plaintext)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo gnupg_decryptverify_method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_decryptverify_function, 0, 0, 3)
+    ZEND_ARG_INFO(0, res)
+    ZEND_ARG_INFO(0, enctext)
+    ZEND_ARG_INFO(1, plaintext)
+ZEND_END_ARG_INFO()
+/* }}} */
 
 /* {{{ functionlist gnupg */
 static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_init,				NULL)
 	PHP_FE(gnupg_keyinfo,			NULL)
 	PHP_FE(gnupg_sign,				NULL)
-	PHP_FE(gnupg_verify,			NULL)
+	PHP_FE(gnupg_verify,			arginfo_gnupg_verify_function)
 	PHP_FE(gnupg_clearsignkeys,		NULL)
 	PHP_FE(gnupg_clearencryptkeys,	NULL)
 	PHP_FE(gnupg_cleardecryptkeys,	NULL)
@@ -221,7 +246,7 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_getprotocol,		NULL)
 	PHP_FE(gnupg_setsignmode,		NULL)
 	PHP_FE(gnupg_encryptsign,		NULL)
-	PHP_FE(gnupg_decryptverify,		arginfo_gnupg_decryptverify)
+	PHP_FE(gnupg_decryptverify,		arginfo_gnupg_decryptverify_function)
 	PHP_FE(gnupg_geterror,			NULL)
 	PHP_FE(gnupg_addsignkey,		NULL)
 	PHP_FE(gnupg_addencryptkey,		NULL)
@@ -1077,7 +1102,7 @@ PHP_FUNCTION(gnupg_verify){
         }
 		intern = (gnupg_object *) zend_fetch_resource(Z_RES_P(res), "ctx", le_gnupg);
     }
-	if(Z_STRVAL_P(signature)){		/* detached signature */
+	if(Z_TYPE_P(signature) == IS_STRING){	/* detached signature */
 		/* setup signature-databuffer for gpgme */
 	    if((intern->err = gpgme_data_new_from_mem (&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0))!=GPG_ERR_NO_ERROR){
        		GNUPG_ERR               ("could not create signature-databuffer");
@@ -1127,6 +1152,7 @@ PHP_FUNCTION(gnupg_verify){
 		/* get a 'plain' version of the text without a signature */
 		gpg_plain			=		gpgme_data_release_and_get_mem(gpgme_text,&gpg_plain_len);
         if(gpg_plain && gpg_plain_len > 0 && plain_text){
+            ZVAL_DEREF                 (plain_text);
             ZVAL_STRINGL        	(plain_text, gpg_plain,gpg_plain_len);
         }
         free                    	(gpg_plain);
