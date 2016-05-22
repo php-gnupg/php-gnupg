@@ -46,8 +46,6 @@ PHPC_OBJ_STRUCT_BEGIN(gnupg)
 	HashTable *decryptkeys;
 PHPC_OBJ_STRUCT_END()
 
-static zend_class_entry *gnupg_class_entry;
-
 PHP_MINIT_FUNCTION(gnupg);
 PHP_MSHUTDOWN_FUNCTION(gnupg);
 PHP_MINFO_FUNCTION(gnupg);
