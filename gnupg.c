@@ -119,7 +119,7 @@ static void gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 static void gnupg_res_dtor(phpc_res_entry_t *rsrc TSRMLS_DC) /* {{{ */
 {
 	PHPC_THIS_DECLARE(gnupg) = rsrc->ptr;
-	gnupg_free_resource_ptr(PHPC_THIS);
+	gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
 	efree(PHPC_THIS);
 }
 /* }}} */
@@ -412,7 +412,7 @@ gpgme_error_t passphrase_cb(
 		uid[idx] = uid_hint[idx];
 	}
 	uid[16] = '\0';
-	if ((passphrase = zend_hash_str_find_ptr(PHPC_THIS->signkeys, (char *)uid, 16)) == NULL) {
+	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(PHPC_THIS->signkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
@@ -448,7 +448,7 @@ gpgme_error_t passphrase_decrypt_cb (
 		uid[idx] = uid_hint[idx];
 	}
 	uid[16] = '\0';
-	if ((passphrase = zend_hash_str_find_ptr(PHPC_THIS->decryptkeys, (char *)uid, 16)) == NULL) {
+	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(PHPC_THIS->decryptkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
@@ -693,10 +693,11 @@ PHP_FUNCTION(gnupg_keyinfo)
 			gpgme_userid = gpgme_userid->next;
 		}
 
-		add_assoc_zval(PHPC_VAL_CAST_TO_PZVAL(subarr), "uids", PHPC_VAL_CAST_TO_PZVAL(userids));
+		PHPC_ARRAY_ADD_ASSOC_ZVAL(PHPC_VAL_CAST_TO_PZVAL(subarr), "uids", PHPC_VAL_CAST_TO_PZVAL(userids));
 
 		gpgme_subkey = gpgme_key->subkeys;
 		while (gpgme_subkey) {
+			PHPC_VAL_MAKE(subkey);
 			PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(subkey));
 
 			if (gpgme_subkey->fpr) {
@@ -719,7 +720,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 			gpgme_subkey = gpgme_subkey->next;
 		}
 
-		add_assoc_zval(PHPC_VAL_CAST_TO_PZVAL(subarr), "subkeys", PHPC_VAL_CAST_TO_PZVAL(subkeys));
+		PHPC_ARRAY_ADD_ASSOC_ZVAL(PHPC_VAL_CAST_TO_PZVAL(subarr), "subkeys", PHPC_VAL_CAST_TO_PZVAL(subkeys));
 
 		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(return_value, PHPC_VAL_CAST_TO_PZVAL(subarr));
 		gpgme_key_unref(gpgme_key);
@@ -909,7 +910,7 @@ PHP_FUNCTION(gnupg_sign)
 	char *value = NULL;
 	phpc_str_size_t value_len;
 	char *userret;
-	phpc_str_size_t ret_size;
+	size_t ret_size;
 	gpgme_data_t in, out;
 	gpgme_sign_result_t result;
 
@@ -979,7 +980,7 @@ PHP_FUNCTION(gnupg_encrypt)
 	char *value = NULL;
 	phpc_str_size_t value_len;
 	char *userret = NULL;
-	phpc_str_size_t ret_size;
+	size_t ret_size;
 	gpgme_data_t in, out;
 	gpgme_encrypt_result_t result;
 
@@ -1040,7 +1041,7 @@ PHP_FUNCTION(gnupg_encryptsign)
 	char *value = NULL;
 	phpc_str_size_t value_len;
 	char *userret = NULL;
-	phpc_str_size_t ret_size;
+	size_t ret_size;
 	gpgme_data_t in, out;
 	gpgme_encrypt_result_t result;
 	gpgme_sign_result_t sign_result;
@@ -1104,7 +1105,7 @@ PHP_FUNCTION(gnupg_encryptsign)
 		return;
 	}
 
-	userret = gpgme_data_release_and_get_mem(out,&ret_size);
+	userret = gpgme_data_release_and_get_mem(out, &ret_size);
 	gpgme_data_release(in);
 	PHPC_CSTRL_RETVAL(userret, ret_size);
 	free (userret);
@@ -1128,7 +1129,7 @@ PHP_FUNCTION(gnupg_verify)
 	/* signed_text without the signature if its not a detached sig */
 	zval *plain_text = NULL;
 	char *gpg_plain;
-	phpc_str_size_t	gpg_plain_len;
+	size_t gpg_plain_len;
 
 	GNUPG_GETOBJ();
 
@@ -1168,7 +1169,7 @@ PHP_FUNCTION(gnupg_verify)
 			return;
 		}
 		/* set a NULL databuffer for gpgme */
-		if ((PHPC_THIS->err = gpgme_data_new_from_mem (&gpgme_text, NULL, 0, 0)) != GPG_ERR_NO_ERROR) {
+		if ((PHPC_THIS->err = gpgme_data_new_from_mem(&gpgme_text, NULL, 0, 0)) != GPG_ERR_NO_ERROR) {
 			GNUPG_ERR("could not create text-databuffer");
 			gpgme_data_release(gpgme_sig);
 			gpgme_data_release(gpgme_text);
@@ -1209,7 +1210,7 @@ PHP_FUNCTION(gnupg_decrypt)
 	char *enctxt;
 	phpc_str_size_t	enctxt_len;
 	char *userret;
-	phpc_str_size_t ret_size;
+	size_t ret_size;
 	gpgme_data_t in, out;
 	gpgme_decrypt_result_t result;
 
@@ -1271,7 +1272,7 @@ PHP_FUNCTION(gnupg_decryptverify)
 	phpc_str_size_t enctxt_len;
 	zval *plaintext;
 	char *userret;
-	phpc_str_size_t ret_size;
+	size_t ret_size;
 	gpgme_data_t in, out;
 	gpgme_decrypt_result_t decrypt_result;
 	gpgme_verify_result_t verify_result;
@@ -1337,7 +1338,7 @@ PHP_FUNCTION(gnupg_export)
 	char *searchkey = NULL;
 	phpc_str_size_t searchkey_len;
 	char *userret;
-	phpc_str_size_t	ret_size;
+	size_t	ret_size;
 	gpgme_data_t  out;
 
 	GNUPG_GETOBJ();
