@@ -8,10 +8,9 @@
   +--------------------------------------------------------------------+
   | Copyright (c) 2006, Thilo Raufeisen <traufeisen@php.net>           |
   | Copyright (c) 2013, Jim Jagielski <jimjag@php.net>                 |
+  | Copyright (c) 2016, Jakub Zelenka <bukka@php.net>                  |
   +--------------------------------------------------------------------+
 */
-
-/* $Id$ */
 
 #ifndef PHP_GNUPG_KEYLISTITERATOR_H
 #define PHP_GNUPG_KEYLISTITERATOR_H
@@ -29,29 +28,17 @@ extern zend_module_entry gnupg_keyiterator_module_entry;
 #endif
 
 #include <gpgme.h>
+#include "phpc/phpc.h"
 
 #define gnupg_keylistiterator_init() _gnupg_keylistiterator_init(INIT_FUNC_ARGS_PASSTHRU)
-extern int  _gnupg_keylistiterator_init(INIT_FUNC_ARGS);
+extern int _gnupg_keylistiterator_init(INIT_FUNC_ARGS);
 
-typedef struct _gnupg_keylistiterator_object{
+PHPC_OBJ_STRUCT_BEGIN(gnupg_keylistiterator)
 	gpgme_ctx_t ctx;
-    gpgme_error_t err;
-    gpgme_key_t gpgkey;
-    zval pattern;
-	zend_object zo;
-} gnupg_keylistiterator_object;
-
-static zend_class_entry *gnupg_keylistiterator_class_entry;
-
-static inline gnupg_keylistiterator_object *keylistiterator_object_from_obj(zend_object *obj) /* {{{ */ {
-    return (gnupg_keylistiterator_object*)((char*)(obj) - XtOffsetOf(gnupg_keylistiterator_object, zo));
-}
-/* }}} */
-
-static inline gnupg_keylistiterator_object *Z_KEYLISTITERATORO_P(zval *zv) /* {{{ */ {
-	return keylistiterator_object_from_obj(Z_OBJ_P((zv)));
-}
-/* }}} */
+	gpgme_error_t err;
+	gpgme_key_t gpgkey;
+	char *pattern;
+PHPC_OBJ_STRUCT_END()
 
 PHP_METHOD(gnupg_keylistiterator, __construct);
 PHP_METHOD(gnupg_keylistiterator, current);
@@ -59,7 +46,6 @@ PHP_METHOD(gnupg_keylistiterator, next);
 PHP_METHOD(gnupg_keylistiterator, rewind);
 PHP_METHOD(gnupg_keylistiterator, key);
 PHP_METHOD(gnupg_keylistiterator, valid);
-
 
 #ifdef ZTS
 #define GNUPG_G(v) TSRMG(gnupg_globals_id, zend_gnupg_globals *, v)

@@ -172,7 +172,7 @@ PHPC_OBJ_HANDLER_CREATE_EX(gnupg)
 	PHPC_OBJ_HANDLER_CREATE_EX_RETURN(gnupg);
 }
 
-/* {{{ create gnupg_object */
+/* {{{ create gnupg */
 PHPC_OBJ_HANDLER_CREATE(gnupg)
 {
 	PHPC_OBJ_HANDLER_CREATE_RETURN(gnupg);
@@ -302,7 +302,7 @@ PHP_MINIT_FUNCTION(gnupg)
 {
 	zend_class_entry ce;
 
-	/* init classes */
+	/* init class */
 	INIT_CLASS_ENTRY(ce, "gnupg", gnupg_methods);
 	PHPC_CLASS_SET_HANDLER_CREATE(ce, gnupg);
 	gnupg_class_entry = PHPC_CLASS_REGISTER(ce);

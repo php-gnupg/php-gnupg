@@ -8,10 +8,9 @@
   +--------------------------------------------------------------------+
   | Copyright (c) 2006, Thilo Raufeisen <traufeisen@php.net>           |
   | Copyright (c) 2013, Jim Jagielski <jimjag@php.net>                 |
+  | Copyright (c) 2016, Jakub Zelenka <bukka@php.net>                  |
   +--------------------------------------------------------------------+
 */
-
-/* $Id$ */
 
 #ifndef PHP_GNUPG_H
 #define PHP_GNUPG_H
