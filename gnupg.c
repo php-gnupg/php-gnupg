@@ -758,7 +758,7 @@ PHP_FUNCTION(gnupg_addsignkey)
 		gpgme_subkey = gpgme_key->subkeys;
 		while (gpgme_subkey) {
 			if (gpgme_subkey->can_sign == 1) {
-				PHPC_HASH_CSTR_ADD_PTR(PHPC_THIS->signkeys, gpgme_subkey->keyid, passphrase);
+				PHPC_HASH_CSTR_ADD_PTR(PHPC_THIS->signkeys, gpgme_subkey->keyid, passphrase, passphrase_len + 1);
 			}
 			gpgme_subkey = gpgme_subkey->next;
 		}
@@ -801,7 +801,7 @@ PHP_FUNCTION(gnupg_adddecryptkey)
 	gpgme_subkey = gpgme_key->subkeys;
 	while (gpgme_subkey) {
 		if (gpgme_subkey->secret == 1) {
-			PHPC_HASH_CSTR_ADD_PTR(PHPC_THIS->decryptkeys, gpgme_subkey->keyid, passphrase);
+			PHPC_HASH_CSTR_ADD_PTR(PHPC_THIS->decryptkeys, gpgme_subkey->keyid, passphrase, passphrase_len + 1);
 		}
 		gpgme_subkey = gpgme_subkey->next;
 	}

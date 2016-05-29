@@ -9,7 +9,6 @@ $gpg = new gnupg();
 $gpg -> seterrormode(gnupg::ERROR_WARNING);
 $gpg -> addencryptkey($fingerprint);
 $enc = $gpg -> encrypt($plaintext);
-
 $gpg = NULL;
 
 $gpg = new gnupg();
