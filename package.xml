@@ -10,9 +10,21 @@ http://pear.php.net/dtd/package-2.0.xsd">
  
  </description>
  <lead>
+  <name>Jakub Zelenka</name>
+  <user>bukka</user>
+  <email>bukka@php.net</email>
+  <active>yes</active>
+ </lead>
+ <lead>
   <name>Jim Jagielski</name>
   <user>jimjag</user>
   <email>jimjag@php.net</email>
+  <active>yes</active>
+ </lead>
+ <lead>
+  <name>Sean DuBois</name>
+  <user>seander</user>
+  <email>sean@siobud.com</email>
   <active>yes</active>
  </lead>
  <date>2015-02-11</date>
