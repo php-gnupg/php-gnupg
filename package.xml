@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.4.11" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
-http://pear.php.net/dtd/tasks-1.0.xsd
-http://pear.php.net/dtd/package-2.0
-http://pear.php.net/dtd/package-2.0.xsd">
+<package xmlns="http://pear.php.net/dtd/package-2.0"
+         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0"
+         xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+                             http://pear.php.net/dtd/tasks-1.0.xsd
+                             http://pear.php.net/dtd/package-2.0
+                             http://pear.php.net/dtd/package-2.0.xsd">
  <name>gnupg</name>
  <channel>pecl.php.net</channel>
  <summary>wrapper around the gpgme library</summary>
- <description>This extension provides methods to interact with gnupg.
- 
- </description>
+ <description>This extension provides methods to interact with gnupg</description>
  <lead>
   <name>Jakub Zelenka</name>
   <user>bukka</user>
@@ -38,8 +39,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <api>stable</api>
  </stability>
  <license>BSD, revised</license>
- <notes>Compilation bug
- </notes>
+ <notes><![CDATA[
+ * Fixed compilation bug
+ ]]></notes>
  <contents>
   <dir name="/">
    <dir name="tests">
@@ -103,8 +105,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2015-02-11</date>
    <license>BSD, revised</license>
- <notes>Compilation bug
- </notes>
+   <notes><![CDATA[
+   * Fixed compilation bug
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -117,10 +120,10 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2015-02-11</date>
    <license>BSD, revised</license>
- <notes>Fix compatibility with PHP 5.4, 5.5 and 5.6
-  iterator fix
-  bug #65342
- </notes>
+   <notes><![CDATA[
+   * Fix compatibility with PHP 5.4, 5.5 and 5.6
+   * Fix iterator bug #65342
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -133,8 +136,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2013-12-31</date>
    <license>BSD, revised</license>
-   <notes>XXX
-   </notes>
+   <notes><![CDATA[
+   * No fixes
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -147,8 +151,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2013-07-17</date>
    <license>BSD, revised</license>
-   <notes>Fix compatibility with PHP 5.4 and 5.5
-   </notes>
+   <notes><![CDATA[
+   * Fix compatibility with PHP 5.4 and 5.5
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -161,8 +166,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2010-07-20</date>
    <license>BSD, revised</license>
-   <notes>Fix compatibility with gpgme >= 1.2.0 and crashes on 64-bit systems
-   </notes>
+   <notes><![CDATA[
+   * Fix compatibility with gpgme >= 1.2.0 and crashes on 64-bit systems
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -175,8 +181,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2007-05-04</date>
    <license>BSD, revised</license>
-   <notes>fixed double-free with recent gpgme-lib
-   </notes>
+   <notes><![CDATA[
+   * Fixed double-free with recent gpgme-lib
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -189,10 +196,11 @@ http://pear.php.net/dtd/package-2.0.xsd">
    </stability>
    <date>2006-11-06</date>
    <license>BSD, revised</license>
-   <notes>PHP 5.2 compatibility
-gnupg_deletekey now allows deleting a secret key in procedural usage
-bumped min version to 4.4
-   </notes>
+   <notes><![CDATA[
+   * PHP 5.2 compatibility
+   * gnupg_deletekey now allows deleting a secret key in procedural usage
+   * Bumped min version to 4.4
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -205,9 +213,10 @@ bumped min version to 4.4
    </stability>
    <date>2006-05-23</date>
    <license>BSD, revised</license>
-   <notes>fixed bug #7587 (gnupg_verify fails with detached signature)
-added &quot;summary&quot; into signature-array
-   </notes>
+   <notes><![CDATA[
+   * Fixed bug #7587 (gnupg_verify fails with detached signature)
+   * Added &quot;summary&quot; into signature-array
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -220,9 +229,10 @@ added &quot;summary&quot; into signature-array
    </stability>
    <date>2006-03-16</date>
    <license>BSD, revised</license>
-   <notes>improved PHP4 compatibility
-passphrase-errors now takes care of the errormode
-   </notes>
+   <notes><![CDATA[
+   * Improved PHP4 compatibility
+   * Fixed passphrase-errors now takes care of the errormode
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -235,8 +245,9 @@ passphrase-errors now takes care of the errormode
    </stability>
    <date>2005-12-29</date>
    <license>BSD, revised</license>
-   <notes>bump to stable
-   </notes>
+   <notes><![CDATA[
+   * Bumped to stable
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -249,8 +260,9 @@ passphrase-errors now takes care of the errormode
    </stability>
    <date>2005-12-01</date>
    <license>BSD, revised</license>
-   <notes>fixed PHP 5.1 build
-   </notes>
+   <notes><![CDATA[
+   * Fixed PHP 5.1 build
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -263,10 +275,11 @@ passphrase-errors now takes care of the errormode
    </stability>
    <date>2005-11-29</date>
    <license>BSD, revised</license>
-   <notes>changed licence to BSD, revised
-fixed error during keyimport when the keyring is not writeable
-fixed error when an invalid errormode is passed to seterrormode
-   </notes>
+   <notes><![CDATA[
+   * Changed licence to BSD, revised
+   * Fixed error during keyimport when the keyring is not writeable
+   * Fixed error when an invalid errormode is passed to seterrormode
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -279,8 +292,9 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-11-12</date>
    <license>BSD, revised</license>
-   <notes>fixed zts build
-   </notes>
+   <notes><![CDATA[
+   * Fixed zts build
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -293,9 +307,10 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-11-12</date>
    <license>BSD, revised</license>
-   <notes>+ added seterrormode
-- various memory optimizations
-   </notes>
+   <notes><![CDATA[
+   * Added seterrormode
+   * Various memory optimizations
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -308,8 +323,11 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-10-25</date>
    <license>BSD, revised</license>
-   <notes>now supports multiple keys. added getsignatures. verify can now handle all signature types. therefore the API has changed.
-   </notes>
+   <notes><![CDATA[
+   * Added support for multiple keys
+   * Added getsignatures
+   * Verify can now handle all signature types
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -322,8 +340,9 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-10-17</date>
    <license>BSD, revised</license>
-   <notes>added procedual usage and lowered min PHP Version to 4.3
-   </notes>
+   <notes><![CDATA[
+   * Added procedual usage and lowered min PHP Version to 4.3
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -336,8 +355,9 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-10-15</date>
    <license>BSD, revised</license>
-   <notes>added import/export methods and better errormessages
-   </notes>
+   <notes><![CDATA[
+   * Added import/export methods and better errormessages
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -350,8 +370,9 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-10-10</date>
    <license>BSD, revised</license>
-   <notes>added keylistiterator, encryptsign and decryptverify
-   </notes>
+   <notes><![CDATA[
+   * Added keylistiterator, encryptsign and decryptverify
+   ]]></notes>
   </release>
   <release>
    <version>
@@ -364,9 +385,9 @@ fixed error when an invalid errormode is passed to seterrormode
    </stability>
    <date>2005-10-07</date>
    <license>BSD, revised</license>
-   <notes>initial release
-    
-   </notes>
+   <notes><![CDATA[
+   * Initial release
+   ]]></notes>
   </release>
  </changelog>
 </package>
