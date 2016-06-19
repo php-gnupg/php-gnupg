@@ -1,3 +1,5 @@
 A documentation how to install a PECL-Extension is available in the PHP-Manual http://www.php.net/manual/en/install.pecl.php
 
-The documentation is now available in the PHP-Manual http://www.php.net/manual/en/
+The extension documentation is now available in the PHP-Manual: http://php.net/manual/en/book.gnupg.php
+
+The extension supports only gnupg version 1 and the version 2 is not currently supported. It should be fixed in the extension version 1.5.
