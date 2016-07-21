@@ -1,0 +1,9 @@
+PHP GNUPG UPGRADING NOTES
+
+This document lists backward incompatible change in the extension
+
+1.4.0
+- gnupg_decryptverify $plaintext reference cannot be longer passed in
+  call_user_func_array which is conformant to user space code.
+  See https://github.com/php-gnupg/php-gnupg/issues/4 for more details.
+
