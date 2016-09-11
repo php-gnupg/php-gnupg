@@ -42,7 +42,8 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 		if (this) { \
 			PHPC_THIS_FETCH_FROM_ZVAL(gnupg, this); \
 			if (!PHPC_THIS) { \
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, \
+					"Invalid or unitialized gnupg object"); \
 				RETURN_FALSE; \
 			} \
 		} \
@@ -50,17 +51,23 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 /* }}} */
 
 #define GNUPG_RES_FETCH() \
-	PHPC_THIS = (PHPC_OBJ_STRUCT_NAME(gnupg) *) PHPC_RES_FETCH(res, "ctx", le_gnupg)
+	PHPC_THIS = (PHPC_OBJ_STRUCT_NAME(gnupg) *) \
+			PHPC_RES_FETCH(res, "ctx", le_gnupg)
 
 /* {{{ GNUPG_ERR */
 #define GNUPG_ERR(error) \
 	if (PHPC_THIS) { \
 		switch (PHPC_THIS->errormode) { \
 			case 1: \
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, \
+					(char*)error); \
 				break; \
 			case 2: \
-				zend_throw_exception(zend_exception_get_default(TSRMLS_C), (char*) error, 0 TSRMLS_CC); \
+				zend_throw_exception(\
+					zend_exception_get_default(TSRMLS_C), \
+					(char*) error, \
+					0 TSRMLS_CC \
+				); \
 				break; \
 			default: \
 				PHPC_THIS->errortxt = (char*)error; \
@@ -95,7 +102,7 @@ static void gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 }
 /* }}} */
 
-/* {{{ gnupg_free_resource_ptre */
+/* {{{ gnupg_free_resource_ptr */
 static void gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 {
 	if (PHPC_THIS) {
@@ -135,9 +142,10 @@ static void gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 	err = gpgme_new(&ctx);
 	if (err == GPG_ERR_NO_ERROR) {
 #ifdef GNUPG_PATH
-		gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
+		gpgme_ctx_set_engine_info(\
+			ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
 #endif
-		gpgme_set_armor(ctx,1);
+		gpgme_set_armor(ctx, 1);
 	}
 	PHPC_THIS->ctx = ctx;
 	PHPC_THIS->encryptkeys = NULL;
