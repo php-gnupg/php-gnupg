@@ -433,7 +433,8 @@ PHP_MINIT_FUNCTION(gnupg)
 	PHPC_OBJ_SET_HANDLER_FREE(gnupg);
 
 	/* register resource */
-	le_gnupg = zend_register_list_destructors_ex(gnupg_res_dtor, NULL, "ctx", module_number);
+	le_gnupg = zend_register_list_destructors_ex(
+				gnupg_res_dtor, NULL, "ctx", module_number);
 
 	if (SUCCESS != gnupg_keylistiterator_init()) {
 		return FAILURE;
@@ -538,7 +539,8 @@ gpgme_error_t passphrase_cb(
 		uid[idx] = uid_hint[idx];
 	}
 	uid[16] = '\0';
-	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(PHPC_THIS->signkeys, (char *)uid, passphrase)) {
+	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(
+				PHPC_THIS->signkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
@@ -547,7 +549,8 @@ gpgme_error_t passphrase_cb(
 		return 1;
 	}
 
-	if (write(fd, passphrase, strlen(passphrase)) == strlen(passphrase) && write(fd, "\n", 1) == 1) {
+	if (write(fd, passphrase, strlen(passphrase)) == strlen(passphrase)
+			&& write(fd, "\n", 1) == 1) {
 		return 0;
 	}
 	GNUPG_ERR("write failed");
@@ -576,7 +579,8 @@ gpgme_error_t passphrase_decrypt_cb (
 		uid[idx] = uid_hint[idx];
 	}
 	uid[16] = '\0';
-	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(PHPC_THIS->decryptkeys, (char *)uid, passphrase)) {
+	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(
+				PHPC_THIS->decryptkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
@@ -584,7 +588,8 @@ gpgme_error_t passphrase_decrypt_cb (
 		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
-	if (write(fd, passphrase, strlen(passphrase)) == strlen(passphrase) && write(fd, "\n", 1) == 1) {
+	if (write(fd, passphrase, strlen(passphrase)) == strlen(passphrase)
+			&& write(fd, "\n", 1) == 1) {
 		return 0;
 	}
 	GNUPG_ERR("write failed");
@@ -601,12 +606,35 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *main_arr)
 	while (gpgme_signatures) {
 		PHPC_VAL_MAKE(sig_arr);
 		PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(sig_arr));
-		PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "fingerprint", gpgme_signatures->fpr);
-		PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "validity", gpgme_signatures->validity);
-		PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "timestamp", gpgme_signatures->timestamp);
-		PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "status", gpgme_signatures->status);
-		PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "summary", gpgme_signatures->summary);
-		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(main_arr, PHPC_VAL_CAST_TO_PZVAL(sig_arr));
+		PHPC_ARRAY_ADD_ASSOC_CSTR(
+			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
+			"fingerprint",
+			gpgme_signatures->fpr
+		);
+		PHPC_ARRAY_ADD_ASSOC_LONG(
+			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
+			"validity",
+			gpgme_signatures->validity
+		);
+		PHPC_ARRAY_ADD_ASSOC_LONG(
+			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
+			"timestamp",
+			gpgme_signatures->timestamp
+		);
+		PHPC_ARRAY_ADD_ASSOC_LONG(
+			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
+			"status",
+			gpgme_signatures->status
+		);
+		PHPC_ARRAY_ADD_ASSOC_LONG(
+			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
+			"summary",
+			gpgme_signatures->summary
+		);
+		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
+			main_arr,
+			PHPC_VAL_CAST_TO_PZVAL(sig_arr)
+		);
 
 		gpgme_signatures = gpgme_signatures->next;
 	}
