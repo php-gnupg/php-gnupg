@@ -666,11 +666,13 @@ PHP_FUNCTION(gnupg_setarmor)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &armor) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l",
+				&armor) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &res, &armor) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl",
+				&res, &armor) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -693,11 +695,13 @@ PHP_FUNCTION(gnupg_seterrormode)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &errormode) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l",
+				&errormode) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &res, &errormode) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl",
+				 &res, &errormode) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -728,11 +732,13 @@ PHP_FUNCTION(gnupg_setsignmode)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &signmode) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l",
+				&signmode) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &res, &signmode) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl",
+				&res, &signmode) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -761,7 +767,8 @@ PHP_FUNCTION(gnupg_geterror)
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r",
+				&res) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -785,7 +792,8 @@ PHP_FUNCTION(gnupg_getprotocol) {
 /* }}} */
 
 /* {{{ proto array gnupg_keyinfo(string pattern)
- * returns an array with informations about all keys, that matches the given pattern
+ * returns an array with informations about all keys, that matches
+ * the given pattern
  */
 PHP_FUNCTION(gnupg_keyinfo)
 {
@@ -799,16 +807,20 @@ PHP_FUNCTION(gnupg_keyinfo)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
-	if ((PHPC_THIS->err = gpgme_op_keylist_start(PHPC_THIS->ctx, searchkey, 0)) != GPG_ERR_NO_ERROR) {
+
+	PHPC_THIS->err = gpgme_op_keylist_start(PHPC_THIS->ctx, searchkey, 0);
+	if (PHPC_THIS->err != GPG_ERR_NO_ERROR) {
 		GNUPG_ERR("could not init keylist");
 		return;
 	}
