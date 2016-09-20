@@ -411,6 +411,24 @@ zend_module_entry gnupg_module_entry = {
 ZEND_GET_MODULE(gnupg)
 #endif
 
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_struct, _g_name, _g_key) \
+	PHPC_ARRAY_ADD_ASSOC_BOOL(\
+		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_prop);
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(_g_arr, _g_struct, _g_name) \
+	PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_struct, _g_name, _g_name)
+
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_LONG_EX(_g_arr, _g_struct, _g_name, _g_key) \
+	PHPC_ARRAY_ADD_ASSOC_LONG(\
+		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_prop);
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(_g_arr, _g_struct, _g_name) \
+	PHP_GNUPG_ARRAY_ADD_ASSOC_LONG_EX(_g_arr, _g_struct, _g_name, _g_name)
+
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(_g_arr, _g_struct, _g_name, _g_key) \
+	PHPC_ARRAY_ADD_ASSOC_CSTR(\
+		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_prop);
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(_g_arr, _g_struct, _g_name) \
+	PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(_g_arr, _g_struct, _g_name, _g_name)
+
 #define PHP_GNUPG_SET_CLASS_CONST(_name, _value) \
 	zend_declare_class_constant_long(gnupg_class_entry, \
 		_name, sizeof(_name) - 1, _value TSRMLS_CC)
