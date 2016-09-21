@@ -411,23 +411,23 @@ zend_module_entry gnupg_module_entry = {
 ZEND_GET_MODULE(gnupg)
 #endif
 
-#define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_struct, _g_name, _g_key) \
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_name, _g_struct, _g_key) \
 	PHPC_ARRAY_ADD_ASSOC_BOOL(\
-		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_prop);
-#define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(_g_arr, _g_struct, _g_name) \
-	PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_struct, _g_name, _g_name)
+		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_key)
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(_g_arr, _g_name, _g_struct) \
+	PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_name, _g_struct, _g_name)
 
-#define PHP_GNUPG_ARRAY_ADD_ASSOC_LONG_EX(_g_arr, _g_struct, _g_name, _g_key) \
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_LONG_EX(_g_arr, _g_name, _g_struct, _g_key) \
 	PHPC_ARRAY_ADD_ASSOC_LONG(\
-		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_prop);
-#define PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(_g_arr, _g_struct, _g_name) \
-	PHP_GNUPG_ARRAY_ADD_ASSOC_LONG_EX(_g_arr, _g_struct, _g_name, _g_name)
+		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_key)
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(_g_arr, _g_name, _g_struct) \
+	PHP_GNUPG_ARRAY_ADD_ASSOC_LONG_EX(_g_arr, _g_name, _g_struct, _g_name)
 
-#define PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(_g_arr, _g_struct, _g_name, _g_key) \
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(_g_arr, _g_name, _g_struct, _g_key) \
 	PHPC_ARRAY_ADD_ASSOC_CSTR(\
-		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_prop);
-#define PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(_g_arr, _g_struct, _g_name) \
-	PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(_g_arr, _g_struct, _g_name, _g_name)
+		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_key)
+#define PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(_g_arr, _g_name, _g_struct) \
+	PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(_g_arr, _g_name, _g_struct, _g_name)
 
 #define PHP_GNUPG_SET_CLASS_CONST(_name, _value) \
 	zend_declare_class_constant_long(gnupg_class_entry, \
@@ -624,31 +624,13 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *main_arr)
 	while (gpgme_signatures) {
 		PHPC_VAL_MAKE(sig_arr);
 		PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(sig_arr));
-		PHPC_ARRAY_ADD_ASSOC_CSTR(
-			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
-			"fingerprint",
-			gpgme_signatures->fpr
-		);
-		PHPC_ARRAY_ADD_ASSOC_LONG(
-			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
-			"validity",
-			gpgme_signatures->validity
-		);
-		PHPC_ARRAY_ADD_ASSOC_LONG(
-			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
-			"timestamp",
-			gpgme_signatures->timestamp
-		);
-		PHPC_ARRAY_ADD_ASSOC_LONG(
-			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
-			"status",
-			gpgme_signatures->status
-		);
-		PHPC_ARRAY_ADD_ASSOC_LONG(
-			PHPC_VAL_CAST_TO_PZVAL(sig_arr),
-			"summary",
-			gpgme_signatures->summary
-		);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(
+				sig_arr, fingerprint, gpgme_signatures, fpr);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, validity, gpgme_signatures);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, timestamp, gpgme_signatures);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, status, gpgme_signatures);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, summary, gpgme_signatures);
+
 		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
 			main_arr,
 			PHPC_VAL_CAST_TO_PZVAL(sig_arr)
