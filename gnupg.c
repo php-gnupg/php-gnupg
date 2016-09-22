@@ -827,7 +827,8 @@ PHP_FUNCTION(gnupg_keyinfo)
 
 	PHPC_ARRAY_INIT(return_value);
 
-	while (!(PHPC_THIS->err = gpgme_op_keylist_next(PHPC_THIS->ctx, &gpgme_key))) {
+	while (!(PHPC_THIS->err = gpgme_op_keylist_next(
+				 PHPC_THIS->ctx, &gpgme_key))) {
 		PHPC_VAL_MAKE(subarr);
 		PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(subarr));
 
@@ -837,31 +838,37 @@ PHP_FUNCTION(gnupg_keyinfo)
 		PHPC_VAL_MAKE(userids);
 		PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(userids));
 
-		PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subarr), "disabled", gpgme_key->disabled);
-		PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subarr), "expired", gpgme_key->expired);
-		PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subarr), "revoked", gpgme_key->revoked);
-		PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subarr), "is_secret", gpgme_key->secret);
-		PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subarr), "can_sign", gpgme_key->can_sign);
-		PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subarr), "can_encrypt", gpgme_key->can_encrypt);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subarr, disabled, gpgme_key);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subarr, expired, gpgme_key);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subarr, revoked, gpgme_key);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(
+				subarr, is_secret, gpgme_key, secret);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subarr, can_sign, gpgme_key);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subarr, can_encrypt, gpgme_key);
 
 		gpgme_userid = gpgme_key->uids;
 		while (gpgme_userid) {
 			PHPC_VAL_MAKE(userid);
 			PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(userid));
 
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(userid), "name", gpgme_userid->name);
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(userid), "comment", gpgme_userid->comment);
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(userid), "email", gpgme_userid->email);
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(userid), "uid", gpgme_userid->uid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(userid, name, gpgme_userid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(userid, comment, gpgme_userid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(userid, email, gpgme_userid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(userid, uid, gpgme_userid);
 
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(userid), "revoked", gpgme_userid->revoked);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(userid), "invalid", gpgme_userid->invalid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(userid, revoked, gpgme_userid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(userid, invalid, gpgme_userid);
 
-			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(PHPC_VAL_CAST_TO_PZVAL(userids), PHPC_VAL_CAST_TO_PZVAL(userid));
+			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
+					PHPC_VAL_CAST_TO_PZVAL(userids),
+					PHPC_VAL_CAST_TO_PZVAL(userid));
 			gpgme_userid = gpgme_userid->next;
 		}
 
-		PHPC_ARRAY_ADD_ASSOC_ZVAL(PHPC_VAL_CAST_TO_PZVAL(subarr), "uids", PHPC_VAL_CAST_TO_PZVAL(userids));
+		PHPC_ARRAY_ADD_ASSOC_ZVAL(
+				PHPC_VAL_CAST_TO_PZVAL(subarr),
+				"uids",
+				PHPC_VAL_CAST_TO_PZVAL(userids));
 
 		gpgme_subkey = gpgme_key->subkeys;
 		while (gpgme_subkey) {
@@ -869,28 +876,35 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(subkey));
 
 			if (gpgme_subkey->fpr) {
-				PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(subkey), "fingerprint", gpgme_subkey->fpr);
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(
+						subkey, fingerprint, gpgme_subkey, fpr);
 			}
 
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(subkey), "keyid", gpgme_subkey->keyid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keyid, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, timestamp, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, expires, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(
+					subkey, is_secret, gpgme_subkey, secret);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, invalid, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_encrypt, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_sign, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, disabled, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, expired, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, revoked, gpgme_subkey);
 
-			PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(subkey), "timestamp", gpgme_subkey->timestamp);
-			PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(subkey), "expires", gpgme_subkey->expires);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "is_secret", gpgme_subkey->secret);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "invalid", gpgme_subkey->invalid);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "can_encrypt", gpgme_subkey->can_encrypt);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "can_sign", gpgme_subkey->can_sign);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "disabled", gpgme_subkey->disabled);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "expired", gpgme_subkey->expired);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(subkey), "revoked", gpgme_subkey->revoked);
-
-			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(PHPC_VAL_CAST_TO_PZVAL(subkeys), PHPC_VAL_CAST_TO_PZVAL(subkey));
+			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
+					PHPC_VAL_CAST_TO_PZVAL(subkeys),
+					PHPC_VAL_CAST_TO_PZVAL(subkey));
 			gpgme_subkey = gpgme_subkey->next;
 		}
 
-		PHPC_ARRAY_ADD_ASSOC_ZVAL(PHPC_VAL_CAST_TO_PZVAL(subarr), "subkeys", PHPC_VAL_CAST_TO_PZVAL(subkeys));
+		PHPC_ARRAY_ADD_ASSOC_ZVAL(
+				PHPC_VAL_CAST_TO_PZVAL(subarr),
+				"subkeys",
+				PHPC_VAL_CAST_TO_PZVAL(subkeys));
 
-		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(return_value, PHPC_VAL_CAST_TO_PZVAL(subarr));
+		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
+				return_value, PHPC_VAL_CAST_TO_PZVAL(subarr));
 		gpgme_key_unref(gpgme_key);
 	}
 }
