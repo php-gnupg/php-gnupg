@@ -411,6 +411,10 @@ zend_module_entry gnupg_module_entry = {
 ZEND_GET_MODULE(gnupg)
 #endif
 
+// (PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR
+
+#define PHP_GNUPG_DO(_action) ((PHPC_THIS->err = _action) == GPG_ERR_NO_ERROR)
+
 #define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_name, _g_struct, _g_key) \
 	PHPC_ARRAY_ADD_ASSOC_BOOL(\
 		PHPC_VAL_CAST_TO_PZVAL(_g_arr), #_g_name, _g_struct->_g_key)
@@ -824,7 +828,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 
 	PHPC_ARRAY_INIT(return_value);
 
-	while (!(PHPC_THIS->err = gpgme_op_keylist_next(PHPC_THIS->ctx, &gpgme_key))) {
+	while (PHP_GNUPG_DO(gpgme_op_keylist_next(PHPC_THIS->ctx, &gpgme_key))) {
 		PHPC_VAL_MAKE(subarr);
 		PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(subarr));
 
@@ -928,7 +932,7 @@ PHP_FUNCTION(gnupg_addsignkey)
 		GNUPG_RES_FETCH();
 	}
 
-	if ((PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 1))) {
 		GNUPG_ERR("get_key failed");
 		return;
 	}
