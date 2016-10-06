@@ -946,7 +946,7 @@ PHP_FUNCTION(gnupg_addsignkey)
 			gpgme_subkey = gpgme_subkey->next;
 		}
 	}
-	if ((PHPC_THIS->err = gpgme_signers_add(PHPC_THIS->ctx, gpgme_key)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_signers_add(PHPC_THIS->ctx, gpgme_key))) {
 		GNUPG_ERR("could not add signer");
 	} else {
 		RETVAL_TRUE;
