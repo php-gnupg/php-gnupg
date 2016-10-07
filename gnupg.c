@@ -979,14 +979,16 @@ PHP_FUNCTION(gnupg_adddecryptkey)
 		}
 		GNUPG_RES_FETCH();
 	}
-	if ((PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 1))) {
 		GNUPG_ERR("get_key failed");
 		return;
 	}
 	gpgme_subkey = gpgme_key->subkeys;
 	while (gpgme_subkey) {
 		if (gpgme_subkey->secret == 1) {
-			PHPC_HASH_CSTR_ADD_PTR(PHPC_THIS->decryptkeys, gpgme_subkey->keyid, passphrase, passphrase_len + 1);
+			PHPC_HASH_CSTR_ADD_PTR(
+					PHPC_THIS->decryptkeys, gpgme_subkey->keyid,
+					passphrase, passphrase_len + 1);
 		}
 		gpgme_subkey = gpgme_subkey->next;
 	}
@@ -1005,21 +1007,24 @@ PHP_FUNCTION(gnupg_addencryptkey)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key_id, &key_id_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&key_id, &key_id_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &key_id, &key_id_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &key_id, &key_id_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
 
-	if ((PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 0))) {
 		GNUPG_ERR("get_key failed");
-		return;
+		RETURN_FALSE;
 	}
-	PHPC_THIS->encryptkeys = erealloc(PHPC_THIS->encryptkeys, sizeof(PHPC_THIS->encryptkeys) * (PHPC_THIS->encrypt_size + 2));
+	PHPC_THIS->encryptkeys = erealloc(PHPC_THIS->encryptkeys,
+			sizeof(PHPC_THIS->encryptkeys) * (PHPC_THIS->encrypt_size + 2));
 	PHPC_THIS->encryptkeys[PHPC_THIS->encrypt_size] = gpgme_key;
 	PHPC_THIS->encrypt_size++;
 	PHPC_THIS->encryptkeys[PHPC_THIS->encrypt_size] = NULL;
