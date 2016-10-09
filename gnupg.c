@@ -1107,27 +1107,29 @@ PHP_FUNCTION(gnupg_sign)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&value, &value_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &value, &value_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
 
 	gpgme_set_passphrase_cb(PHPC_THIS->ctx, passphrase_cb, PHPC_THIS);
-	if ((PHPC_THIS->err = gpgme_data_new_from_mem(&in, value, value_len, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, value, value_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create out-data buffer");
 		gpgme_data_release(in);
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_sign(PHPC_THIS->ctx, in, out, PHPC_THIS->signmode)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_sign(PHPC_THIS->ctx, in, out, PHPC_THIS->signmode))) {
 		if (!PHPC_THIS->errortxt) {
 			GNUPG_ERR("data signing failed");
 		}
