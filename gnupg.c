@@ -1179,11 +1179,13 @@ PHP_FUNCTION(gnupg_encrypt)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&value, &value_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &value, &value_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -1192,16 +1194,17 @@ PHP_FUNCTION(gnupg_encrypt)
 		GNUPG_ERR("no key for encryption set");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_data_new_from_mem(&in, value, value_len, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, value, value_len, 0))) {
 		GNUPG_ERR("could no create in-data buffer");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(PHPC_THIS->err = gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create out-data buffer");
 		gpgme_data_release(in);
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_encrypt(PHPC_THIS->ctx, PHPC_THIS->encryptkeys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_encrypt(PHPC_THIS->ctx, PHPC_THIS->encryptkeys,
+			GPGME_ENCRYPT_ALWAYS_TRUST, in, out))) {
 		GNUPG_ERR("encrypt failed");
 		gpgme_data_release(in);
 		gpgme_data_release(out);
