@@ -1228,8 +1228,8 @@ PHP_FUNCTION(gnupg_encrypt)
 /* }}} */
 
 /* {{{ proto string gnupg_encrypt_sign(string text)
- * encrypts and signs the given text with the keys, which weres set with setencryptkey and setsignkey before
- * and returns the encrypted text
+ * encrypts and signs the given text with the keys, which weres set
+ * with setencryptkey and setsignkey before, and returns the encrypted text
  */
 PHP_FUNCTION(gnupg_encryptsign)
 {
@@ -1244,11 +1244,13 @@ PHP_FUNCTION(gnupg_encryptsign)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&value, &value_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &value, &value_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -1259,16 +1261,17 @@ PHP_FUNCTION(gnupg_encryptsign)
 		return;
 	}
 	gpgme_set_passphrase_cb(PHPC_THIS->ctx, passphrase_cb, PHPC_THIS);
-	if ((PHPC_THIS->err = gpgme_data_new_from_mem (&in, value, value_len, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem (&in, value, value_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create out-data buffer");
 		gpgme_data_release(in);
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_encrypt_sign(PHPC_THIS->ctx, PHPC_THIS->encryptkeys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_encrypt_sign(PHPC_THIS->ctx, PHPC_THIS->encryptkeys,
+			GPGME_ENCRYPT_ALWAYS_TRUST, in, out))) {
 		if (!PHPC_THIS->errortxt) {
 			GNUPG_ERR("encrypt-sign failed");
 		}
