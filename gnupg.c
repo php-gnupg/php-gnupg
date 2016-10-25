@@ -1332,49 +1332,54 @@ PHP_FUNCTION(gnupg_verify)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz|z", &signed_text, &signature, &plain_text) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz|z",
+				&signed_text, &signature, &plain_text) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rzz|z", &res, &signed_text, &signature, &plain_text) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rzz|z",
+				&res, &signed_text, &signature, &plain_text) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
 	if (Z_TYPE_P(signature) == IS_STRING) { /* detached signature */
 		/* setup signature-databuffer for gpgme */
-		if ((PHPC_THIS->err = gpgme_data_new_from_mem(&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0)) != GPG_ERR_NO_ERROR) {
+		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(
+				&gpgme_sig, Z_STRVAL_P(signature), Z_STRLEN_P(signature), 0))) {
 			GNUPG_ERR("could not create signature-databuffer");
 			return;
 		}
 		/* and the text */
-		if ((PHPC_THIS->err = gpgme_data_new_from_mem(&gpgme_text, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0)) != GPG_ERR_NO_ERROR) {
+		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(
+				&gpgme_text, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0))) {
 			GNUPG_ERR("could not create text-databuffer");
 			gpgme_data_release(gpgme_sig);
 			gpgme_data_release(gpgme_text);
 			return;
 		}
 		/* now verify sig + text */
-		if ((PHPC_THIS->err = gpgme_op_verify (PHPC_THIS->ctx, gpgme_sig, gpgme_text, NULL)) != GPG_ERR_NO_ERROR) {
+		if (!PHP_GNUPG_DO(gpgme_op_verify(PHPC_THIS->ctx, gpgme_sig, gpgme_text, NULL))) {
 			GNUPG_ERR("verify failed");
 			gpgme_data_release(gpgme_sig);
 			gpgme_data_release(gpgme_text);
 			return;
 		}
 	} else { /* clearsign or normal signature */
-		if ((PHPC_THIS->err = gpgme_data_new_from_mem(&gpgme_sig, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0)) != GPG_ERR_NO_ERROR) {
+		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(
+				&gpgme_sig, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0))) {
 			GNUPG_ERR("could not create signature-databuffer");
 			return;
 		}
 		/* set a NULL databuffer for gpgme */
-		if ((PHPC_THIS->err = gpgme_data_new_from_mem(&gpgme_text, NULL, 0, 0)) != GPG_ERR_NO_ERROR) {
+		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&gpgme_text, NULL, 0, 0))) {
 			GNUPG_ERR("could not create text-databuffer");
 			gpgme_data_release(gpgme_sig);
 			gpgme_data_release(gpgme_text);
 			return;
 		}
 		/* and verify the 'signature' */
-		if ((PHPC_THIS->err = gpgme_op_verify(PHPC_THIS->ctx, gpgme_sig, NULL, gpgme_text)) != GPG_ERR_NO_ERROR) {
+		if (!PHP_GNUPG_DO(gpgme_op_verify(PHPC_THIS->ctx, gpgme_sig, NULL, gpgme_text))) {
 			GNUPG_ERR("verify failed");
 			gpgme_data_release(gpgme_sig);
 			gpgme_data_release(gpgme_text);
