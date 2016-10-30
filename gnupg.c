@@ -1485,11 +1485,13 @@ PHP_FUNCTION(gnupg_decryptverify)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &enctxt, &enctxt_len, &plaintext) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz",
+				&enctxt, &enctxt_len, &plaintext) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsz", &res, &enctxt, &enctxt_len, &plaintext) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsz",
+				&res, &enctxt, &enctxt_len, &plaintext) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -1498,15 +1500,15 @@ PHP_FUNCTION(gnupg_decryptverify)
 
 	gpgme_set_passphrase_cb(PHPC_THIS->ctx, passphrase_decrypt_cb, PHPC_THIS);
 
-	if ((PHPC_THIS->err = gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
 	}
-	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create out-data buffer");
 		gpgme_data_release(in);
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_decrypt_verify(PHPC_THIS->ctx, in, out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_decrypt_verify(PHPC_THIS->ctx, in, out))) {
 		if (!PHPC_THIS->errortxt) {
 			GNUPG_ERR("decrypt-verify failed");
 		}
