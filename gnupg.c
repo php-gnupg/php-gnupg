@@ -1551,20 +1551,22 @@ PHP_FUNCTION(gnupg_export)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
-	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create data buffer");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_export(PHPC_THIS->ctx, searchkey, 0, out)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_export(PHPC_THIS->ctx, searchkey, 0, out))) {
 		GNUPG_ERR("export failed");
 		gpgme_data_release(out);
 		return;
