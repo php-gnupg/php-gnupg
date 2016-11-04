@@ -1594,20 +1594,22 @@ PHP_FUNCTION(gnupg_import)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &importkey, &importkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&importkey, &importkey_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &importkey, &importkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &importkey, &importkey_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
-	if ((PHPC_THIS->err = gpgme_data_new_from_mem(&in, importkey, importkey_len, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, importkey, importkey_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_import(PHPC_THIS->ctx,in)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_import(PHPC_THIS->ctx,in))) {
 		GNUPG_ERR("import failed");
 		gpgme_data_release(in);
 		return;
