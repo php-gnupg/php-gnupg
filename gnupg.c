@@ -1648,21 +1648,23 @@ PHP_FUNCTION(gnupg_deletekey)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &key, &key_len, &allow_secret) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
+				&key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|l", &res, &key, &key_len, &allow_secret) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|l",
+				&res, &key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
 
-	if ((PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, key, &gpgme_key, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_get_key(PHPC_THIS->ctx, key, &gpgme_key, 0))) {
 		GNUPG_ERR("get_key failed");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_op_delete(PHPC_THIS->ctx,gpgme_key,allow_secret)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_delete(PHPC_THIS->ctx,gpgme_key,allow_secret))) {
 		GNUPG_ERR("delete failed");
 		RETVAL_FALSE;
 	} else {
