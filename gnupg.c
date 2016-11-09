@@ -1687,31 +1687,33 @@ PHP_FUNCTION(gnupg_gettrustlist)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &pattern, &pattern_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&pattern, &pattern_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &pattern, &pattern_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &pattern, &pattern_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
-	if ((PHPC_THIS->err = gpgme_op_trustlist_start (PHPC_THIS->ctx, pattern, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_op_trustlist_start(PHPC_THIS->ctx, pattern, 0))) {
 		GNUPG_ERR("could not start trustlist");
 		return;
 	}
 	PHPC_ARRAY_INIT(return_value);
-	while (!(PHPC_THIS->err = gpgme_op_trustlist_next (PHPC_THIS->ctx, &item))) {
+	while (PHP_GNUPG_DO(gpgme_op_trustlist_next(PHPC_THIS->ctx, &item))) {
 		PHPC_VAL_MAKE(sub_arr);
 		PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(sub_arr));
 
-		PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sub_arr), "level", item->level);
-		PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sub_arr), "type", item->type);
-		PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sub_arr), "keyid", item->keyid);
-		PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sub_arr), "ownertrust", item->owner_trust);
-		PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sub_arr), "validity", item->validity);
-		PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sub_arr), "name", item->name);
-		gpgme_trust_item_unref	(item);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sub_arr, level, item);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sub_arr, type, item);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sub_arr, keyid, item);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(sub_arr, ownertrust, item, owner_trust);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sub_arr, validity, item);
+		PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sub_arr, name, item);
+		gpgme_trust_item_unref(item);
 		PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(return_value, PHPC_VAL_CAST_TO_PZVAL(sub_arr));
 	}
 }
