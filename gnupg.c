@@ -1735,20 +1735,22 @@ PHP_FUNCTION(gnupg_listsignatures)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &keyid, &keyid_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&keyid, &keyid_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &res, &keyid, &keyid_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &keyid, &keyid_len) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
-	if ((PHPC_THIS->err = gpgme_set_keylist_mode(PHPC_THIS->ctx, GPGME_KEYLIST_MODE_SIGS)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_set_keylist_mode(PHPC_THIS->ctx, GPGME_KEYLIST_MODE_SIGS))) {
 		GNUPG_ERR("could not switch to sigmode");
 		return;
 	}
-	if ((PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, keyid, &gpgme_key, 0)) != GPG_ERR_NO_ERROR) {
+	if (!PHP_GNUPG_DO(gpgme_get_key(PHPC_THIS->ctx, keyid, &gpgme_key, 0))) {
 		GNUPG_ERR("get_key failed. given key not unique?");
 		return;
 	}
@@ -1767,14 +1769,14 @@ PHP_FUNCTION(gnupg_listsignatures)
 			PHPC_VAL_MAKE(sig_arr);
 			PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(sig_arr));
 
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "uid", gpgme_signature->uid);
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "name", gpgme_signature->name);
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "email", gpgme_signature->email);
-			PHPC_ARRAY_ADD_ASSOC_CSTR(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "comment", gpgme_signature->comment);
-			PHPC_ARRAY_ADD_ASSOC_LONG(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "expires", gpgme_signature->expires);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "revoked", gpgme_signature->revoked);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "expired", gpgme_signature->expired);
-			PHPC_ARRAY_ADD_ASSOC_BOOL(PHPC_VAL_CAST_TO_PZVAL(sig_arr), "invalid", gpgme_signature->invalid);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sig_arr, uid, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sig_arr, name, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sig_arr, email, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(sig_arr, comment, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, expires, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, revoked, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, expired, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, invalid, gpgme_signature);
 			PHPC_ARRAY_ADD_ASSOC_ZVAL(
 				PHPC_VAL_CAST_TO_PZVAL(sub_arr),
 				gpgme_signature->keyid,
@@ -1782,7 +1784,8 @@ PHP_FUNCTION(gnupg_listsignatures)
 			);
 			gpgme_signature = gpgme_signature->next;
 		}
-		PHPC_ARRAY_ADD_ASSOC_ZVAL(return_value, gpgme_userid->uid, PHPC_VAL_CAST_TO_PZVAL(sub_arr));
+		PHPC_ARRAY_ADD_ASSOC_ZVAL(
+				return_value, gpgme_userid->uid, PHPC_VAL_CAST_TO_PZVAL(sub_arr));
 		gpgme_userid = gpgme_userid->next;
 	}
 	gpgme_key_unref(gpgme_key);
