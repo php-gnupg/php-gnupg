@@ -4,16 +4,18 @@ encrypt and decrypt a text
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_import();
+
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> addencryptkey($fingerprint);
-$enc = $gpg -> encrypt($plaintext);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$gpg->addencryptkey($fingerprint);
+$enc = $gpg->encrypt($plaintext);
 $gpg = NULL;
 
 $gpg = new gnupg();
-$gpg -> adddecryptkey($fingerprint, $passphrase);
-$ret = $gpg -> decrypt ($enc);
+$gpg->adddecryptkey($fingerprint, $passphrase);
+$ret = $gpg->decrypt($enc);
 
 var_dump($ret);
 ?>

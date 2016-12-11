@@ -1,10 +1,11 @@
 <?php
-putenv("GNUPGHOME=".dirname(__FILE__));
-error_reporting (E_ALL);
+putenv("GNUPGHOME=" . dirname(__FILE__));
+error_reporting(E_ALL);
 $fingerprint = "64DF06E42FCF2094590CDEEE2E96F141B3DD2B2E";
-$passphrase  = "blabla";
-
-$plaintext	=	"foo bar";
+$passphrase = "blabla";
+$plaintext = "foo bar";
+$secringfile = dirname(__FILE__) . "/secring.gpg";
+$pubringfile = dirname(__FILE__) . "/pubring.gpg";
 
 $testkey =<<<EOF
 -----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -35,4 +36,28 @@ BjoYSlJsrQm0AJ4m57ArwLXA7WXk5iQbMWlvhWCq4g==
 =awlp
 -----END PGP PRIVATE KEY BLOCK-----
 EOF;
+
+function gnupg_test_clear_files() {
+	global $secringfile, $pubringfile;
+
+	if (is_file($secringfile)) {
+		unlink($secringfile);
+	}
+	if (is_file($pubringfile)) {
+		unlink($pubringfile);
+	}
+}
+
+function gnupg_test_import() {
+	global $secringfile, $testkey;
+
+	if (!file_exists($secringfile) || !filesize($secringfile)) {
+		$gpg = new gnupg();
+		return $gpg->import($testkey);
+	}
+
+	return true;
+}
+
 ?>
+

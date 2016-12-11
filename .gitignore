@@ -63,8 +63,10 @@ tests/*.log
 tests/*.out
 tests/*.php
 tests/*.sh
+tests/pubring.gpg
 tests/pubring.kbx
 tests/random_seed
+tests/secring.gpg
 tests/sshcontrol
 tests/trustdb.gpg
 

@@ -4,10 +4,12 @@ get keyinfo
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_import();
+
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$ret = $gpg -> keyinfo($fingerprint);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$ret = $gpg->keyinfo($fingerprint);
 var_dump($ret);
 ?>
 --EXPECT--

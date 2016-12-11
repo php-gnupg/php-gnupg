@@ -2,7 +2,9 @@
 sign a text with mode SIG_MODE_DETACH and without armored output
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_import();
+
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
 gnupg_setarmor($gpg, 0);

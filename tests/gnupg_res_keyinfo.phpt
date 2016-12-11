@@ -2,7 +2,9 @@
 get keyinfo
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_import();
+
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
 $ret = gnupg_keyinfo($gpg, $fingerprint);

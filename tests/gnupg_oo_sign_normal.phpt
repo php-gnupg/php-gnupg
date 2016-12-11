@@ -4,19 +4,21 @@ sign a text with mode SIG_MODE_NORMAL
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_import();
+
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> setsignmode(gnupg::SIG_MODE_NORMAL);
-$gpg -> addsignkey($fingerprint, $passphrase);
-$ret = $gpg -> sign($plaintext);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$gpg->setsignmode(gnupg::SIG_MODE_NORMAL);
+$gpg->addsignkey($fingerprint, $passphrase);
+$ret = $gpg->sign($plaintext);
 
 $gpg = NULL;
 
 $gpg = new gnupg();
 $tmp = false;
 $plaintext = false;
-$ret = $gpg -> verify($ret, false, $plaintext);
+$ret = $gpg->verify($ret, false, $plaintext);
 
 var_dump($ret);
 var_dump($plaintext);

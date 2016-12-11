@@ -4,12 +4,11 @@ import a new key into the keyring
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
-@unlink (dirname(__FILE__)."/pubring.gpg");
-@unlink (dirname(__FILE__)."/secring.gpg");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_clear_files();
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$ret = $gpg -> import($testkey);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$ret = $gpg->import($testkey);
 var_dump($ret);
 ?>
 --EXPECT--

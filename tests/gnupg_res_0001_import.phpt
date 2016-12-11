@@ -2,9 +2,9 @@
 import a new key into the keyring
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
-@unlink (dirname(__FILE__)."/pubring.gpg");
-@unlink (dirname(__FILE__)."/secring.gpg");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_clear_files();
+
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
 $ret = gnupg_import($gpg, $testkey);

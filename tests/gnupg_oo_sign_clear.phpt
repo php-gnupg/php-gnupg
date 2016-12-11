@@ -4,18 +4,20 @@ sign a text with sigmode SIG_MODE_CLEAR
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once dirname(__FILE__) . "/vars.inc";
+gnupg_test_import();
+
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> setsignmode(gnupg::SIG_MODE_CLEAR);
-$gpg -> addsignkey($fingerprint, $passphrase);
-$ret = $gpg -> sign($plaintext);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$gpg->setsignmode(gnupg::SIG_MODE_CLEAR);
+$gpg->addsignkey($fingerprint, $passphrase);
+$ret = $gpg->sign($plaintext);
 
 $gpg = NULL;
 
 $gpg = new gnupg();
 $tmp = false;
-$ret = $gpg -> verify($ret, false, $tmp);
+$ret = $gpg->verify($ret, false, $tmp);
 
 var_dump($ret);
 var_dump($tmp);
