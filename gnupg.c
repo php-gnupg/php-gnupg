@@ -91,11 +91,9 @@ static void gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 		for (idx=0; idx < PHPC_THIS->encrypt_size; idx++) {
 			gpgme_key_unref(PHPC_THIS->encryptkeys[idx]);
 		}
-		/* it's an odd-thing, but other solutions makes problems :
-		*  erealloc(x,0) gives a segfault with PHP 4 and debug enabled
-		*  efree(x) alone ends in a segfault
-		*/
-		efree(erealloc(PHPC_THIS->encryptkeys, 0));
+		if (PHPC_THIS->encryptkeys != NULL) {
+			efree(PHPC_THIS->encryptkeys);
+		}
 		PHPC_THIS->encryptkeys = NULL;
 		PHPC_THIS->encrypt_size = 0;
 	}
@@ -1003,6 +1001,7 @@ PHP_FUNCTION(gnupg_addencryptkey)
 	char *key_id = NULL;
 	phpc_str_size_t  key_id_len;
 	gpgme_key_t gpgme_key = NULL;
+	size_t encrypt_keys_size;
 
 	GNUPG_GETOBJ();
 
@@ -1023,8 +1022,13 @@ PHP_FUNCTION(gnupg_addencryptkey)
 		GNUPG_ERR("get_key failed");
 		RETURN_FALSE;
 	}
-	PHPC_THIS->encryptkeys = erealloc(PHPC_THIS->encryptkeys,
-			sizeof(PHPC_THIS->encryptkeys) * (PHPC_THIS->encrypt_size + 2));
+
+	encrypt_keys_size = sizeof(PHPC_THIS->encryptkeys) * (PHPC_THIS->encrypt_size + 2);
+	if (PHPC_THIS->encryptkeys == NULL) {
+		PHPC_THIS->encryptkeys = emalloc(encrypt_keys_size);
+	} else {
+		PHPC_THIS->encryptkeys = erealloc(PHPC_THIS->encryptkeys, encrypt_keys_size);
+	}
 	PHPC_THIS->encryptkeys[PHPC_THIS->encrypt_size] = gpgme_key;
 	PHPC_THIS->encrypt_size++;
 	PHPC_THIS->encryptkeys[PHPC_THIS->encrypt_size] = NULL;
