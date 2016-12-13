@@ -140,8 +140,7 @@ static void gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 	err = gpgme_new(&ctx);
 	if (err == GPG_ERR_NO_ERROR) {
 #ifdef GNUPG_PATH
-		gpgme_ctx_set_engine_info(\
-			ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
+		gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
 #endif
 		gpgme_set_armor(ctx, 1);
 	}
