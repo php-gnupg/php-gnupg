@@ -408,8 +408,6 @@ zend_module_entry gnupg_module_entry = {
 ZEND_GET_MODULE(gnupg)
 #endif
 
-// (PHPC_THIS->err = gpgme_get_key(PHPC_THIS->ctx, key_id, &gpgme_key, 1)) != GPG_ERR_NO_ERROR
-
 #define PHP_GNUPG_DO(_action) ((PHPC_THIS->err = _action) == GPG_ERR_NO_ERROR)
 
 #define PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL_EX(_g_arr, _g_name, _g_struct, _g_key) \
