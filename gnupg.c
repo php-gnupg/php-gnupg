@@ -135,7 +135,6 @@ static void gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
 	gpgme_error_t err;
-	gpgme_check_version(NULL);
 
 	err = gpgme_new(&ctx);
 	if (err == GPG_ERR_NO_ERROR) {
@@ -508,6 +507,9 @@ PHP_MINIT_FUNCTION(gnupg)
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_WARNING",      1);
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_EXCEPTION",    2);
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_SILENT",       3);
+
+	/* init gpgme subsystems */
+	gpgme_check_version(NULL);
 
 	return SUCCESS;
 }
