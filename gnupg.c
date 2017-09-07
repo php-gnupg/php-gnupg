@@ -259,6 +259,7 @@ phpc_function_entry gnupg_methods[] = {
 	PHP_GNUPG_FALIAS(setarmor,          arginfo_gnupg_armor_method)
 	PHP_GNUPG_FALIAS(encrypt,           arginfo_gnupg_text_method)
 	PHP_GNUPG_FALIAS(decrypt,           arginfo_gnupg_enctext_method)
+	PHP_GNUPG_FALIAS(messagekeys,       arginfo_gnupg_enctext_method)
 	PHP_GNUPG_FALIAS(export,            arginfo_gnupg_pattern_method)
 	PHP_GNUPG_FALIAS(import,            arginfo_gnupg_key_method)
 	PHP_GNUPG_FALIAS(getprotocol,       NULL)
@@ -369,6 +370,7 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_setarmor,			arginfo_gnupg_armor_function)
 	PHP_FE(gnupg_encrypt,			arginfo_gnupg_text_function)
 	PHP_FE(gnupg_decrypt,			arginfo_gnupg_enctext_function)
+	PHP_FE(gnupg_messagekeys,		arginfo_gnupg_enctext_function)
 	PHP_FE(gnupg_export,			arginfo_gnupg_pattern_function)
 	PHP_FE(gnupg_import,			arginfo_gnupg_key_function)
 	PHP_FE(gnupg_getprotocol,		arginfo_gnupg_void_function)
@@ -1469,6 +1471,67 @@ PHP_FUNCTION(gnupg_decrypt)
 		RETVAL_FALSE;
 	}
 }
+/* }}} */
+
+/* {{{ proto string gnupg_messagekeys(string enctext)
+ * returns the recipient keyids and their status for the given enctext
+ */
+PHP_FUNCTION(gnupg_messagekeys)
+{
+	char *enctxt;
+	phpc_str_size_t	enctxt_len;
+	gpgme_data_t in, out;
+	gpgme_decrypt_result_t result;
+	gpgme_recipient_t recipient;
+
+	GNUPG_GETOBJ();
+
+	if (this) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&enctxt, &enctxt_len) == FAILURE) {
+			return;
+		}
+	} else {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+				&res, &enctxt, &enctxt_len) == FAILURE) {
+			return;
+		}
+		GNUPG_RES_FETCH();
+	}
+
+	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
+		GNUPG_ERR("could not create in-data buffer");
+	}
+
+	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
+		GNUPG_ERR("could not create out-data buffer");
+		gpgme_data_release(in);
+		return;
+	}
+
+	PHP_GNUPG_DO(gpgme_op_decrypt(PHPC_THIS->ctx, in, out));
+
+	result = gpgme_op_decrypt_result(PHPC_THIS->ctx);
+
+	gpgme_data_release(in);
+	gpgme_data_release(out);
+
+	if (result->recipients) {
+		PHPC_ARRAY_INIT(return_value);
+
+		recipient = result->recipients;
+
+		while (recipient) {
+			PHPC_ARRAY_ADD_ASSOC_BOOL(return_value, recipient->keyid, !recipient->status);
+
+			recipient = recipient->next;
+		}
+	} else {
+		GNUPG_ERR("invalid enctext");
+		RETVAL_FALSE;
+	}
+}
+
 /* }}} */
 
 /* {{{ proto string gnupg_decryptverify(string enctext, string &plaintext)

@@ -62,6 +62,7 @@ PHP_FUNCTION(gnupg_getprotocol);
 PHP_FUNCTION(gnupg_encrypt);
 PHP_FUNCTION(gnupg_encryptsign);
 PHP_FUNCTION(gnupg_decrypt);
+PHP_FUNCTION(gnupg_messagekeys);
 PHP_FUNCTION(gnupg_decryptverify);
 PHP_FUNCTION(gnupg_export);
 PHP_FUNCTION(gnupg_import);
