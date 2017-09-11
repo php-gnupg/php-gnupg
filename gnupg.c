@@ -1501,12 +1501,13 @@ PHP_FUNCTION(gnupg_messagekeys)
 
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
+		RETURN_FALSE;
 	}
 
 	if ((PHPC_THIS->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
 		GNUPG_ERR("could not create out-data buffer");
 		gpgme_data_release(in);
-		return;
+		RETURN_FALSE;
 	}
 
 	PHP_GNUPG_DO(gpgme_op_decrypt(PHPC_THIS->ctx, in, out));
@@ -1516,19 +1517,19 @@ PHP_FUNCTION(gnupg_messagekeys)
 	gpgme_data_release(in);
 	gpgme_data_release(out);
 
-	if (result->recipients) {
-		PHPC_ARRAY_INIT(return_value);
-
-		recipient = result->recipients;
-
-		while (recipient) {
-			PHPC_ARRAY_ADD_ASSOC_BOOL(return_value, recipient->keyid, !recipient->status);
-
-			recipient = recipient->next;
-		}
-	} else {
+	if (!result->recipients) {
 		GNUPG_ERR("invalid enctext");
-		RETVAL_FALSE;
+		RETURN_FALSE;
+	}
+
+	PHPC_ARRAY_INIT(return_value);
+
+	recipient = result->recipients;
+
+	while (recipient) {
+		PHPC_ARRAY_ADD_ASSOC_BOOL(return_value, recipient->keyid, !recipient->status);
+
+		recipient = recipient->next;
 	}
 }
 
