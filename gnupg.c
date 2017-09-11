@@ -729,7 +729,7 @@ PHP_FUNCTION(gnupg_seterrormode)
  */
 PHP_FUNCTION(gnupg_setsignmode)
 {
-	phpc_long_t			 signmode;
+	phpc_long_t signmode;
 
 	GNUPG_GETOBJ();
 
