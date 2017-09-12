@@ -88,14 +88,10 @@ static void php_gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 	if (PHPC_THIS) {
 		int idx;
 		/* loop through all encryptkeys and unref them in the gpgme-lib */
-		for (idx=0; idx < PHPC_THIS->encrypt_size; idx++) {
+		for (idx = 0; idx < PHPC_THIS->encrypt_size; idx++) {
 			gpgme_key_unref(PHPC_THIS->encryptkeys[idx]);
 		}
-		/* it's an odd-thing, but other solutions makes problems :
-		*  erealloc(x,0) gives a segfault with PHP 4 and debug enabled
-		*  efree(x) alone ends in a segfault
-		*/
-		efree(erealloc(PHPC_THIS->encryptkeys, 0));
+		efree(PHPC_THIS->encryptkeys);
 		PHPC_THIS->encryptkeys = NULL;
 		PHPC_THIS->encrypt_size = 0;
 	}
