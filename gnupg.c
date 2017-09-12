@@ -82,8 +82,8 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 	} while (0)
 /* }}} */
 
-/* {{{ gnupg_free_encryptkeys */
-static void gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+/* {{{ php_gnupg_free_encryptkeys */
+static void php_gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 {
 	if (PHPC_THIS) {
 		int idx;
@@ -102,8 +102,8 @@ static void gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 }
 /* }}} */
 
-/* {{{ gnupg_free_resource_ptr */
-static void gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+/* {{{ php_gnupg_free_resource_ptr */
+static void php_gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 {
 	if (PHPC_THIS) {
 		if (PHPC_THIS->ctx) {
@@ -113,7 +113,7 @@ static void gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 			PHPC_THIS->ctx = NULL;
 		}
 		/* basic cleanup */
-		gnupg_free_encryptkeys(PHPC_THIS TSRMLS_CC);
+		php_gnupg_free_encryptkeys(PHPC_THIS TSRMLS_CC);
 		zend_hash_destroy(PHPC_THIS->signkeys);
 		FREE_HASHTABLE(PHPC_THIS->signkeys);
 		zend_hash_destroy(PHPC_THIS->decryptkeys);
@@ -122,17 +122,17 @@ static void gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 }
 /* }}} */
 
-/* {{{ gnupg_res_dtor */
-static void gnupg_res_dtor(phpc_res_entry_t *rsrc TSRMLS_DC) /* {{{ */
+/* {{{ php_gnupg_res_dtor */
+static void php_gnupg_res_dtor(phpc_res_entry_t *rsrc TSRMLS_DC) /* {{{ */
 {
 	PHPC_THIS_DECLARE(gnupg) = rsrc->ptr;
-	gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
+	php_gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
 	efree(PHPC_THIS);
 }
 /* }}} */
 
-/* {{{ gnupg_res_init */
-static void gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+/* {{{ php_gnupg_res_init */
+static void php_gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 {
 	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
@@ -165,7 +165,7 @@ PHPC_OBJ_HANDLER_FREE(gnupg)
 {
 	PHPC_OBJ_HANDLER_FREE_INIT(gnupg);
 
-	gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
+	php_gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
 
 	PHPC_OBJ_HANDLER_FREE_DESTROY();
 }
@@ -175,7 +175,7 @@ PHPC_OBJ_HANDLER_CREATE_EX(gnupg)
 {
 	PHPC_OBJ_HANDLER_CREATE_EX_INIT(gnupg);
 
-	gnupg_res_init(PHPC_THIS TSRMLS_CC);
+	php_gnupg_res_init(PHPC_THIS TSRMLS_CC);
 
 	PHPC_OBJ_HANDLER_CREATE_EX_RETURN(gnupg);
 }
@@ -456,7 +456,7 @@ PHP_MINIT_FUNCTION(gnupg)
 
 	/* register resource */
 	le_gnupg = zend_register_list_destructors_ex(
-				gnupg_res_dtor, NULL, "ctx", module_number);
+				php_gnupg_res_dtor, NULL, "ctx", module_number);
 
 	if (SUCCESS != gnupg_keylistiterator_init()) {
 		return FAILURE;
@@ -651,7 +651,7 @@ PHP_FUNCTION(gnupg_init)
 {
 	PHPC_THIS_DECLARE(gnupg);
 	PHPC_THIS = emalloc(sizeof(PHPC_OBJ_STRUCT_NAME(gnupg)));
-	gnupg_res_init(PHPC_THIS TSRMLS_CC);
+	php_gnupg_res_init(PHPC_THIS TSRMLS_CC);
 	PHPC_RES_RETURN(PHPC_RES_REGISTER(PHPC_THIS, le_gnupg));
 }
 /* }}} */
@@ -1065,7 +1065,7 @@ PHP_FUNCTION(gnupg_clearencryptkeys)
 		}
 		GNUPG_RES_FETCH();
 	}
-	gnupg_free_encryptkeys(PHPC_THIS TSRMLS_CC);
+	php_gnupg_free_encryptkeys(PHPC_THIS TSRMLS_CC);
 
 	RETURN_TRUE;
 }
