@@ -4,18 +4,20 @@ sign a text with mode SIG_MODE_DETACH
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once "gnupgt.inc";
+gnupgt::import_key();
+
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> setsignmode(gnupg::SIG_MODE_DETACH);
-$gpg -> addsignkey($fingerprint, $passphrase);
-$ret = $gpg -> sign($plaintext);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$gpg->setsignmode(gnupg::SIG_MODE_DETACH);
+$gpg->addsignkey($fingerprint, $passphrase);
+$ret = $gpg->sign($plaintext);
 
 $gpg = NULL;
 
 $gpg = new gnupg();
 $tmp = false;
-$ret = $gpg -> verify($plaintext, $ret);
+$ret = $gpg->verify($plaintext, $ret);
 
 var_dump($ret);
 var_dump($plaintext);
@@ -37,3 +39,8 @@ array(1) {
   }
 }
 string(7) "foo bar"
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>

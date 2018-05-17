@@ -1,15 +1,17 @@
 --TEST--n
 sign a text with sigmode SIG_MODE_CLEAR
+--SKIPIF--
+<?php if (!extension_loaded("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once "gnupgt.inc";
+gnupgt::import_key();
+
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
 gnupg_setsignmode($gpg, GNUPG_SIG_MODE_CLEAR);
 gnupg_addsignkey($gpg, $fingerprint, $passphrase);
 $ret = gnupg_sign($gpg, $plaintext);
-
-$gpg = NULL;
 
 $gpg = gnupg_init();
 $tmp = false;
@@ -36,3 +38,8 @@ array(1) {
 }
 string(8) "foo bar
 "
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>

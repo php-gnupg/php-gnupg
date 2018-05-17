@@ -4,19 +4,19 @@ encryptsign and decryptverify a text
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
-$gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$gpg -> addencryptkey($fingerprint);
-$gpg -> addsignkey($fingerprint, $passphrase);
-$enc = $gpg -> encryptsign($plaintext);
+require_once "gnupgt.inc";
+gnupgt::import_key();
 
-$gpg = NULL;
+$gpg = new gnupg();
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$gpg->addencryptkey($fingerprint);
+$gpg->addsignkey($fingerprint, $passphrase);
+$enc = $gpg->encryptsign($plaintext);
+
 $plaintext = false;
-
 $gpg = new gnupg();
-$gpg -> adddecryptkey($fingerprint, $passphrase);
-$ret = $gpg -> decryptverify ($enc, $plaintext);
+$gpg->adddecryptkey($fingerprint, $passphrase);
+$ret = $gpg->decryptverify ($enc, $plaintext);
 
 var_dump($ret);
 var_dump($plaintext);
@@ -38,3 +38,8 @@ array(1) {
   }
 }
 string(7) "foo bar"
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>

@@ -1,13 +1,15 @@
---TEST--n
+--TEST--
 list signatures
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once "gnupgt.inc";
+gnupgt::import_key();
+
 $gpg = new gnupg();
-$gpg -> seterrormode(gnupg::ERROR_WARNING);
-$ret = $gpg -> listsignatures($fingerprint);
+$gpg->seterrormode(gnupg::ERROR_WARNING);
+$ret = $gpg->listsignatures($fingerprint);
 var_dump($ret);
 ?>
 --EXPECT--
@@ -35,3 +37,8 @@ array(1) {
     }
   }
 }
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>

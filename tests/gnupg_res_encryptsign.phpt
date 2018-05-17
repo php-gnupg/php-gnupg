@@ -1,8 +1,12 @@
 --TEST--
 encryptsign and decryptverify a text
+--SKIPIF--
+<?php if (!extension_loaded("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once(dirname(__FILE__)."/vars.inc");
+require_once "gnupgt.inc";
+gnupgt::import_key();
+
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
 gnupg_addencryptkey($gpg, $fingerprint);
@@ -36,3 +40,8 @@ array(1) {
   }
 }
 string(7) "foo bar"
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>
