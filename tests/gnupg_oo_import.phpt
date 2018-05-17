@@ -1,11 +1,12 @@
---TEST--n
+--TEST--
 import a new key into the keyring
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once dirname(__FILE__) . "/vars.inc";
-gnupg_test_clear_files();
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+
 $gpg = new gnupg();
 $gpg->seterrormode(gnupg::ERROR_WARNING);
 $ret = $gpg->import($testkey);
@@ -32,3 +33,8 @@ array(9) {
   ["fingerprint"]=>
   string(40) "64DF06E42FCF2094590CDEEE2E96F141B3DD2B2E"
 }
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>

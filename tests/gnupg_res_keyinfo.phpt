@@ -1,9 +1,11 @@
 --TEST--n
 get keyinfo
+--SKIPIF--
+<?php if (!extension_loaded("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once dirname(__FILE__) . "/vars.inc";
-gnupg_test_import();
+require_once "gnupgt.inc";
+gnupgt::import_key();
 
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
@@ -99,3 +101,8 @@ array(1) {
     }
   }
 }
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>

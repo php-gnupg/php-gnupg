@@ -4,8 +4,8 @@ sign a text with sigmode SIG_MODE_CLEAR
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
-require_once dirname(__FILE__) . "/vars.inc";
-gnupg_test_import();
+require_once "gnupgt.inc";
+gnupgt::import_key();
 
 $gpg = new gnupg();
 $gpg->seterrormode(gnupg::ERROR_WARNING);
@@ -40,3 +40,8 @@ array(1) {
 }
 string(8) "foo bar
 "
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>
