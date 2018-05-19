@@ -49,6 +49,7 @@ PHP_MINIT_FUNCTION(gnupg);
 PHP_MSHUTDOWN_FUNCTION(gnupg);
 PHP_MINFO_FUNCTION(gnupg);
 
+PHP_METHOD(gnupg, __construct);
 PHP_FUNCTION(gnupg_keyinfo);
 PHP_FUNCTION(gnupg_verify);
 PHP_FUNCTION(gnupg_geterror);

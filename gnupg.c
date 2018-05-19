@@ -100,8 +100,8 @@ static void php_gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 }
 /* }}} */
 
-/* {{{ php_gnupg_free_resource_ptr */
-static void php_gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+/* {{{ php_gnupg_this_free */
+static void php_gnupg_this_free(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 {
 	if (PHPC_THIS) {
 		if (PHPC_THIS->ctx) {
@@ -120,33 +120,19 @@ static void php_gnupg_free_resource_ptr(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 }
 /* }}} */
 
-/* {{{ php_gnupg_res_dtor */
-static void php_gnupg_res_dtor(phpc_res_entry_t *rsrc TSRMLS_DC) /* {{{ */
-{
-	PHPC_THIS_DECLARE(gnupg) = rsrc->ptr;
-	php_gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
-	efree(PHPC_THIS);
-}
-/* }}} */
-
-/* {{{ php_gnupg_res_init */
-static void php_gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+/* {{{ php_gnupg_this_init */
+static void php_gnupg_this_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 {
 	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
 	gpgme_error_t err;
 
 	err = gpgme_new(&ctx);
-	if (err == GPG_ERR_NO_ERROR) {
-#ifdef GNUPG_PATH
-		gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP, GNUPG_PATH, NULL);
-#endif
-		gpgme_set_armor(ctx, 1);
-	}
 	PHPC_THIS->ctx = ctx;
 	PHPC_THIS->encryptkeys = NULL;
 	PHPC_THIS->encrypt_size = 0;
 	PHPC_THIS->signmode = GPGME_SIG_MODE_CLEAR;
+	PHPC_THIS->err = err;
 	PHPC_THIS->errortxt = NULL;
 	PHPC_THIS->errormode = 3;
 	ALLOC_HASHTABLE(PHPC_THIS->signkeys);
@@ -156,12 +142,53 @@ static void php_gnupg_res_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 }
 /* }}} */
 
+/* set GNUPG_PATH to NULL if not defined */
+#ifndef GNUPG_PATH
+#define GNUPG_PATH NULL
+#endif
+
+/* {{{ php_gnupg_this_make */
+static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_DC)
+{
+	if (PHPC_THIS->err != GPG_ERR_NO_ERROR) {
+		char *file_name = GNUPG_PATH;
+		char *home_dir = NULL;
+		phpc_val *ppv_file_name, *ppv_home_dir;
+		gpgme_ctx_t	ctx = PHPC_THIS->ctx;
+
+		if (options && PHPC_HASH_CSTR_FIND_IN_COND(
+				Z_ARRVAL_P(options), "file_name", ppv_file_name)) {
+			file_name = PHPC_STRVAL_P(ppv_file_name);
+		}
+		if (options && PHPC_HASH_CSTR_FIND_IN_COND(
+				Z_ARRVAL_P(options), "home_dir", ppv_home_dir)) {
+			home_dir = PHPC_STRVAL_P(ppv_file_name);
+		}
+
+		if (file_name != NULL || home_dir != NULL) {
+			gpgme_ctx_set_engine_info(
+					ctx, GPGME_PROTOCOL_OpenPGP, file_name, home_dir);
+		}
+		gpgme_set_armor(ctx, 1);
+	}
+}
+/* }}} */
+
+/* {{{ php_gnupg_res_dtor */
+static void php_gnupg_res_dtor(phpc_res_entry_t *rsrc TSRMLS_DC) /* {{{ */
+{
+	PHPC_THIS_DECLARE(gnupg) = rsrc->ptr;
+	php_gnupg_this_free(PHPC_THIS TSRMLS_CC);
+	efree(PHPC_THIS);
+}
+/* }}} */
+
 /* {{{ free gnupg */
 PHPC_OBJ_HANDLER_FREE(gnupg)
 {
 	PHPC_OBJ_HANDLER_FREE_INIT(gnupg);
 
-	php_gnupg_free_resource_ptr(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_free(PHPC_THIS TSRMLS_CC);
 
 	PHPC_OBJ_HANDLER_FREE_DESTROY();
 }
@@ -171,7 +198,7 @@ PHPC_OBJ_HANDLER_CREATE_EX(gnupg)
 {
 	PHPC_OBJ_HANDLER_CREATE_EX_INIT(gnupg);
 
-	php_gnupg_res_init(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_init(PHPC_THIS TSRMLS_CC);
 
 	PHPC_OBJ_HANDLER_CREATE_EX_RETURN(gnupg);
 }
@@ -181,6 +208,12 @@ PHPC_OBJ_HANDLER_CREATE(gnupg)
 {
 	PHPC_OBJ_HANDLER_CREATE_RETURN(gnupg);
 }
+
+/* {{{ arginfo for gnupg __construct and gnupg_init */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_init, 0, 0, 0)
+	ZEND_ARG_INFO(0, options)
+ZEND_END_ARG_INFO()
+/* }}} */
 
 /* {{{ arginfo for gnupg method with armor parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_armor_method, 0)
@@ -250,6 +283,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ methodlist gnupg */
 phpc_function_entry gnupg_methods[] = {
+	PHP_ME(gnupg, __construct, arginfo_gnupg_init, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
 	PHP_GNUPG_FALIAS(keyinfo,           arginfo_gnupg_pattern_method)
 	PHP_GNUPG_FALIAS(verify,            arginfo_gnupg_verify_method)
 	PHP_GNUPG_FALIAS(geterror,          NULL)
@@ -641,14 +675,40 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *main_arr)
 }
 /* }}} */
 
-/* {{{ proto resource gnupg_init()
+/* {{{ proto gnupg::__construct(array options = NULL)
+ * inits gnupg and returns a resource
+*/
+PHP_METHOD(gnupg, __construct)
+{
+	zval *options = NULL;
+	PHPC_THIS_DECLARE(gnupg);
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a",
+			options) == FAILURE) {
+		return;
+	}
+
+	PHPC_THIS_FETCH(gnupg);
+	php_gnupg_this_make(PHPC_THIS, options TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto resource gnupg_init(array options = NULL)
  * inits gnupg and returns a resource
 */
 PHP_FUNCTION(gnupg_init)
 {
+	zval *options = NULL;
 	PHPC_THIS_DECLARE(gnupg);
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a",
+			options) == FAILURE) {
+		return;
+	}
+
 	PHPC_THIS = emalloc(sizeof(PHPC_OBJ_STRUCT_NAME(gnupg)));
-	php_gnupg_res_init(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_init(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_make(PHPC_THIS, options TSRMLS_CC);
 	PHPC_RES_RETURN(PHPC_RES_REGISTER(PHPC_THIS, le_gnupg));
 }
 /* }}} */
