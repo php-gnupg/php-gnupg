@@ -170,6 +170,7 @@ static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_D
 					ctx, GPGME_PROTOCOL_OpenPGP, file_name, home_dir);
 		}
 		gpgme_set_armor(ctx, 1);
+		gpgme_set_pinentry_mode(ctx, GPGME_PINENTRY_MODE_LOOPBACK);
 	}
 }
 /* }}} */
