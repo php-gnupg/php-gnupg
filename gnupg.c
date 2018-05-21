@@ -150,7 +150,7 @@ static void php_gnupg_this_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 /* {{{ php_gnupg_this_make */
 static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_DC)
 {
-	if (PHPC_THIS->err != GPG_ERR_NO_ERROR) {
+	if (PHPC_THIS->err == GPG_ERR_NO_ERROR) {
 		char *file_name = GNUPG_PATH;
 		char *home_dir = NULL;
 		phpc_val *ppv_file_name, *ppv_home_dir;
