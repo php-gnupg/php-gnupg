@@ -1673,7 +1673,7 @@ PHP_FUNCTION(gnupg_import)
 		GNUPG_ERR("could not create in-data buffer");
 		return;
 	}
-	if (!PHP_GNUPG_DO(gpgme_op_import(PHPC_THIS->ctx,in))) {
+	if (!PHP_GNUPG_DO(gpgme_op_import(PHPC_THIS->ctx, in))) {
 		GNUPG_ERR("import failed");
 		gpgme_data_release(in);
 		return;
@@ -1728,7 +1728,7 @@ PHP_FUNCTION(gnupg_deletekey)
 		GNUPG_ERR("get_key failed");
 		return;
 	}
-	if (!PHP_GNUPG_DO(gpgme_op_delete(PHPC_THIS->ctx,gpgme_key,allow_secret))) {
+	if (!PHP_GNUPG_DO(gpgme_op_delete(PHPC_THIS->ctx, gpgme_key, allow_secret))) {
 		GNUPG_ERR("delete failed");
 		RETVAL_FALSE;
 	} else {
