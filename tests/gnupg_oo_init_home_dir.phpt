@@ -15,7 +15,6 @@ $gpg->seterrormode(gnupg::ERROR_WARNING);
 $gpg->import($testkey);
 $imported = false;
 foreach (glob("$homedir/*") as $filename) {
-    //var_dump($filename);
     $imported = true;
 }
 var_dump($imported);

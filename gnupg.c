@@ -162,7 +162,7 @@ static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_D
 		}
 		if (options && PHPC_HASH_CSTR_FIND_IN_COND(
 				Z_ARRVAL_P(options), "home_dir", ppv_home_dir)) {
-			home_dir = PHPC_STRVAL_P(ppv_file_name);
+			home_dir = PHPC_STRVAL_P(ppv_home_dir);
 		}
 
 		if (file_name != NULL || home_dir != NULL) {
@@ -685,7 +685,7 @@ PHP_METHOD(gnupg, __construct)
 	PHPC_THIS_DECLARE(gnupg);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a",
-			options) == FAILURE) {
+			&options) == FAILURE) {
 		return;
 	}
 
@@ -703,7 +703,7 @@ PHP_FUNCTION(gnupg_init)
 	PHPC_THIS_DECLARE(gnupg);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a",
-			options) == FAILURE) {
+			&options) == FAILURE) {
 		return;
 	}
 
