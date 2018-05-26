@@ -871,10 +871,6 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHPC_VAL_MAKE(subkey);
 			PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(subkey));
 
-			if (gpgme_subkey->fpr) {
-				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(subkey, fingerprint, gpgme_subkey, fpr);
-			}
-
 			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keyid, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, timestamp, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, expires, gpgme_subkey);
@@ -885,6 +881,39 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, disabled, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, expired, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, revoked, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_certify, gpgme_subkey);
+#if GPGME_VERSION_NUMBER >= 0x000405  /* GPGME >= 0.4.5 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_authenticate, gpgme_subkey);
+#endif /* gpgme >= 0.4.5 */
+#if GPGME_VERSION_NUMBER >= 0x010100  /* GPGME >= 1.1.0 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_qualified, gpgme_subkey);
+#endif /* gpgme >= 1.1.0 */
+#if GPGME_VERSION_NUMBER >= 0x010800  /* GPGME >= 1.8.0 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_de_vs, gpgme_subkey);
+#endif /* gpgme >= 1.8.0 */
+			/*
+				https://github.com/gpg/gpgme/blob/f7700a016926f0d8e9cb3c0337837deb7fe01079/src/gpgme.h.in#L258
+				https://github.com/gpg/gpgme/blob/f7700a016926f0d8e9cb3c0337837deb7fe01079/src/gpgme.c#L1196
+			*/
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, pubkey_algo, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, length, gpgme_subkey);
+			if (gpgme_subkey->fpr) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(subkey, fingerprint, gpgme_subkey, fpr);
+			}
+#if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
+			if (gpgme_subkey->keygrip) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keygrip, gpgme_subkey);
+			}
+#endif /* gpgme >= 1.7.0 */
+#if GPGME_VERSION_NUMBER >= 0x010200  /* GPGME >= 1.2.0 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_cardkey, gpgme_subkey);
+			if (gpgme_subkey->card_number) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, card_number, gpgme_subkey);
+			}
+#endif /* gpgme >= 1.2.0 */
+			if (gpgme_subkey->curve) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, curve, gpgme_subkey);
+			}
 
 			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
 					PHPC_VAL_CAST_TO_PZVAL(subkeys),
@@ -1780,6 +1809,7 @@ PHP_FUNCTION(gnupg_listsignatures)
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, revoked, gpgme_signature);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, expired, gpgme_signature);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, invalid, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, timestamp, gpgme_signature);
 			PHPC_ARRAY_ADD_ASSOC_ZVAL(
 				PHPC_VAL_CAST_TO_PZVAL(sub_arr),
 				gpgme_signature->keyid,

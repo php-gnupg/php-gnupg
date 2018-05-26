@@ -10,8 +10,6 @@
   - https://github.com/php-gnupg/php-gnupg/pull/12
 - Add parameter to `gnupg_keyinfo` to use `secret_only` on `gpgme_op_keylist_start`
   - https://github.com/php-gnupg/php-gnupg/issues/5
-- Extend `gnupg_keyinfo` subkey result with `pubkey_algo` and `length`
-  - https://github.com/php-gnupg/php-gnupg/issues/6
 - Add support for exporting multiple keys using `gpgme_op_export_ext`
   - https://github.com/php-gnupg/php-gnupg/issues/10
 - Add missing tests for following functions:
