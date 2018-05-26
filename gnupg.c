@@ -966,6 +966,10 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHPC_VAL_MAKE(subkey);
 			PHPC_ARRAY_INIT(PHPC_VAL_CAST_TO_PZVAL(subkey));
 
+			if (gpgme_subkey->fpr) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(subkey, fingerprint, gpgme_subkey, fpr);
+			}
+
 			PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keyid, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, timestamp, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, expires, gpgme_subkey);
@@ -992,9 +996,6 @@ PHP_FUNCTION(gnupg_keyinfo)
 			*/
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, pubkey_algo, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, length, gpgme_subkey);
-			if (gpgme_subkey->fpr) {
-				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR_EX(subkey, fingerprint, gpgme_subkey, fpr);
-			}
 #if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
 			if (gpgme_subkey->keygrip) {
 				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keygrip, gpgme_subkey);
