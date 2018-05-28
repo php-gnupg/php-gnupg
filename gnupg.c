@@ -892,12 +892,13 @@ PHP_FUNCTION(gnupg_keyinfo)
 #if GPGME_VERSION_NUMBER >= 0x010100  /* GPGME >= 1.1.0 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_qualified, gpgme_subkey);
 #endif /* gpgme >= 1.1.0 */
-#if GPGME_VERSION_NUMBER >= 0x010800  /* GPGME >= 1.8.0 */
+#if GPGME_VERSION_NUMBER >= 0x010900  /* GPGME >= 1.9.0 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_de_vs, gpgme_subkey);
-#endif /* gpgme >= 1.8.0 */
+#endif /* gpgme >= 1.9.0 */
 			/*
 				https://github.com/gpg/gpgme/blob/f7700a016926f0d8e9cb3c0337837deb7fe01079/src/gpgme.h.in#L258
 				https://github.com/gpg/gpgme/blob/f7700a016926f0d8e9cb3c0337837deb7fe01079/src/gpgme.c#L1196
+				printf '0x%02x%02x%02x\n' 1 2 0
 			*/
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, pubkey_algo, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, length, gpgme_subkey);
