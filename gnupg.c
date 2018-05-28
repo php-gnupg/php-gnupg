@@ -981,9 +981,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, expired, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, revoked, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_certify, gpgme_subkey);
-#if GPGME_VERSION_NUMBER >= 0x000405  /* GPGME >= 0.4.5 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_authenticate, gpgme_subkey);
-#endif /* gpgme >= 0.4.5 */
 #if GPGME_VERSION_NUMBER >= 0x010100  /* GPGME >= 1.1.0 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_qualified, gpgme_subkey);
 #endif /* gpgme >= 1.1.0 */
