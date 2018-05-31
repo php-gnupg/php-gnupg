@@ -287,6 +287,7 @@ phpc_function_entry gnupg_methods[] = {
 	PHP_ME(gnupg, __construct, arginfo_gnupg_init, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
 	PHP_GNUPG_FALIAS(keyinfo,           arginfo_gnupg_pattern_method)
 	PHP_GNUPG_FALIAS(verify,            arginfo_gnupg_verify_method)
+	PHP_GNUPG_FALIAS(getengineinfo,     NULL)
 	PHP_GNUPG_FALIAS(geterror,          NULL)
 	PHP_GNUPG_FALIAS(clearsignkeys,     NULL)
 	PHP_GNUPG_FALIAS(clearencryptkeys,  NULL)
@@ -406,6 +407,7 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_decrypt,			arginfo_gnupg_enctext_function)
 	PHP_FE(gnupg_export,			arginfo_gnupg_pattern_function)
 	PHP_FE(gnupg_import,			arginfo_gnupg_key_function)
+	PHP_FE(gnupg_getengineinfo,		arginfo_gnupg_void_function)
 	PHP_FE(gnupg_getprotocol,		arginfo_gnupg_void_function)
 	PHP_FE(gnupg_setsignmode,		arginfo_gnupg_signmode_function)
 	PHP_FE(gnupg_encryptsign,		arginfo_gnupg_text_function)
@@ -816,6 +818,30 @@ PHP_FUNCTION(gnupg_setsignmode)
 			break;
 	}
 	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto array gnupg_getengineinfo(void)
+ * returns the engine info
+ */
+PHP_FUNCTION(gnupg_getengineinfo)
+{
+	gpgme_engine_info_t info;
+	GNUPG_GETOBJ();
+
+	if (!this) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+			return;
+		}
+		GNUPG_RES_FETCH();
+	}
+
+	info = gpgme_ctx_get_engine_info(PHPC_THIS->ctx);
+
+	PHPC_ARRAY_INIT(return_value);
+	PHPC_ARRAY_ADD_ASSOC_LONG(return_value, "protocol", info->protocol);
+	PHPC_ARRAY_ADD_ASSOC_CSTR(return_value, "file_name", info->file_name);
+	PHPC_ARRAY_ADD_ASSOC_CSTR(return_value, "home_dir", info->home_dir ? info->home_dir : "");
 }
 /* }}} */
 
