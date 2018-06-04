@@ -1,24 +1,24 @@
 --TEST--
-init object with custom home_dir
+init resource with custom home_dir
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
 <?php
 require_once "gnupgt.inc";
-$homedir = __DIR__ . '/init_oo_home';
+$homedir = __DIR__ . '/init_res_home';
 if (!is_dir($homedir)) {
     mkdir($homedir);
 }
 
-$gpg = new gnupg(array('home_dir' => $homedir));
-$gpg->seterrormode(gnupg::ERROR_WARNING);
-$gpg->import($testkey);
+$gpg = gnupg_init(array('home_dir' => $homedir));
+gnupg_seterrormode($gpg, gnupg::ERROR_WARNING);
+gnupg_import($gpg, $testkey);
 $imported = false;
 foreach (glob("$homedir/*") as $filename) {
     $imported = true;
 }
 var_dump($imported);
-$engine = $gpg->getengineinfo();
+$engine = gnupg_getengineinfo($gpg);
 var_dump($engine['home_dir'] === $homedir);
 ?>
 --EXPECT--
@@ -26,7 +26,7 @@ bool(true)
 bool(true)
 --CLEAN--
 <?php
-$homedir = __DIR__ . '/init_oo_home';
+$homedir = __DIR__ . '/init_res_home';
 foreach (glob($homedir . '/*') as $filename) {
     unlink($filename);
 }
