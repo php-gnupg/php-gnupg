@@ -471,11 +471,17 @@ ZEND_GET_MODULE(gnupg)
 #define PHP_GNUPG_REG_CONST(_name, _value) \
 	REGISTER_LONG_CONSTANT(_name,  _value, CONST_CS | CONST_PERSISTENT);
 
+#define PHP_GNUPG_REG_CONST_STR(_name, _value) \
+	REGISTER_STRING_CONSTANT(_name,  _value, CONST_CS | CONST_PERSISTENT);
+
+#define PHP_GNUPG_VERSION_BUF_SIZE 64
+
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(gnupg)
 {
 	zend_class_entry ce;
+	char php_gpgme_version[PHP_GNUPG_VERSION_BUF_SIZE];
 
 	/* init class */
 	INIT_CLASS_ENTRY(ce, "gnupg", gnupg_methods);
@@ -545,8 +551,10 @@ PHP_MINIT_FUNCTION(gnupg)
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_EXCEPTION",    2);
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_SILENT",       3);
 
-	/* init gpgme subsystems */
-	gpgme_check_version(NULL);
+	/* init gpgme subsystems and set the returned version to the constant */
+	strncpy(php_gpgme_version, gpgme_check_version(NULL), PHP_GNUPG_VERSION_BUF_SIZE);
+	php_gpgme_version[PHP_GNUPG_VERSION_BUF_SIZE - 1] = '\0';
+	PHP_GNUPG_REG_CONST_STR("GNUPG_GPGME_VERSION", php_gpgme_version);
 
 	return SUCCESS;
 }
