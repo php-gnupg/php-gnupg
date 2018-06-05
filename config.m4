@@ -15,14 +15,19 @@ PHP_ARG_WITH(gnupg, for gnupg support,
 [  --with-gnupg[=dir]       Include gnupg support])
 
 if test "$PHP_GNUPG" != "no"; then
-  SEARCH_PATH="/usr/local/include /usr/include /usr/local/include/gpgme/ /usr/include/gpgme/"
-  SEARCH_FOR="gpgme.h"
+  SEARCH_PATH="/usr/local /usr /opt"
+  SEARCH_FOR="include/gpgme.h"
+  SEARCH_FOR_ALT="include/gpgme/gpgme.h"
   if test -r $PHP_GNUPG/$SEARCH_FOR; then
     GNUPG_DIR=$PHP_GNUPG
   else
     AC_MSG_CHECKING([for gnupg files in default path])
     for i in $SEARCH_PATH ; do
       if test -r $i/$SEARCH_FOR; then
+        GNUPG_DIR=$i
+        AC_MSG_RESULT(found in $i)
+      fi
+      if test -r $i/$SEARCH_FOR_ALT; then
         GNUPG_DIR=$i
         AC_MSG_RESULT(found in $i)
       fi
@@ -41,12 +46,12 @@ if test "$PHP_GNUPG" != "no"; then
 
   PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
   [
-    PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $GNUPG_DIR/lib, GNUPG_SHARED_LIBADD)
+    PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $GNUPG_DIR/$PHP_LIBDIR, GNUPG_SHARED_LIBADD)
     AC_DEFINE(HAVE_GNUPGLIB,1,[ ])
   ],[
     AC_MSG_ERROR([wrong gpgme lib version or lib not found])
   ],[
-    -L$GNUPG_DIR/lib -lm $GNUPG_DL
+    -L$GNUPG_DIR/$PHP_LIBDIR -lm $GNUPG_DL
   ])
   PHP_SUBST(GNUPG_SHARED_LIBADD)
 
@@ -70,6 +75,6 @@ if test "$with_gpg" != "no"; then
     fi
   fi
   if test -x "$ac_cv_path_GNUPG_PATH"; then
-    AC_DEFINE_UNQUOTED([GNUPG_PATH], ["$ac_cv_path_GNUPG_PATH"], [Path to gpg v1.x])
+    AC_DEFINE_UNQUOTED([GNUPG_PATH], ["$ac_cv_path_GNUPG_PATH"], [Path to gpg binary])
   fi
 fi
