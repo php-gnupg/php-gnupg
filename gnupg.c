@@ -524,6 +524,22 @@ PHP_MINIT_FUNCTION(gnupg)
 	PHP_GNUPG_SET_CLASS_CONST("ERROR_WARNING",      1);
 	PHP_GNUPG_SET_CLASS_CONST("ERROR_EXCEPTION",    2);
 	PHP_GNUPG_SET_CLASS_CONST("ERROR_SILENT",       3);
+	PHP_GNUPG_SET_CLASS_CONST("PK_RSA",             GPGME_PK_RSA);
+	PHP_GNUPG_SET_CLASS_CONST("PK_RSA_E",           GPGME_PK_RSA_E);
+	PHP_GNUPG_SET_CLASS_CONST("PK_RSA_S",           GPGME_PK_RSA_S);
+	PHP_GNUPG_SET_CLASS_CONST("PK_DSA",             GPGME_PK_DSA);
+	PHP_GNUPG_SET_CLASS_CONST("PK_ELG",             GPGME_PK_ELG);
+	PHP_GNUPG_SET_CLASS_CONST("PK_ELG_E",           GPGME_PK_ELG_E);
+#if GPGME_VERSION_NUMBER >= 0x010500  /* GPGME >= 1.5.0 */
+	PHP_GNUPG_SET_CLASS_CONST("PK_ECC",             GPGME_PK_ECC);
+#endif /* gpgme >= 1.5.0 */	
+#if GPGME_VERSION_NUMBER >= 0x010300  /* GPGME >= 1.3.0 */
+	PHP_GNUPG_SET_CLASS_CONST("PK_ECDSA",           GPGME_PK_ECDSA);
+	PHP_GNUPG_SET_CLASS_CONST("PK_ECDH",            GPGME_PK_ECDH);
+#endif /* gpgme >= 1.3.0 */	
+#if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
+	PHP_GNUPG_SET_CLASS_CONST("PK_EDDSA",           GPGME_PK_EDDSA);
+#endif /* gpgme >= 1.7.0 */
 
 	PHP_GNUPG_REG_CONST("GNUPG_SIG_MODE_NORMAL",    GPGME_SIG_MODE_NORMAL);
 	PHP_GNUPG_REG_CONST("GNUPG_SIG_MODE_DETACH",    GPGME_SIG_MODE_DETACH);
@@ -550,6 +566,22 @@ PHP_MINIT_FUNCTION(gnupg)
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_WARNING",      1);
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_EXCEPTION",    2);
 	PHP_GNUPG_REG_CONST("GNUPG_ERROR_SILENT",       3);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_RSA",             GPGME_PK_RSA);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_RSA_E",           GPGME_PK_RSA_E);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_RSA_S",           GPGME_PK_RSA_S);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_DSA",             GPGME_PK_DSA);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_ELG",             GPGME_PK_ELG);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_ELG_E",           GPGME_PK_ELG_E);
+#if GPGME_VERSION_NUMBER >= 0x010500  /* GPGME >= 1.5.0 */
+	PHP_GNUPG_REG_CONST("GNUPG_PK_ECC",             GPGME_PK_ECC);
+#endif /* gpgme >= 1.5.0 */	
+#if GPGME_VERSION_NUMBER >= 0x010300  /* GPGME >= 1.3.0 */
+	PHP_GNUPG_REG_CONST("GNUPG_PK_ECDSA",           GPGME_PK_ECDSA);
+	PHP_GNUPG_REG_CONST("GNUPG_PK_ECDH",            GPGME_PK_ECDH);
+#endif /* gpgme >= 1.3.0 */	
+#if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
+	PHP_GNUPG_REG_CONST("GNUPG_PK_EDDSA",           GPGME_PK_EDDSA);
+#endif /* gpgme >= 1.7.0 */
 
 	/* init gpgme subsystems and set the returned version to the constant */
 	strncpy(php_gpgme_version, gpgme_check_version(NULL), PHP_GNUPG_VERSION_BUF_SIZE);
@@ -980,6 +1012,35 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, disabled, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, expired, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, revoked, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_certify, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_authenticate, gpgme_subkey);
+#if GPGME_VERSION_NUMBER >= 0x010100  /* GPGME >= 1.1.0 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_qualified, gpgme_subkey);
+#endif /* gpgme >= 1.1.0 */
+#if GPGME_VERSION_NUMBER >= 0x010900  /* GPGME >= 1.9.0 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_de_vs, gpgme_subkey);
+#endif /* gpgme >= 1.9.0 */
+			/*
+				https://github.com/gpg/gpgme/blob/f7700a016926f0d8e9cb3c0337837deb7fe01079/src/gpgme.h.in#L258
+				https://github.com/gpg/gpgme/blob/f7700a016926f0d8e9cb3c0337837deb7fe01079/src/gpgme.c#L1196
+				printf '0x%02x%02x%02x\n' 1 2 0
+			*/
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, pubkey_algo, gpgme_subkey);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(subkey, length, gpgme_subkey);
+#if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
+			if (gpgme_subkey->keygrip) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keygrip, gpgme_subkey);
+			}
+#endif /* gpgme >= 1.7.0 */
+#if GPGME_VERSION_NUMBER >= 0x010200  /* GPGME >= 1.2.0 */
+			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_cardkey, gpgme_subkey);
+			if (gpgme_subkey->card_number) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, card_number, gpgme_subkey);
+			}
+#endif /* gpgme >= 1.2.0 */
+			if (gpgme_subkey->curve) {
+				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, curve, gpgme_subkey);
+			}
 
 			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
 					PHPC_VAL_CAST_TO_PZVAL(subkeys),
@@ -1875,6 +1936,7 @@ PHP_FUNCTION(gnupg_listsignatures)
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, revoked, gpgme_signature);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, expired, gpgme_signature);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(sig_arr, invalid, gpgme_signature);
+			PHP_GNUPG_ARRAY_ADD_ASSOC_LONG(sig_arr, timestamp, gpgme_signature);
 			PHPC_ARRAY_ADD_ASSOC_ZVAL(
 				PHPC_VAL_CAST_TO_PZVAL(sub_arr),
 				gpgme_signature->keyid,
