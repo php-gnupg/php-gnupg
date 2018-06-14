@@ -10,7 +10,9 @@ gnupgt::import_key();
 $gpg = new gnupg();
 $gpg->seterrormode(gnupg::ERROR_WARNING);
 $ret = $gpg->keyinfo($fingerprint);
-var_dump($ret);
+gnupgt::check_array(false, $ret, 0, 'disabled');
+
+//var_dump($ret);
 ?>
 --EXPECT--
 array(1) {
