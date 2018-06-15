@@ -11,6 +11,17 @@ $gpg = new gnupg();
 $gpg->seterrormode(gnupg::ERROR_WARNING);
 $ret = $gpg->keyinfo($fingerprint);
 gnupgt::check_array(false, $ret, 0, 'disabled');
+gnupgt::check_array(false, $ret, 0, 'expired');
+gnupgt::check_array(false, $ret, 0, 'revoked');
+gnupgt::check_array(false, $ret, 0, 'is_secret');
+gnupgt::check_array(true, $ret, 0, 'can_sign');
+gnupgt::check_array(true, $ret, 0, 'can_encrypt');
+gnupgt::check_array('testkey', $ret, 0, 'uuids', 0, 'name');
+gnupgt::check_array('testkey', $ret, 0, 'uuids', 0, 'comment');
+gnupgt::check_array('test@example.net', $ret, 0, 'uuids', 0, 'email');
+gnupgt::check_array('testkey (testkey) test@example.net', $ret, 0, 'uuids', 0, 'uid');
+gnupgt::check_array(false, $ret, 0, 'uuids', 0, 'revoked');
+gnupgt::check_array(false, $ret, 0, 'uuids', 0, 'invalid');
 
 //var_dump($ret);
 ?>
