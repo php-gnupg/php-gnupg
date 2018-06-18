@@ -71,10 +71,10 @@ class gnupgt {
 
             return self::error(
                 sprintf(
-                    "key %s value %s does not match expected %s",
+                    "key %s value %s does not match expected %s\n",
                     $key,
                     var_export($value, true),
-                    var_export($value, true)
+                    var_export($expected, true)
                 )
             );
         }
