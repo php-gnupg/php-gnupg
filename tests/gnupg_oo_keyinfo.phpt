@@ -1,4 +1,4 @@
---TEST--n
+--TEST--
 get keyinfo
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
@@ -35,6 +35,13 @@ gnupgt::check_array(true, $ret, 0, 'subkeys', 0, 'can_sign');
 gnupgt::check_array(false, $ret, 0, 'subkeys', 0, 'disabled');
 gnupgt::check_array(false, $ret, 0, 'subkeys', 0, 'expired');
 gnupgt::check_array(false, $ret, 0, 'subkeys', 0, 'revoked');
+gnupgt::check_array(true, $ret, 0, 'subkeys', 0, 'can_certify');
+gnupgt::check_array(false, $ret, 0, 'subkeys', 0, 'can_authenticate');
+gnupgt::check_array(false, $ret, 0, 'subkeys', 0, 'is_qualified');
+gnupgt::check_array_from_version('1.9.0', false, $ret, 0, 'subkeys', 0, 'is_de_vs');
+gnupgt::check_array(GNUPG_PK_DSA, $ret, 0, 'subkeys', 0, 'pubkey_algo');
+gnupgt::check_array(1024, $ret, 0, 'subkeys', 0, 'length');
+gnupgt::check_array_from_version('1.7.0', false, $ret, 0, 'subkeys', 0, 'is_cardkey');
 // subkey 2
 gnupgt::check_array("A3437D3651E27CF9864198F0BFE8D07DDACDEAC8", $ret, 0, 'subkeys', 1, 'fingerprint');
 gnupgt::check_array("BFE8D07DDACDEAC8", $ret, 0, 'subkeys', 1, 'keyid');
@@ -46,98 +53,18 @@ gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'can_sign');
 gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'disabled');
 gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'expired');
 gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'revoked');
+gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'can_certify');
+gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'can_authenticate');
+gnupgt::check_array(false, $ret, 0, 'subkeys', 1, 'is_qualified');
+gnupgt::check_array_from_version('1.9.0', false, $ret, 0, 'subkeys', 1, 'is_de_vs');
+gnupgt::check_array(GNUPG_PK_ELG_E, $ret, 0, 'subkeys', 1, 'pubkey_algo');
+gnupgt::check_array(1024, $ret, 0, 'subkeys', 1, 'length');
+gnupgt::check_array_from_version('1.7.0', false, $ret, 0, 'subkeys', 1, 'is_cardkey');
 
-var_dump($ret);
 ?>
+Done
 --EXPECT--
-array(1) {
-  [0]=>
-  array(8) {
-    ["disabled"]=>
-    bool(false)
-    ["expired"]=>
-    bool(false)
-    ["revoked"]=>
-    bool(false)
-    ["is_secret"]=>
-    bool(false)
-    ["can_sign"]=>
-    bool(true)
-    ["can_encrypt"]=>
-    bool(true)
-    ["uids"]=>
-    array(1) {
-      [0]=>
-      array(6) {
-        ["name"]=>
-        string(7) "testkey"
-        ["comment"]=>
-        string(7) "testkey"
-        ["email"]=>
-        string(16) "test@example.net"
-        ["uid"]=>
-        string(36) "testkey (testkey) <test@example.net>"
-        ["revoked"]=>
-        bool(false)
-        ["invalid"]=>
-        bool(false)
-      }
-    }
-    ["subkeys"]=>
-    array(2) {
-      [0]=>
-      array(11) {
-        ["fingerprint"]=>
-        string(40) "64DF06E42FCF2094590CDEEE2E96F141B3DD2B2E"
-        ["keyid"]=>
-        string(16) "2E96F141B3DD2B2E"
-        ["timestamp"]=>
-        int(1129316524)
-        ["expires"]=>
-        int(0)
-        ["is_secret"]=>
-        bool(false)
-        ["invalid"]=>
-        bool(false)
-        ["can_encrypt"]=>
-        bool(false)
-        ["can_sign"]=>
-        bool(true)
-        ["disabled"]=>
-        bool(false)
-        ["expired"]=>
-        bool(false)
-        ["revoked"]=>
-        bool(false)
-      }
-      [1]=>
-      array(11) {
-        ["fingerprint"]=>
-        string(40) "A3437D3651E27CF9864198F0BFE8D07DDACDEAC8"
-        ["keyid"]=>
-        string(16) "BFE8D07DDACDEAC8"
-        ["timestamp"]=>
-        int(1129316525)
-        ["expires"]=>
-        int(0)
-        ["is_secret"]=>
-        bool(false)
-        ["invalid"]=>
-        bool(false)
-        ["can_encrypt"]=>
-        bool(true)
-        ["can_sign"]=>
-        bool(false)
-        ["disabled"]=>
-        bool(false)
-        ["expired"]=>
-        bool(false)
-        ["revoked"]=>
-        bool(false)
-      }
-    }
-  }
-}
+Done
 --CLEAN--
 <?php
 require_once "gnupgt.inc";
