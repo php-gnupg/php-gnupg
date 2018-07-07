@@ -1,4 +1,4 @@
---TEST--n
+--TEST--
 list signatures
 --SKIPIF--
 <?php if (!extension_loaded("gnupg")) die("skip"); ?>
@@ -10,33 +10,23 @@ gnupgt::import_key();
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
 $ret = gnupg_listsignatures($gpg, $fingerprint);
-var_dump($ret);
+
+$k1 = "testkey (testkey) <test@example.net>";
+$k2 = "2E96F141B3DD2B2E";
+gnupgt::check_array('testkey (testkey) <test@example.net>', $ret, $k1, $k2, 'uid');
+gnupgt::check_array('testkey', $ret, $k1, $k2, 'name');
+gnupgt::check_array('test@example.net', $ret, $k1, $k2, 'email');
+gnupgt::check_array('testkey', $ret, $k1, $k2, 'comment');
+gnupgt::check_array(0, $ret, $k1, $k2, 'expires');
+gnupgt::check_array(false, $ret, $k1, $k2, 'revoked');
+gnupgt::check_array(false, $ret, $k1, $k2, 'expired');
+gnupgt::check_array(false, $ret, $k1, $k2, 'invalid');
+gnupgt::check_array(1129316524, $ret, $k1, $k2, 'timestamp');
+
 ?>
+Done
 --EXPECT--
-array(1) {
-  ["testkey (testkey) <test@example.net>"]=>
-  array(1) {
-    ["2E96F141B3DD2B2E"]=>
-    array(8) {
-      ["uid"]=>
-      string(36) "testkey (testkey) <test@example.net>"
-      ["name"]=>
-      string(7) "testkey"
-      ["email"]=>
-      string(16) "test@example.net"
-      ["comment"]=>
-      string(7) "testkey"
-      ["expires"]=>
-      int(0)
-      ["revoked"]=>
-      bool(false)
-      ["expired"]=>
-      bool(false)
-      ["invalid"]=>
-      bool(false)
-    }
-  }
-}
+Done
 --CLEAN--
 <?php
 require_once "gnupgt.inc";
