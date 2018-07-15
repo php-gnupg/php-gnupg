@@ -3,9 +3,6 @@
 - Support GnuPG 2
 - Introduce gnupg_geterrorinfo with more info about the error
   - including error message from gpgme
-- Allow setting engine info on object construction
-  - Add __construct / res init with gpgme_ctx_set_engine_info
-  - https://github.com/php-gnupg/php-gnupg/issues/7
 - Return decrypt result if extra param supplied (including recipients)
   - https://github.com/php-gnupg/php-gnupg/pull/12
 - Add parameter to `gnupg_keyinfo` to use `secret_only` on `gpgme_op_keylist_start`
