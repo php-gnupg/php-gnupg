@@ -246,6 +246,13 @@ ZEND_BEGIN_ARG_INFO(arginfo_gnupg_keyid_method, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
+/* {{{ arginfo for gnupg_keyinfo method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_keyinfo_method, 0, 0, 1)
+	ZEND_ARG_INFO(0, pattern)
+	ZEND_ARG_INFO(0, secret_only)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ arginfo for gnupg methods with pattern parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_pattern_method, 0)
 	ZEND_ARG_INFO(0, pattern)
@@ -285,7 +292,7 @@ ZEND_END_ARG_INFO()
 /* {{{ methodlist gnupg */
 phpc_function_entry gnupg_methods[] = {
 	PHP_ME(gnupg, __construct, arginfo_gnupg_init, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
-	PHP_GNUPG_FALIAS(keyinfo,           arginfo_gnupg_pattern_method)
+	PHP_GNUPG_FALIAS(keyinfo,           arginfo_gnupg_keyinfo_method)
 	PHP_GNUPG_FALIAS(verify,            arginfo_gnupg_verify_method)
 	PHP_GNUPG_FALIAS(getengineinfo,     NULL)
 	PHP_GNUPG_FALIAS(geterror,          NULL)
@@ -356,6 +363,14 @@ ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with pattern parameter */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_keyinfo_function, 0, 0, 2)
+	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_INFO(0, pattern)
+	ZEND_ARG_INFO(0, secret_only)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo for gnupg functions with pattern parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_pattern_function, 0)
 	ZEND_ARG_INFO(0, res)
 	ZEND_ARG_INFO(0, pattern)
@@ -396,7 +411,7 @@ ZEND_END_ARG_INFO()
 /* {{{ functionlist gnupg */
 static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_init,				arginfo_gnupg_void_function)
-	PHP_FE(gnupg_keyinfo,			arginfo_gnupg_pattern_function)
+	PHP_FE(gnupg_keyinfo,			arginfo_gnupg_keyinfo_function)
 	PHP_FE(gnupg_sign,				arginfo_gnupg_text_function)
 	PHP_FE(gnupg_verify,			arginfo_gnupg_verify_function)
 	PHP_FE(gnupg_clearsignkeys,		arginfo_gnupg_void_function)
@@ -916,7 +931,7 @@ PHP_FUNCTION(gnupg_getprotocol) {
 
 /* }}} */
 
-/* {{{ proto array gnupg_keyinfo(string pattern)
+/* {{{ proto array gnupg_keyinfo(string pattern, bool secret_only = false)
  * returns an array with informations about all keys, that matches
  * the given pattern
  */
@@ -928,23 +943,24 @@ PHP_FUNCTION(gnupg_keyinfo)
 	gpgme_key_t gpgme_key;
 	gpgme_subkey_t gpgme_subkey;
 	gpgme_user_id_t gpgme_userid;
+	zend_bool secret_only = 0;
 
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
-				&searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b",
+				&searchkey, &searchkey_len, &secret_only) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
-				&res, &searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|b",
+				&res, &searchkey, &searchkey_len, &secret_only) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
 
-	PHPC_THIS->err = gpgme_op_keylist_start(PHPC_THIS->ctx, searchkey, 0);
+	PHPC_THIS->err = gpgme_op_keylist_start(PHPC_THIS->ctx, searchkey, secret_only);
 	if ((PHPC_THIS->err) != GPG_ERR_NO_ERROR) {
 		GNUPG_ERR("could not init keylist");
 		return;
