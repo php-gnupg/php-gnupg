@@ -43,6 +43,7 @@ tmp-php.ini
 *.gcno
 *.la
 *.lo
+*.loT
 *.o
 *.a
 *.ncb
