@@ -28,7 +28,7 @@ array(1) {
   [0]=>
   array(5) {
     ["fingerprint"]=>
-    string(40) "64DF06E42FCF2094590CDEEE2E96F141B3DD2B2E"
+    string(40) "2DF0DD02DC9B70B7F64F572E669E775E0A6284B3"
     ["validity"]=>
     int(0)
     ["timestamp"]=>
