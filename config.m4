@@ -1,7 +1,7 @@
 dnl config.m4 for extension gnupg
 AC_CANONICAL_HOST
 case $host_os in
-   *BSD*)
+   *BSD* | *bsd)
         GNUPG_DL=""
         ;;
     *)
