@@ -41,7 +41,7 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg_keylistiterator);
 		if (this) { \
 			PHPC_THIS_FETCH_FROM_ZVAL(gnupg_keylistiterator, this); \
 			if (!PHPC_THIS) { \
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid or unitialized gnupg object"); \
+				php_error_docref(NULL, E_WARNING, "Invalid or unitialized gnupg object"); \
 				RETURN_FALSE; \
 			} \
 		} \
@@ -110,7 +110,7 @@ int _gnupg_keylistiterator_init(INIT_FUNC_ARGS)
 	PHPC_OBJ_SET_HANDLER_OFFSET(gnupg_keylistiterator);
 	PHPC_OBJ_SET_HANDLER_FREE(gnupg_keylistiterator);
 
-	zend_class_implements(gnupg_keylistiterator_class_entry TSRMLS_CC, 1, zend_ce_iterator);
+	zend_class_implements(gnupg_keylistiterator_class_entry, 1, zend_ce_iterator);
 
 	le_gnupg_keylistiterator = zend_register_list_destructors_ex(NULL, NULL, "ctx_keylistiterator", module_number);
 
@@ -131,7 +131,7 @@ PHP_METHOD(gnupg_keylistiterator, __construct)
 	GNUPG_GET_ITERATOR();
 
 	if (args > 0) {
-		if (zend_parse_parameters(args TSRMLS_CC, "|s", &pattern, &pattern_len) == FAILURE) {
+		if (zend_parse_parameters(args, "|s", &pattern, &pattern_len) == FAILURE) {
 			return;
 		}
 		PHPC_THIS->pattern = estrdup(pattern);
@@ -181,7 +181,7 @@ PHP_METHOD(gnupg_keylistiterator,rewind)
 
 	if ((PHPC_THIS->err = gpgme_op_keylist_start(
 			 PHPC_THIS->ctx, PHPC_THIS->pattern ? PHPC_THIS->pattern : "", 0)) != GPG_ERR_NO_ERROR){
-		zend_throw_exception(zend_exception_get_default(TSRMLS_C), (char *)gpg_strerror(PHPC_THIS->err), 1 TSRMLS_CC);
+		zend_throw_exception(zend_exception_get_default(), (char *)gpg_strerror(PHPC_THIS->err), 1);
 	}
 	if ((PHPC_THIS->err = gpgme_op_keylist_next(PHPC_THIS->ctx, &PHPC_THIS->gpgkey)) != GPG_ERR_NO_ERROR){
 		RETURN_FALSE;

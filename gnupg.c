@@ -42,7 +42,7 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 		if (this) { \
 			PHPC_THIS_FETCH_FROM_ZVAL(gnupg, this); \
 			if (!PHPC_THIS) { \
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, \
+				php_error_docref(NULL, E_WARNING, \
 					"Invalid or unitialized gnupg object"); \
 				RETURN_FALSE; \
 			} \
@@ -59,21 +59,21 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 	if (PHPC_THIS) { \
 		switch (PHPC_THIS->errormode) { \
 			case 1: \
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, \
+				php_error_docref(NULL, E_WARNING, \
 					(char*)error); \
 				break; \
 			case 2: \
 				zend_throw_exception(\
-					zend_exception_get_default(TSRMLS_C), \
+					zend_exception_get_default(), \
 					(char*) error, \
-					0 TSRMLS_CC \
+					0 \
 				); \
 				break; \
 			default: \
 				PHPC_THIS->errortxt = (char*)error; \
 		} \
 	} else { \
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, (char*)error); \
+		php_error_docref(NULL, E_WARNING, (char*)error); \
 	} \
 	do { \
 		if (return_value) { \
@@ -83,7 +83,7 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 /* }}} */
 
 /* {{{ php_gnupg_free_encryptkeys */
-static void php_gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+static void php_gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg))
 {
 	if (PHPC_THIS) {
 		int idx;
@@ -101,7 +101,7 @@ static void php_gnupg_free_encryptkeys(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 /* }}} */
 
 /* {{{ php_gnupg_this_free */
-static void php_gnupg_this_free(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+static void php_gnupg_this_free(PHPC_THIS_DECLARE(gnupg))
 {
 	if (PHPC_THIS) {
 		if (PHPC_THIS->ctx) {
@@ -111,7 +111,7 @@ static void php_gnupg_this_free(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 			PHPC_THIS->ctx = NULL;
 		}
 		/* basic cleanup */
-		php_gnupg_free_encryptkeys(PHPC_THIS TSRMLS_CC);
+		php_gnupg_free_encryptkeys(PHPC_THIS);
 		zend_hash_destroy(PHPC_THIS->signkeys);
 		FREE_HASHTABLE(PHPC_THIS->signkeys);
 		zend_hash_destroy(PHPC_THIS->decryptkeys);
@@ -121,7 +121,7 @@ static void php_gnupg_this_free(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 /* }}} */
 
 /* {{{ php_gnupg_this_init */
-static void php_gnupg_this_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
+static void php_gnupg_this_init(PHPC_THIS_DECLARE(gnupg))
 {
 	/* init the gpgme-lib and set the default values */
 	gpgme_ctx_t	ctx;
@@ -148,7 +148,7 @@ static void php_gnupg_this_init(PHPC_THIS_DECLARE(gnupg) TSRMLS_DC)
 #endif
 
 /* {{{ php_gnupg_this_make */
-static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_DC)
+static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options)
 {
 	if (PHPC_THIS->err == GPG_ERR_NO_ERROR) {
 		char *file_name = GNUPG_PATH;
@@ -176,10 +176,10 @@ static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_D
 /* }}} */
 
 /* {{{ php_gnupg_res_dtor */
-static void php_gnupg_res_dtor(phpc_res_entry_t *rsrc TSRMLS_DC) /* {{{ */
+static void php_gnupg_res_dtor(phpc_res_entry_t *rsrc) /* {{{ */
 {
 	PHPC_THIS_DECLARE(gnupg) = rsrc->ptr;
-	php_gnupg_this_free(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_free(PHPC_THIS);
 	efree(PHPC_THIS);
 }
 /* }}} */
@@ -189,7 +189,7 @@ PHPC_OBJ_HANDLER_FREE(gnupg)
 {
 	PHPC_OBJ_HANDLER_FREE_INIT(gnupg);
 
-	php_gnupg_this_free(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_free(PHPC_THIS);
 
 	PHPC_OBJ_HANDLER_FREE_DESTROY();
 }
@@ -199,7 +199,7 @@ PHPC_OBJ_HANDLER_CREATE_EX(gnupg)
 {
 	PHPC_OBJ_HANDLER_CREATE_EX_INIT(gnupg);
 
-	php_gnupg_this_init(PHPC_THIS TSRMLS_CC);
+	php_gnupg_this_init(PHPC_THIS);
 
 	PHPC_OBJ_HANDLER_CREATE_EX_RETURN(gnupg);
 }
@@ -481,7 +481,7 @@ ZEND_GET_MODULE(gnupg)
 
 #define PHP_GNUPG_SET_CLASS_CONST(_name, _value) \
 	zend_declare_class_constant_long(gnupg_class_entry, \
-		_name, sizeof(_name) - 1, _value TSRMLS_CC)
+		_name, sizeof(_name) - 1, _value)
 
 #define PHP_GNUPG_REG_CONST(_name, _value) \
 	REGISTER_LONG_CONSTANT(_name,  _value, CONST_CS | CONST_PERSISTENT);
@@ -741,13 +741,13 @@ PHP_METHOD(gnupg, __construct)
 	zval *options = NULL;
 	PHPC_THIS_DECLARE(gnupg);
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a",
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a",
 			&options) == FAILURE) {
 		return;
 	}
 
 	PHPC_THIS_FETCH(gnupg);
-	php_gnupg_this_make(PHPC_THIS, options TSRMLS_CC);
+	php_gnupg_this_make(PHPC_THIS, options);
 }
 /* }}} */
 
@@ -759,14 +759,14 @@ PHP_FUNCTION(gnupg_init)
 	zval *options = NULL;
 	PHPC_THIS_DECLARE(gnupg);
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a",
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a",
 			&options) == FAILURE) {
 		return;
 	}
 
 	PHPC_THIS = emalloc(sizeof(PHPC_OBJ_STRUCT_NAME(gnupg)));
-	php_gnupg_this_init(PHPC_THIS TSRMLS_CC);
-	php_gnupg_this_make(PHPC_THIS, options TSRMLS_CC);
+	php_gnupg_this_init(PHPC_THIS);
+	php_gnupg_this_make(PHPC_THIS, options);
 	PHPC_RES_RETURN(PHPC_RES_REGISTER(PHPC_THIS, le_gnupg));
 }
 /* }}} */
@@ -783,12 +783,12 @@ PHP_FUNCTION(gnupg_setarmor)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "l",
 				&armor) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rl",
 				&res, &armor) == FAILURE) {
 			return;
 		}
@@ -812,12 +812,12 @@ PHP_FUNCTION(gnupg_seterrormode)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "l",
 				&errormode) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rl",
 				 &res, &errormode) == FAILURE) {
 			return;
 		}
@@ -849,12 +849,12 @@ PHP_FUNCTION(gnupg_setsignmode)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "l",
 				&signmode) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rl",
 				&res, &signmode) == FAILURE) {
 			return;
 		}
@@ -885,7 +885,7 @@ PHP_FUNCTION(gnupg_getengineinfo)
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -908,7 +908,7 @@ PHP_FUNCTION(gnupg_geterror)
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -948,12 +948,12 @@ PHP_FUNCTION(gnupg_keyinfo)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|b",
 				&searchkey, &searchkey_len, &secret_only) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|b",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs|b",
 				&res, &searchkey, &searchkey_len, &secret_only) == FAILURE) {
 			return;
 		}
@@ -1089,12 +1089,12 @@ PHP_FUNCTION(gnupg_addsignkey)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s",
 				&key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs|s",
 				&res, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
 			return;
 		}
@@ -1137,12 +1137,12 @@ PHP_FUNCTION(gnupg_adddecryptkey)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss",
 				&key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rss",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rss",
 				&res, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
 			return;
 		}
@@ -1177,12 +1177,12 @@ PHP_FUNCTION(gnupg_addencryptkey)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&key_id, &key_id_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &key_id, &key_id_len) == FAILURE) {
 			return;
 		}
@@ -1215,7 +1215,7 @@ PHP_FUNCTION(gnupg_clearsignkeys)
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -1235,12 +1235,12 @@ PHP_FUNCTION(gnupg_clearencryptkeys)
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
 	}
-	php_gnupg_free_encryptkeys(PHPC_THIS TSRMLS_CC);
+	php_gnupg_free_encryptkeys(PHPC_THIS);
 
 	RETURN_TRUE;
 }
@@ -1254,7 +1254,7 @@ PHP_FUNCTION(gnupg_cleardecryptkeys)
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
 			return;
 		}
 		GNUPG_RES_FETCH();
@@ -1282,12 +1282,12 @@ PHP_FUNCTION(gnupg_sign)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&value, &value_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &value, &value_len) == FAILURE) {
 			return;
 		}
@@ -1354,12 +1354,12 @@ PHP_FUNCTION(gnupg_encrypt)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&value, &value_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &value, &value_len) == FAILURE) {
 			return;
 		}
@@ -1419,12 +1419,12 @@ PHP_FUNCTION(gnupg_encryptsign)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&value, &value_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &value, &value_len) == FAILURE) {
 			return;
 		}
@@ -1507,12 +1507,12 @@ PHP_FUNCTION(gnupg_verify)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz|z",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "zz|z",
 				&signed_text, &signature, &plain_text) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rzz|z",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rzz|z",
 				&res, &signed_text, &signature, &plain_text) == FAILURE) {
 			return;
 		}
@@ -1595,12 +1595,12 @@ PHP_FUNCTION(gnupg_decrypt)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&enctxt, &enctxt_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &enctxt, &enctxt_len) == FAILURE) {
 			return;
 		}
@@ -1660,12 +1660,12 @@ PHP_FUNCTION(gnupg_decryptverify)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "sz",
 				&enctxt, &enctxt_len, &plaintext) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsz",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rsz",
 				&res, &enctxt, &enctxt_len, &plaintext) == FAILURE) {
 			return;
 		}
@@ -1726,12 +1726,12 @@ PHP_FUNCTION(gnupg_export)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
@@ -1769,12 +1769,12 @@ PHP_FUNCTION(gnupg_import)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&importkey, &importkey_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &importkey, &importkey_len) == FAILURE) {
 			return;
 		}
@@ -1823,12 +1823,12 @@ PHP_FUNCTION(gnupg_deletekey)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|l",
 				&key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs|l",
 				&res, &key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
@@ -1862,12 +1862,12 @@ PHP_FUNCTION(gnupg_gettrustlist)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&pattern, &pattern_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &pattern, &pattern_len) == FAILURE) {
 			return;
 		}
@@ -1910,12 +1910,12 @@ PHP_FUNCTION(gnupg_listsignatures)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
 				&keyid, &keyid_len) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
 				&res, &keyid, &keyid_len) == FAILURE) {
 			return;
 		}
