@@ -3,9 +3,12 @@
 List of all features for the release
 
 ## 1.5.0
+- Support for PHP 8
+- Support for GnuPG 2.1+
 - Added argument info for all functions and methods (reflection support)
-- Improved support for GnuPG 2.1+
-- Added new function gnupg_getengineinfo
+- Added new function `gnupg_getengineinfo`
+- Added new function `gnupg_geterrorinfo`
 - Added init array argument for setting home dir and gpg binary file name
 - Added additional fields to `gnupg_keyinfo` returned array
-- Add parameter to `gnupg_keyinfo` to use `secret_only
+- Added parameter to `gnupg_keyinfo` to use `secret_only`
+- Fixed `gnupg_deletekey` to use boolean for `allow_secret` parameter
