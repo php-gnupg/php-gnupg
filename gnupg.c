@@ -216,6 +216,11 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_init, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
+/* {{{ arginfo for gnupg void methods */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_void_method, 0, 0, 0)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ arginfo for gnupg method with armor parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_armor_method, 0)
 	ZEND_ARG_INFO(0, armor)
@@ -237,6 +242,20 @@ ZEND_END_ARG_INFO()
 /* {{{ arginfo for gnupg methods with key parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_method, 0)
 	ZEND_ARG_INFO(0, kye)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo for gnupg methods with adddecryptkey parameter */
+ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_method, 0)
+	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, passphrase)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo for gnupg methods with deletekey parameter */
+ZEND_BEGIN_ARG_INFO(arginfo_gnupg_deletekey_method, 0)
+	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, allow_secret)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -294,25 +313,25 @@ phpc_function_entry gnupg_methods[] = {
 	PHP_ME(gnupg, __construct, arginfo_gnupg_init, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
 	PHP_GNUPG_FALIAS(keyinfo,           arginfo_gnupg_keyinfo_method)
 	PHP_GNUPG_FALIAS(verify,            arginfo_gnupg_verify_method)
-	PHP_GNUPG_FALIAS(getengineinfo,     NULL)
-	PHP_GNUPG_FALIAS(geterror,          NULL)
-	PHP_GNUPG_FALIAS(clearsignkeys,     NULL)
-	PHP_GNUPG_FALIAS(clearencryptkeys,  NULL)
-	PHP_GNUPG_FALIAS(cleardecryptkeys,  NULL)
+	PHP_GNUPG_FALIAS(getengineinfo,     arginfo_gnupg_void_method)
+	PHP_GNUPG_FALIAS(geterror,          arginfo_gnupg_void_method)
+	PHP_GNUPG_FALIAS(clearsignkeys,     arginfo_gnupg_void_method)
+	PHP_GNUPG_FALIAS(clearencryptkeys,  arginfo_gnupg_void_method)
+	PHP_GNUPG_FALIAS(cleardecryptkeys,  arginfo_gnupg_void_method)
 	PHP_GNUPG_FALIAS(setarmor,          arginfo_gnupg_armor_method)
 	PHP_GNUPG_FALIAS(encrypt,           arginfo_gnupg_text_method)
 	PHP_GNUPG_FALIAS(decrypt,           arginfo_gnupg_enctext_method)
 	PHP_GNUPG_FALIAS(export,            arginfo_gnupg_pattern_method)
 	PHP_GNUPG_FALIAS(import,            arginfo_gnupg_key_method)
-	PHP_GNUPG_FALIAS(getprotocol,       NULL)
+	PHP_GNUPG_FALIAS(getprotocol,       arginfo_gnupg_void_method)
 	PHP_GNUPG_FALIAS(setsignmode,       arginfo_gnupg_signmode_method)
 	PHP_GNUPG_FALIAS(sign,              arginfo_gnupg_text_method)
 	PHP_GNUPG_FALIAS(encryptsign,       arginfo_gnupg_text_method)
 	PHP_GNUPG_FALIAS(decryptverify,     arginfo_gnupg_decryptverify_method)
-	PHP_GNUPG_FALIAS(addsignkey,        arginfo_gnupg_key_method)
+	PHP_GNUPG_FALIAS(addsignkey,        arginfo_gnupg_key_passphrase_method)
 	PHP_GNUPG_FALIAS(addencryptkey,     arginfo_gnupg_key_method)
-	PHP_GNUPG_FALIAS(adddecryptkey,     arginfo_gnupg_key_method)
-	PHP_GNUPG_FALIAS(deletekey,         arginfo_gnupg_key_method)
+	PHP_GNUPG_FALIAS(adddecryptkey,     arginfo_gnupg_key_passphrase_method)
+	PHP_GNUPG_FALIAS(deletekey,         arginfo_gnupg_deletekey_method)
 	PHP_GNUPG_FALIAS(gettrustlist,      arginfo_gnupg_pattern_method)
 	PHP_GNUPG_FALIAS(listsignatures,    arginfo_gnupg_keyid_method)
 	PHP_GNUPG_FALIAS(seterrormode,      arginfo_gnupg_errmode_method)
@@ -352,6 +371,22 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_function, 0)
 	ZEND_ARG_INFO(0, res)
 	ZEND_ARG_INFO(0, kye)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo for gnupg functions with deletekey parameter */
+ZEND_BEGIN_ARG_INFO(arginfo_gnupg_deletekey_function, 0)
+	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, allow_secret)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo for gnupg functions with adddecryptkey parameter */
+ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_function, 0)
+	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, passphrase)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -428,10 +463,10 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_encryptsign,		arginfo_gnupg_text_function)
 	PHP_FE(gnupg_decryptverify,		arginfo_gnupg_decryptverify_function)
 	PHP_FE(gnupg_geterror,			arginfo_gnupg_void_function)
-	PHP_FE(gnupg_addsignkey,		arginfo_gnupg_key_function)
+	PHP_FE(gnupg_addsignkey,		arginfo_gnupg_key_passphrase_function)
 	PHP_FE(gnupg_addencryptkey,		arginfo_gnupg_key_function)
-	PHP_FE(gnupg_adddecryptkey,		arginfo_gnupg_key_function)
-	PHP_FE(gnupg_deletekey,			arginfo_gnupg_key_function)
+	PHP_FE(gnupg_adddecryptkey,		arginfo_gnupg_key_passphrase_function)
+	PHP_FE(gnupg_deletekey,			arginfo_gnupg_deletekey_function)
 	PHP_FE(gnupg_gettrustlist,		arginfo_gnupg_pattern_function)
 	PHP_FE(gnupg_listsignatures,	arginfo_gnupg_keyid_function)
 	PHP_FE(gnupg_seterrormode,		arginfo_gnupg_errmode_function)
