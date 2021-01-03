@@ -1845,6 +1845,10 @@ PHP_FUNCTION(gnupg_import)
 }
 /* }}} */
 
+#ifndef GPGME_DELETE_ALLOW_SECRET
+#define GPGME_DELETE_ALLOW_SECRET 1
+#endif
+
 /* {{{ proto book gnupg_deletekey(string key)
  *	deletes a key from the keyring
  */
@@ -1852,18 +1856,19 @@ PHP_FUNCTION(gnupg_deletekey)
 {
 	char *key;
 	phpc_str_size_t key_len;
-	phpc_long_t allow_secret = 0;
+	zend_bool allow_secret = 0;
 	gpgme_key_t	gpgme_key;
+	unsigned int flags = 0;
 
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b",
 				&key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|l",
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|b",
 				&res, &key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
@@ -1874,7 +1879,10 @@ PHP_FUNCTION(gnupg_deletekey)
 		GNUPG_ERR("get_key failed");
 		return;
 	}
-	if (!PHP_GNUPG_DO(gpgme_op_delete(PHPC_THIS->ctx, gpgme_key, allow_secret))) {
+	if (allow_secret) {
+		flags = GPGME_DELETE_ALLOW_SECRET;
+	}
+	if (!PHP_GNUPG_DO(gpgme_op_delete(PHPC_THIS->ctx, gpgme_key, flags))) {
 		GNUPG_ERR("delete failed");
 		RETVAL_FALSE;
 	} else {
