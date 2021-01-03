@@ -315,6 +315,7 @@ phpc_function_entry gnupg_methods[] = {
 	PHP_GNUPG_FALIAS(verify,            arginfo_gnupg_verify_method)
 	PHP_GNUPG_FALIAS(getengineinfo,     arginfo_gnupg_void_method)
 	PHP_GNUPG_FALIAS(geterror,          arginfo_gnupg_void_method)
+	PHP_GNUPG_FALIAS(geterrorinfo,      arginfo_gnupg_void_method)
 	PHP_GNUPG_FALIAS(clearsignkeys,     arginfo_gnupg_void_method)
 	PHP_GNUPG_FALIAS(clearencryptkeys,  arginfo_gnupg_void_method)
 	PHP_GNUPG_FALIAS(cleardecryptkeys,  arginfo_gnupg_void_method)
@@ -463,6 +464,7 @@ static zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_encryptsign,		arginfo_gnupg_text_function)
 	PHP_FE(gnupg_decryptverify,		arginfo_gnupg_decryptverify_function)
 	PHP_FE(gnupg_geterror,			arginfo_gnupg_void_function)
+	PHP_FE(gnupg_geterrorinfo,		arginfo_gnupg_void_function)
 	PHP_FE(gnupg_addsignkey,		arginfo_gnupg_key_passphrase_function)
 	PHP_FE(gnupg_addencryptkey,		arginfo_gnupg_key_function)
 	PHP_FE(gnupg_adddecryptkey,		arginfo_gnupg_key_passphrase_function)
@@ -953,6 +955,32 @@ PHP_FUNCTION(gnupg_geterror)
 	} else {
 		PHPC_CSTR_RETURN(PHPC_THIS->errortxt);
 	}
+}
+/* }}} */
+
+/* {{{ proto string gnupg_geterrorinfo(void)
+ * returns the last error info array
+ */
+PHP_FUNCTION(gnupg_geterrorinfo)
+{
+	GNUPG_GETOBJ();
+
+	if (!this) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &res) == FAILURE) {
+			return;
+		}
+		GNUPG_RES_FETCH();
+	}
+
+	PHPC_ARRAY_INIT(return_value);
+	if (PHPC_THIS->errortxt) {
+		PHPC_ARRAY_ADD_ASSOC_CSTR(return_value, "generic_message", PHPC_THIS->errortxt);
+	} else {
+		PHPC_ARRAY_ADD_ASSOC_BOOL(return_value, "generic_message", 0);
+	}
+	PHPC_ARRAY_ADD_ASSOC_LONG(return_value, "gpgme_code", PHPC_THIS->err);
+	PHPC_ARRAY_ADD_ASSOC_CSTR(return_value, "gpgme_source", (char *) gpgme_strsource(PHPC_THIS->err));
+	PHPC_ARRAY_ADD_ASSOC_CSTR(return_value, "gpgme_message", (char *) gpgme_strerror(PHPC_THIS->err));
 }
 /* }}} */
 

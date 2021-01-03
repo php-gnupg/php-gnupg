@@ -54,6 +54,7 @@ PHP_FUNCTION(gnupg_keyinfo);
 PHP_FUNCTION(gnupg_verify);
 PHP_FUNCTION(gnupg_getengineinfo);
 PHP_FUNCTION(gnupg_geterror);
+PHP_FUNCTION(gnupg_geterrorinfo);
 PHP_FUNCTION(gnupg_setsignmode);
 PHP_FUNCTION(gnupg_setarmor);
 PHP_FUNCTION(gnupg_sign);

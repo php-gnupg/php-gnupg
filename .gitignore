@@ -69,6 +69,8 @@ tests/pubring.kbx
 tests/random_seed
 tests/sshcontrol
 tests/trustdb.gpg
+tests/init_oo_home/
+tests/init_res_home/
 
 # coverage
 /coverage.info
