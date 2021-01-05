@@ -12,18 +12,18 @@ var_dump($ret);
 ?>
 --EXPECT--
 array(1) {
-  ["testkey (testkey) <test@example.net>"]=>
+  ["PHP GnuPG <gnupg@php.net>"]=>
   array(1) {
-    ["2E96F141B3DD2B2E"]=>
+    ["976AB7A307618158"]=>
     array(8) {
       ["uid"]=>
-      string(36) "testkey (testkey) <test@example.net>"
+      string(25) "PHP GnuPG <gnupg@php.net>"
       ["name"]=>
-      string(7) "testkey"
+      string(9) "PHP GnuPG"
       ["email"]=>
-      string(16) "test@example.net"
+      string(13) "gnupg@php.net"
       ["comment"]=>
-      string(7) "testkey"
+      string(0) ""
       ["expires"]=>
       int(0)
       ["revoked"]=>

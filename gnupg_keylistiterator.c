@@ -84,14 +84,19 @@ PHPC_OBJ_HANDLER_CREATE(gnupg_keylistiterator)
 	PHPC_OBJ_HANDLER_CREATE_RETURN(gnupg_keylistiterator);
 }
 
+/* {{{ arginfo for gnupg void iterator method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_void_iterator_method, 0, 0, 0) 
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ method list gnupg_keylistiterator */
 static zend_function_entry gnupg_keylistiterator_methods[] = {
-	PHP_ME(gnupg_keylistiterator, __construct, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, current, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, key, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, next, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, rewind, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, valid, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, __construct, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, current, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, key, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, next, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, rewind, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, valid, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
 	PHPC_FE_END
 };
 /* }}} */

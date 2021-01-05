@@ -31,13 +31,13 @@ array(1) {
       [0]=>
       array(6) {
         ["name"]=>
-        string(7) "testkey"
+        string(9) "PHP GnuPG"
         ["comment"]=>
-        string(7) "testkey"
+        string(0) ""
         ["email"]=>
-        string(16) "test@example.net"
+        string(13) "gnupg@php.net"
         ["uid"]=>
-        string(36) "testkey (testkey) <test@example.net>"
+        string(25) "PHP GnuPG <gnupg@php.net>"
         ["revoked"]=>
         bool(false)
         ["invalid"]=>
@@ -49,11 +49,11 @@ array(1) {
       [0]=>
       array(11) {
         ["fingerprint"]=>
-        string(40) "64DF06E42FCF2094590CDEEE2E96F141B3DD2B2E"
+        string(40) "BA5808CEAC2F4DEB25599472976AB7A307618158"
         ["keyid"]=>
-        string(16) "2E96F141B3DD2B2E"
+        string(16) "976AB7A307618158"
         ["timestamp"]=>
-        int(1129316524)
+        int(1609869162)
         ["expires"]=>
         int(0)
         ["is_secret"]=>
@@ -74,11 +74,11 @@ array(1) {
       [1]=>
       array(11) {
         ["fingerprint"]=>
-        string(40) "A3437D3651E27CF9864198F0BFE8D07DDACDEAC8"
+        string(40) "E9E3A5171BDC5B621420E2A99A9BF4CB9BF4BF97"
         ["keyid"]=>
-        string(16) "BFE8D07DDACDEAC8"
+        string(16) "9A9BF4CB9BF4BF97"
         ["timestamp"]=>
-        int(1129316525)
+        int(1609869162)
         ["expires"]=>
         int(0)
         ["is_secret"]=>

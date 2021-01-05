@@ -13,6 +13,7 @@ $gpg = NULL;
 
 $gpg = new gnupg();
 $gpg -> adddecryptkey($fingerprint, $passphrase);
+$gpg -> seterrormode(gnupg::ERROR_WARNING);
 $ret = $gpg -> decrypt ($enc);
 
 var_dump($ret);
