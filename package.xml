@@ -20,26 +20,34 @@
   <name>Jim Jagielski</name>
   <user>jimjag</user>
   <email>jimjag@php.net</email>
-  <active>yes</active>
+  <active>no</active>
  </lead>
  <lead>
   <name>Sean DuBois</name>
   <user>seander</user>
   <email>sean@siobud.com</email>
-  <active>yes</active>
+  <active>no</active>
  </lead>
- <date>2016-08-29</date>
+ <date>2021-02-14</date>
  <version>
-  <release>1.4.0</release>
-  <api>1.4.0</api>
+  <release>1.5.0RC1</release>
+  <api>1.5.0RC1</api>
  </version>
  <stability>
-  <release>stable</release>
-  <api>stable</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
  <license>BSD, revised</license>
  <notes><![CDATA[
- * No changes since 1.4.0RC2
+ * Added support for PHP 8
+ * Added support for GnuPG 2.1+
+ * Added argument info for all functions and methods (reflection support)
+ * Added new function `gnupg_getengineinfo`
+ * Added new function `gnupg_geterrorinfo`
+ * Added init array argument for setting home dir and gpg binary file name
+ * Added additional fields to `gnupg_keyinfo` returned array
+ * Added parameter to `gnupg_keyinfo` to use `secret_only`
+ * Fixed `gnupg_deletekey` to use boolean for `allow_secret` parameter
  ]]></notes>
  <contents>
   <dir name="/">
@@ -57,10 +65,16 @@
     <file role="src" name="phpc.h"/>
    </dir>
    <dir name="tests">
-    <file name="gnupg_oo_0001_import.phpt" role="test" />
+    <file name="gnupg_oo_deletekey.phpt" role="test" />
     <file name="gnupg_oo_encrypt.phpt" role="test" />
     <file name="gnupg_oo_encryptsign.phpt" role="test" />
     <file name="gnupg_oo_export.phpt" role="test" />
+    <file name="gnupg_oo_getengineinfo.phpt" role="test" />
+    <file name="gnupg_oo_geterror.phpt" role="test" />
+    <file name="gnupg_oo_geterrorinfo.phpt" role="test" />
+    <file name="gnupg_oo_import.phpt" role="test" />
+    <file name="gnupg_oo_init_file_name.phpt" role="test" />
+    <file name="gnupg_oo_init_home_dir.phpt" role="test" />
     <file name="gnupg_oo_keyinfo.phpt" role="test" />
     <file name="gnupg_oo_listsignatures.phpt" role="test" />
     <file name="gnupg_oo_sign_clear.phpt" role="test" />
@@ -68,11 +82,16 @@
     <file name="gnupg_oo_sign_detach_nonarmor.phpt" role="test" />
     <file name="gnupg_oo_sign_normal.phpt" role="test" />
     <file name="gnupg_oo_sign_normal_noarmor.phpt" role="test" />
-    <file name="gnupg_oo_zzz_deletekey.phpt" role="test" />
-    <file name="gnupg_res_0001_import.phpt" role="test" />
+    <file name="gnupg_res_deletekey.phpt" role="test" />
     <file name="gnupg_res_encrypt.phpt" role="test" />
     <file name="gnupg_res_encryptsign.phpt" role="test" />
     <file name="gnupg_res_export.phpt" role="test" />
+    <file name="gnupg_res_getengineinfo.phpt" role="test" />
+    <file name="gnupg_res_geterror.phpt" role="test" />
+    <file name="gnupg_res_geterrorinfo.phpt" role="test" />
+    <file name="gnupg_res_import.phpt" role="test" />
+    <file name="gnupg_res_init_file_name.phpt" role="test" />
+    <file name="gnupg_res_init_home_dir.phpt" role="test" />
     <file name="gnupg_res_keyinfo.phpt" role="test" />
     <file name="gnupg_res_listsignatures.phpt" role="test" />
     <file name="gnupg_res_sign_clear.phpt" role="test" />
@@ -80,8 +99,6 @@
     <file name="gnupg_res_sign_detach_nonarmor.phpt" role="test" />
     <file name="gnupg_res_sign_normal.phpt" role="test" />
     <file name="gnupg_res_sign_normal_noarmor.phpt" role="test" />
-    <file name="gnupg_res_zzz_deletekey.phpt" role="test" />
-    <file name="vars.inc" role="test" />
    </dir>
   </dir>
  </contents>
@@ -98,6 +115,21 @@
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>1.4.0</release>
+    <api>1.4.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2016-08-29</date>
+   <license>BSD, revised</license>
+   <notes><![CDATA[
+ * No changes since 1.4.0RC2
+ ]]></notes>
+  </release>
   <release>
    <version>
 	<release>1.4.0RC2</release>
