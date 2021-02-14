@@ -1,5 +1,5 @@
 <?php
-putenv("GNUPGHOME=".dirname(__FILE__));
+putenv("GNUPGHOME=".dirname(__FILE__) . '/home');
 error_reporting (E_ALL);
 $fingerprint = "2DF0DD02DC9B70B7F64F572E669E775E0A6284B3";
 $passphrase = "blabla";

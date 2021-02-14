@@ -10,7 +10,7 @@ class gnupgt {
     {
         global $testkey;
 
-        self::delete_key();
+        self::reset_key();
 
         $gpg = new gnupg();
         $gpg->import($testkey);
@@ -21,20 +21,54 @@ class gnupgt {
      */
     static public function delete_key()
     {
-        @unlink(__DIR__ . "/pubring.gpg");
-        @unlink(__DIR__ . "/secring.gpg");
-        @unlink(__DIR__ . "/pubring.kbx");
-        @unlink(__DIR__ . "/random_seed");
-        @unlink(__DIR__ . "/sshcontrol");
-        @unlink(__DIR__ . "/trustdb.gpg");
-        $privKeyDir = __DIR__ . '/private-keys-v1.d';
+        $homeDir = self::get_home_dir();
+        if (!is_dir($homeDir)) {
+            return;
+        }
+        @unlink("$homeDir/pubring.gpg");
+        @unlink("$homeDir/secring.gpg");
+        @unlink("$homeDir/pubring.kbx");
+		@unlink("$homeDir/pubring.kbx~");
+        @unlink("$homeDir/random_seed");
+        @unlink("$homeDir/sshcontrol");
+        @unlink("$homeDir/trustdb.gpg");
+        $privKeyDir = self::get_priv_key_dir();
         if (is_dir($privKeyDir)) {
             foreach (glob($privKeyDir . '/*.key') as $key) {
                 unlink($key);
             }
             rmdir($privKeyDir);
         }
+        rmdir($homeDir);
     }
+
+	/**
+	 * Initialize key directory.
+	 */
+	static public function init_key_dir()
+	{
+        mkdir(self::get_home_dir());
+        mkdir(self::get_priv_key_dir(), 0700);
+	}
+
+	/**
+	 * Reset all keys.
+	 */
+	static public function reset_key()
+	{
+		self::delete_key();
+		self::init_key_dir();
+	}
+
+    static private function get_home_dir()
+	{
+        return 	__DIR__ . '/home';
+	}
+
+	static private function get_priv_key_dir()
+	{
+		return 	self::get_home_dir() . '/private-keys-v1.d';
+	}
 
     /**
      * Print error message and return false.

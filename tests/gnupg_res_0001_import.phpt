@@ -5,7 +5,7 @@ import a new key into the keyring
 --FILE--
 <?php
 require_once "gnupgt.inc";
-gnupgt::delete_key();
+gnupgt::reset_key();
 
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
