@@ -346,6 +346,12 @@ ZEND_BEGIN_ARG_INFO(arginfo_gnupg_void_function, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
+/* {{{ arginfo for gnupg init */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_init_function, 0, 0, 0)
+	ZEND_ARG_INFO(0, options)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 
 /* {{{ arginfo for gnupg function with armor parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_armor_function, 0)
@@ -446,7 +452,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ functionlist gnupg */
 static zend_function_entry gnupg_functions[] = {
-	PHP_FE(gnupg_init,				arginfo_gnupg_void_function)
+	PHP_FE(gnupg_init,				arginfo_gnupg_init_function)
 	PHP_FE(gnupg_keyinfo,			arginfo_gnupg_keyinfo_function)
 	PHP_FE(gnupg_sign,				arginfo_gnupg_text_function)
 	PHP_FE(gnupg_verify,			arginfo_gnupg_verify_function)

@@ -1,5 +1,5 @@
 --TEST--
-get keyinfo
+get engineinfo
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--
@@ -8,7 +8,7 @@ require_once "gnupgt.inc";
 gnupgt::import_key();
 
 $gpg = new gnupg();
-$ret = $gpg->getengineinfo($fingerprint);
+$ret = $gpg->getengineinfo();
 var_dump($ret);
 ?>
 --EXPECTF--

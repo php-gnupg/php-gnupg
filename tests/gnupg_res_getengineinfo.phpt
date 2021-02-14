@@ -1,5 +1,5 @@
 --TEST--
-get keyinfo
+get engineinfo
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
 --FILE--

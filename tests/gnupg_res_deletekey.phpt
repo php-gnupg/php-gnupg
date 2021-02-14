@@ -9,7 +9,7 @@ gnupgt::import_key();
 
 $gpg = gnupg_init();
 gnupg_seterrormode($gpg, GNUPG_ERROR_WARNING);
-$ret = gnupg_deletekey($gpg, $fingerprint,true);
+$ret = gnupg_deletekey($gpg, $fingerprint, true);
 var_dump($ret);
 ?>
 --EXPECT--
