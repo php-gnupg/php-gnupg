@@ -18,23 +18,24 @@ class gnupgt {
 
     /**
      * Delete all keys.
+     * @param null|string $homeDir
      */
-    static public function delete_key()
+    static public function delete_key($homeDir = null)
     {
-        $homeDir = self::get_home_dir();
+        if (is_null($homeDir)) {
+            $homeDir = self::get_home_dir();
+        }
         if (!is_dir($homeDir)) {
             return;
         }
-        @unlink("$homeDir/pubring.gpg");
-        @unlink("$homeDir/secring.gpg");
-        @unlink("$homeDir/pubring.kbx");
-		@unlink("$homeDir/pubring.kbx~");
-        @unlink("$homeDir/random_seed");
-        @unlink("$homeDir/sshcontrol");
-        @unlink("$homeDir/trustdb.gpg");
-        $privKeyDir = self::get_priv_key_dir();
+        foreach (glob($homeDir . '/*') as $filename) {
+            if (is_file($filename)) {
+                unlink($filename);
+            }
+        }
+        $privKeyDir = self::get_priv_key_dir($homeDir);
         if (is_dir($privKeyDir)) {
-            foreach (glob($privKeyDir . '/*.key') as $key) {
+            foreach (glob($privKeyDir . '/*') as $key) {
                 unlink($key);
             }
             rmdir($privKeyDir);
@@ -42,33 +43,46 @@ class gnupgt {
         rmdir($homeDir);
     }
 
-	/**
-	 * Initialize key directory.
-	 */
-	static public function init_key_dir()
-	{
+    /**
+     * Initialize key directory.
+     */
+    static public function init_key_dir()
+    {
         mkdir(self::get_home_dir());
         mkdir(self::get_priv_key_dir(), 0700);
-	}
+    }
 
-	/**
-	 * Reset all keys.
-	 */
-	static public function reset_key()
-	{
-		self::delete_key();
-		self::init_key_dir();
-	}
+    /**
+     * Reset all keys.
+     */
+    static public function reset_key()
+    {
+        self::delete_key();
+        self::init_key_dir();
+    }
 
+    /**
+     * Get home directory.
+     *
+     * @return string
+     */
     static private function get_home_dir()
-	{
-        return 	__DIR__ . '/home';
-	}
+    {
+        return __DIR__ . '/home';
+    }
 
-	static private function get_priv_key_dir()
-	{
-		return 	self::get_home_dir() . '/private-keys-v1.d';
-	}
+    /**
+     * Get private key directory (for GPG2).
+     * @param null|string $homeDir
+     * @return string
+     */
+    static private function get_priv_key_dir($homeDir = null)
+    {
+        if (is_null($homeDir)) {
+            $homeDir = self::get_home_dir();
+        }
+        return $homeDir . '/private-keys-v1.d';
+    }
 
     /**
      * Print error message and return false.
@@ -126,7 +140,7 @@ class gnupgt {
      */
     static public function check_array_from_version($version, $expected, $a, $key1)
     {
-        if (version_compare(GNUPG_GPGME_VERSION,  $version) > 0) {
+        if (version_compare(GNUPG_GPGME_VERSION,  $version) < 0) {
             return true;
         }
 

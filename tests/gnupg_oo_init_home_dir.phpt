@@ -26,9 +26,6 @@ bool(true)
 bool(true)
 --CLEAN--
 <?php
-$homedir = __DIR__ . '/init_oo_home';
-foreach (glob($homedir . '/*') as $filename) {
-    unlink($filename);
-}
-rmdir($homedir);
+require_once "gnupgt.inc";
+gnupgt::delete_key(__DIR__ . '/init_oo_home');
 ?>
