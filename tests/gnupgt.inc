@@ -29,7 +29,7 @@ class gnupgt {
             return;
         }
         foreach (glob($homeDir . '/*') as $filename) {
-            if (is_file($filename)) {
+            if (!is_dir($filename)) {
                 unlink($filename);
             }
         }
