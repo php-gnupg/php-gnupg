@@ -99,6 +99,8 @@
     <file name="gnupg_res_sign_detach_nonarmor.phpt" role="test" />
     <file name="gnupg_res_sign_normal.phpt" role="test" />
     <file name="gnupg_res_sign_normal_noarmor.phpt" role="test" />
+    <file name="gnupgt.inc" role="test" />
+    <file name="vars.inc" role="test" />
    </dir>
   </dir>
  </contents>
