@@ -40,15 +40,16 @@ if test "$PHP_GNUPG" != "no"; then
 
   PHP_ADD_INCLUDE($GNUPG_DIR/include)
 
+  dnl gpgme_op_passwd is not used but was added in 1.3.0
   LIBNAME=gpgme
-  LIBSYMBOL=gpgme_check_version
+  LIBSYMBOL=gpgme_op_passwd
 
   PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
   [
     PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $GNUPG_DIR/$PHP_LIBDIR, GNUPG_SHARED_LIBADD)
     AC_DEFINE(HAVE_GNUPGLIB,1,[ ])
   ],[
-    AC_MSG_ERROR([wrong gpgme lib version or lib not found])
+    AC_MSG_ERROR([wrong gpgme lib version or lib not found (version >= 1.3 required)])
   ],[
     -L$GNUPG_DIR/$PHP_LIBDIR -lm $GNUPG_DL
   ])
