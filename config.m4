@@ -39,7 +39,9 @@ if test "$PHP_GNUPG" != "no"; then
   fi
 
   PHP_ADD_INCLUDE($GNUPG_DIR/include)
-
+  AC_SYS_LARGEFILE
+  AC_TYPE_OFF_T
+  
   LIBNAME=gpgme
   LIBSYMBOL=gpgme_check_version
 
