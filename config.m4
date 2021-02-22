@@ -40,6 +40,10 @@ if test "$PHP_GNUPG" != "no"; then
 
   PHP_ADD_INCLUDE($GNUPG_DIR/include)
 
+  dnl enable largefile support on 32-bits platform
+  AC_SYS_LARGEFILE
+  AC_TYPE_OFF_T
+  
   dnl gpgme_op_passwd is not used but was added in 1.3.0
   LIBNAME=gpgme
   LIBSYMBOL=gpgme_op_passwd
