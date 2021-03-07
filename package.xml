@@ -28,10 +28,10 @@
   <email>sean@siobud.com</email>
   <active>no</active>
  </lead>
- <date>2021-02-14</date>
+ <date>2021-03-07</date>
  <version>
-  <release>1.5.0RC1</release>
-  <api>1.5.0RC1</api>
+  <release>1.5.0RC2</release>
+  <api>1.5.0RC2</api>
  </version>
  <stability>
   <release>beta</release>
@@ -39,15 +39,9 @@
  </stability>
  <license>BSD, revised</license>
  <notes><![CDATA[
- * Added support for PHP 8
- * Added support for GnuPG 2.1+
- * Added argument info for all functions and methods (reflection support)
- * Added new function `gnupg_getengineinfo`
- * Added new function `gnupg_geterrorinfo`
- * Added init array argument for setting home dir and gpg binary file name
- * Added additional fields to `gnupg_keyinfo` returned array
- * Added parameter to `gnupg_keyinfo` to use `secret_only`
- * Fixed `gnupg_deletekey` to use boolean for `allow_secret` parameter
+ * Fixed build with libgpgme 1.3
+ * Fixed largefile support on 32-bit platforms
+ * Fixed tests in PECL archive
  ]]></notes>
  <contents>
   <dir name="/">
@@ -119,6 +113,29 @@
  <changelog>
   <release>
    <version>
+	<release>1.5.0RC1</release>
+	<api>1.5.0RC1</api>
+   </version>
+   <stability>
+	<release>beta</release>
+	<api>beta</api>
+   </stability>
+   <date>2021-02-14</date>
+   <license>BSD, revised</license>
+   <notes><![CDATA[
+   * Added support for PHP 8
+   * Added support for GnuPG 2.1+
+   * Added argument info for all functions and methods (reflection support)
+   * Added new function `gnupg_getengineinfo`
+   * Added new function `gnupg_geterrorinfo`
+   * Added init array argument for setting home dir and gpg binary file name
+   * Added additional fields to `gnupg_keyinfo` returned array
+   * Added parameter to `gnupg_keyinfo` to use `secret_only`
+   * Fixed `gnupg_deletekey` to use boolean for `allow_secret` parameter
+   ]]></notes>
+  </release>
+  <release>
+   <version>
     <release>1.4.0</release>
     <api>1.4.0</api>
    </version>
@@ -129,8 +146,8 @@
    <date>2016-08-29</date>
    <license>BSD, revised</license>
    <notes><![CDATA[
- * No changes since 1.4.0RC2
- ]]></notes>
+   * No changes since 1.4.0RC2
+   ]]></notes>
   </release>
   <release>
    <version>
