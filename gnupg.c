@@ -170,7 +170,9 @@ static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_D
 					ctx, GPGME_PROTOCOL_OpenPGP, file_name, home_dir);
 		}
 		gpgme_set_armor(ctx, 1);
+#if GPGME_VERSION_NUMBER >= 0x010400  /* GPGME >= 1.4.0 */
 		gpgme_set_pinentry_mode(ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+#endif
 	}
 }
 /* }}} */
@@ -591,10 +593,8 @@ PHP_MINIT_FUNCTION(gnupg)
 #if GPGME_VERSION_NUMBER >= 0x010500  /* GPGME >= 1.5.0 */
 	PHP_GNUPG_SET_CLASS_CONST("PK_ECC",             GPGME_PK_ECC);
 #endif /* gpgme >= 1.5.0 */	
-#if GPGME_VERSION_NUMBER >= 0x010300  /* GPGME >= 1.3.0 */
 	PHP_GNUPG_SET_CLASS_CONST("PK_ECDSA",           GPGME_PK_ECDSA);
 	PHP_GNUPG_SET_CLASS_CONST("PK_ECDH",            GPGME_PK_ECDH);
-#endif /* gpgme >= 1.3.0 */	
 #if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
 	PHP_GNUPG_SET_CLASS_CONST("PK_EDDSA",           GPGME_PK_EDDSA);
 #endif /* gpgme >= 1.7.0 */
@@ -633,10 +633,8 @@ PHP_MINIT_FUNCTION(gnupg)
 #if GPGME_VERSION_NUMBER >= 0x010500  /* GPGME >= 1.5.0 */
 	PHP_GNUPG_REG_CONST("GNUPG_PK_ECC",             GPGME_PK_ECC);
 #endif /* gpgme >= 1.5.0 */	
-#if GPGME_VERSION_NUMBER >= 0x010300  /* GPGME >= 1.3.0 */
 	PHP_GNUPG_REG_CONST("GNUPG_PK_ECDSA",           GPGME_PK_ECDSA);
 	PHP_GNUPG_REG_CONST("GNUPG_PK_ECDH",            GPGME_PK_ECDH);
-#endif /* gpgme >= 1.3.0 */	
 #if GPGME_VERSION_NUMBER >= 0x010700  /* GPGME >= 1.7.0 */
 	PHP_GNUPG_REG_CONST("GNUPG_PK_EDDSA",           GPGME_PK_EDDSA);
 #endif /* gpgme >= 1.7.0 */
@@ -1099,9 +1097,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, revoked, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_certify, gpgme_subkey);
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, can_authenticate, gpgme_subkey);
-#if GPGME_VERSION_NUMBER >= 0x010100  /* GPGME >= 1.1.0 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_qualified, gpgme_subkey);
-#endif /* gpgme >= 1.1.0 */
 #if GPGME_VERSION_NUMBER >= 0x010900  /* GPGME >= 1.9.0 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_de_vs, gpgme_subkey);
 #endif /* gpgme >= 1.9.0 */
@@ -1117,15 +1113,15 @@ PHP_FUNCTION(gnupg_keyinfo)
 				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, keygrip, gpgme_subkey);
 			}
 #endif /* gpgme >= 1.7.0 */
-#if GPGME_VERSION_NUMBER >= 0x010200  /* GPGME >= 1.2.0 */
 			PHP_GNUPG_ARRAY_ADD_ASSOC_BOOL(subkey, is_cardkey, gpgme_subkey);
 			if (gpgme_subkey->card_number) {
 				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, card_number, gpgme_subkey);
 			}
-#endif /* gpgme >= 1.2.0 */
+#if GPGME_VERSION_NUMBER >= 0x010403  /* GPGME >= 1.4.3 */
 			if (gpgme_subkey->curve) {
 				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, curve, gpgme_subkey);
 			}
+#endif
 
 			PHPC_ARRAY_ADD_NEXT_INDEX_ZVAL(
 					PHPC_VAL_CAST_TO_PZVAL(subkeys),
