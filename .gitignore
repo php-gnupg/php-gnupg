@@ -35,6 +35,7 @@ tmp-php.ini
 # General Ignores
 *~
 .#*
+*.dep
 *.
 *.slo
 *.mk
