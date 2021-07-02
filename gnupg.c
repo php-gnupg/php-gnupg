@@ -715,6 +715,7 @@ gpgme_error_t passphrase_decrypt_cb (
 		const char *uid_hint, const char *passphrase_info,
 		int last_was_bad, int fd)
 {
+	static int passphrase_found = 0;
 	char uid[17];
 	int idx;
 	char *passphrase = NULL;
@@ -722,7 +723,7 @@ gpgme_error_t passphrase_decrypt_cb (
 	PHPC_THIS_DECLARE(gnupg) = hook;
 	TSRMLS_FETCH();
 
-	if (last_was_bad) {
+	if (passphrase_found && last_was_bad) {
 		GNUPG_ERR("Incorrent passphrase");
 		return 1;
 	}
@@ -733,9 +734,12 @@ gpgme_error_t passphrase_decrypt_cb (
 	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(
 				PHPC_THIS->decryptkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
-		return 1;
+		passphrase_found = 0;
+		write(fd, "\n", 1);
+		return 0;
 	}
 	if (!passphrase) {
+		passphrase_found = 0;
 		GNUPG_ERR("no passphrase set");
 		return 1;
 	}
@@ -743,6 +747,8 @@ gpgme_error_t passphrase_decrypt_cb (
 			&& write(fd, "\n", 1) == 1) {
 		return 0;
 	}
+
+	passphrase_found = 1;
 	GNUPG_ERR("write failed");
 	return 1;
 }
