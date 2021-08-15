@@ -1,6 +1,7 @@
 # TODO list
 
 - Fix build error with gpgme 1.4.0 - https://bugs.php.net/bug.php?id=81004&edit=1
+- Support PHP 8.1
 - Update PHP.net documentation - including changes in 1.5.0
 - Fix / review and test PR of decryption with multiple keys
   - https://github.com/php-gnupg/php-gnupg/pull/33
