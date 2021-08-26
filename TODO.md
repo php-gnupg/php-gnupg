@@ -1,12 +1,14 @@
 # TODO list
 
-- Support GnuPG 2
-- Introduce gnupg_geterrorinfo with more info about the error
-  - including error message from gpgme
-- Return decrypt result if extra param supplied (including recipients)
-  - https://github.com/php-gnupg/php-gnupg/pull/12
+- Fix build error with gpgme 1.4.0 - https://bugs.php.net/bug.php?id=81004&edit=1
+- Support PHP 8.1
+- Update PHP.net documentation - including changes in 1.5.0
+- Fix / review and test PR of decryption with multiple keys
+  - https://github.com/php-gnupg/php-gnupg/pull/33
 - Add support for exporting multiple keys using `gpgme_op_export_ext`
   - https://github.com/php-gnupg/php-gnupg/issues/10
+- Return decrypt result if extra param supplied (including recipients)
+  - https://github.com/php-gnupg/php-gnupg/pull/12
 - Extend keyinfo
   - Add `can_encrypt`, `can_sign`, `can_certify` and `can_authenticate` to the main key
   - Add user signatures
@@ -17,5 +19,3 @@
   - `gnupg_clearencryptkeys`
   - `gnupg_cleardecryptkeys`
   - `gnupg_gettrustlist`
-- Create new README.md
-- Update PHP.net documentation
