@@ -17,6 +17,22 @@ class gnupgt {
     }
 
     /**
+     * Import keys individually
+     */
+    static public function import_first()
+    {
+        global $testkey;
+        $gpg = new gnupg();
+        $gpg->import($testkey);
+    }
+    static public function import_second()
+    {
+        global $testkey2;
+        $gpg = new gnupg();
+        $gpg->import($testkey2);
+    }
+
+    /**
      * Delete all keys.
      * @param null|string $homeDir
      */
