@@ -90,14 +90,40 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_void_iterator_method, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
+#if PHP_VERSION_ID < 80100
+
+#define arginfo_gnupg_current arginfo_gnupg_void_iterator_method
+#define arginfo_gnupg_key     arginfo_gnupg_void_iterator_method
+#define arginfo_gnupg_valid   arginfo_gnupg_void_iterator_method
+#define arginfo_gnupg_next    arginfo_gnupg_void_iterator_method
+#define arginfo_gnupg_rewind  arginfo_gnupg_void_iterator_method
+
+#else
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_gnupg_current, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
+#define arginfo_gnupg_key arginfo_gnupg_current
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_gnupg_valid, 0, 0, _IS_BOOL, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_gnupg_next, 0, 0, IS_VOID, 0)
+ZEND_END_ARG_INFO()
+
+#define arginfo_gnupg_rewind  arginfo_gnupg_next
+
+#endif
+
+
 /* {{{ method list gnupg_keylistiterator */
 static zend_function_entry gnupg_keylistiterator_methods[] = {
 	PHP_ME(gnupg_keylistiterator, __construct, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, current, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, key, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, next, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, rewind, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
-	PHP_ME(gnupg_keylistiterator, valid, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, current, arginfo_gnupg_current, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, key, arginfo_gnupg_key, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, next, arginfo_gnupg_next, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, rewind, arginfo_gnupg_rewind, ZEND_ACC_PUBLIC)
+	PHP_ME(gnupg_keylistiterator, valid, arginfo_gnupg_valid, ZEND_ACC_PUBLIC)
 	PHPC_FE_END
 };
 /* }}} */
