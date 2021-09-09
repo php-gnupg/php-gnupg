@@ -90,11 +90,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_void_iterator_method, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-#ifndef ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX
-#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
-        ZEND_BEGIN_ARG_INFO_EX(name, 0, return_reference, required_num_args)
-#endif
-
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_gnupg_current, 0, 0, IS_MIXED, 0)
 ZEND_END_ARG_INFO()
 
