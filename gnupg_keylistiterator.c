@@ -90,15 +90,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_void_iterator_method, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-#if PHP_VERSION_ID < 80100
-
-#define arginfo_gnupg_current arginfo_gnupg_void_iterator_method
-#define arginfo_gnupg_key     arginfo_gnupg_void_iterator_method
-#define arginfo_gnupg_valid   arginfo_gnupg_void_iterator_method
-#define arginfo_gnupg_next    arginfo_gnupg_void_iterator_method
-#define arginfo_gnupg_rewind  arginfo_gnupg_void_iterator_method
-
-#else
+#ifndef ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX
+#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
+        ZEND_BEGIN_ARG_INFO_EX(name, 0, return_reference, required_num_args)
+#endif
 
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_gnupg_current, 0, 0, IS_MIXED, 0)
 ZEND_END_ARG_INFO()
@@ -112,8 +107,6 @@ ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_gnupg_next, 0, 0, IS_V
 ZEND_END_ARG_INFO()
 
 #define arginfo_gnupg_rewind  arginfo_gnupg_next
-
-#endif
 
 
 /* {{{ method list gnupg_keylistiterator */
