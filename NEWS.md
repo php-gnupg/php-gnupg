@@ -2,6 +2,10 @@
 
 List of all features for the release
 
+## 1.5.1
+- Fixed compilation with PHP 8.1
+- Fixed build with gpgme 1.4
+
 ## 1.5.0
 - Support for PHP 8
 - Support for GnuPG 2.1+
