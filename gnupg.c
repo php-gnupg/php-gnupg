@@ -1117,7 +1117,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 			if (gpgme_subkey->card_number) {
 				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, card_number, gpgme_subkey);
 			}
-#if GPGME_VERSION_NUMBER >= 0x010403  /* GPGME >= 1.4.3 */
+#if GPGME_VERSION_NUMBER >= 0x010500  /* GPGME >= 1.5.0 */
 			if (gpgme_subkey->curve) {
 				PHP_GNUPG_ARRAY_ADD_ASSOC_CSTR(subkey, curve, gpgme_subkey);
 			}
