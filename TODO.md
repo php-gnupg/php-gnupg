@@ -1,8 +1,9 @@
 # TODO list
 
-- Fix build error with gpgme 1.4.0 - https://bugs.php.net/bug.php?id=81004&edit=1
-- Support PHP 8.1
 - Update PHP.net documentation - including changes in 1.5.0
+- Add CI for running tests
+- Fix mem leak for encrypting empty key
+  - https://github.com/php-gnupg/php-gnupg/issues/37
 - Fix / review and test PR of decryption with multiple keys
   - https://github.com/php-gnupg/php-gnupg/pull/33
 - Add support for exporting multiple keys using `gpgme_op_export_ext`
