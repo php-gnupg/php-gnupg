@@ -14,7 +14,7 @@ PHP_ARG_WITH(gnupg, for gnupg support,
 [  --with-gnupg[=dir]       Include gnupg support])
 
 if test "$PHP_GNUPG" != "no"; then
-  SEARCH_PATH="/usr/local /usr /opt"
+  SEARCH_PATH="/usr/local /usr /opt /opt/homebrew"
   SEARCH_FOR="include/gpgme.h"
   SEARCH_FOR_ALT="include/gpgme/gpgme.h"
   if test -r $PHP_GNUPG/$SEARCH_FOR; then
