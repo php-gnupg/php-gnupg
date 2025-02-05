@@ -2,6 +2,9 @@
 
 List of all features for the release
 
+## X.Y.Z
+- The deletekey `allow_secret` made optional again
+
 ## 1.5.1
 - Fixed compilation with PHP 8.1
 - Fixed build with gpgme 1.4
