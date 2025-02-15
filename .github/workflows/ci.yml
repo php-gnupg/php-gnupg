@@ -16,13 +16,15 @@ jobs:
         ubuntu: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
-      - name: Checkout php-gnupg
-        uses: actions/checkout@v4
-
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gpg gpgme gpgsm libgpgme-dev php-cli php-dev autoconf automake libtool make gcc
+          sudo apt-get install -y gpg gpgsm libgpgme-dev php-cli php-dev autoconf libtool make gcc
+
+      - name: Checkout php-gnupg
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Build and install php-gnupg
         run: |
