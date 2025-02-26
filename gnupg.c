@@ -166,8 +166,14 @@ static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_D
 		}
 
 		if (file_name != NULL || home_dir != NULL) {
-			gpgme_ctx_set_engine_info(
-					ctx, GPGME_PROTOCOL_OpenPGP, file_name, home_dir);
+			if (gpgme_ctx_set_engine_info(
+					ctx, GPGME_PROTOCOL_OpenPGP, file_name, home_dir) != GPG_ERR_NO_ERROR) {
+				zend_throw_exception(
+					zend_exception_get_default(TSRMLS_C),
+					(char*) "Setting engine info failed",
+					0 TSRMLS_CC
+				);
+			}
 		}
 		gpgme_set_armor(ctx, 1);
 #if GPGME_VERSION_NUMBER >= 0x010400  /* GPGME >= 1.4.0 */
