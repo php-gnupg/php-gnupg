@@ -1705,11 +1705,13 @@ PHP_FUNCTION(gnupg_decrypt)
 		return;
 	}
 	userret = gpgme_data_release_and_get_mem(out, &ret_size);
+
 	gpgme_data_release(in);
-	PHPC_CSTRL_RETVAL(userret, ret_size);
-	free(userret);
-	if (ret_size < 1) {
-		RETVAL_FALSE;
+	if (userret != NULL) {
+		PHPC_CSTRL_RETVAL(userret, ret_size);
+		free(userret);
+	} else {
+		PHPC_CSTR_EMPTY_RETVAL();
 	}
 }
 /* }}} */
