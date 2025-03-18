@@ -1,0 +1,109 @@
+--TEST--
+decrypt with private key without uid hint
+--SKIPIF--
+<?php
+if (!class_exists("gnupg")) die("skip");
+require_once "gnupgt.inc";
+if (gnupgt::gpg_version_compare("2.3", "lt")) {
+    die("skip: GnuPG 2.3 or newer required");
+}
+?>
+--FILE--
+<?php
+
+require_once "gnupgt.inc";
+
+$privkey =<<<EOF
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+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
+=QWHB
+-----END PGP PRIVATE KEY BLOCK-----
+EOF;
+
+$fingerprint = 'DDAD2AB87FDB228BC5E9E4AF0E55BD6058B0636E';
+
+gnupgt::import_key($privkey);
+
+$gpg = gnupgt::create_instance();
+$gpg->adddecryptkey($fingerprint, 'test');
+$ret = $gpg->decrypt(file_get_contents(__DIR__ . '/no_uid_hint_msg.gpg'));
+var_dump($ret);
+print_r($gpg->geterrorinfo());
+
+?>
+--EXPECTF--
+bool(false)
+Array
+(
+    [generic_message] => No user ID hint
+    [gpgme_code] => 1
+    [gpgme_source] => Unspecified source
+    [gpgme_message] => General error
+)
+--CLEAN--
+<?php
+require_once "gnupgt.inc";
+gnupgt::delete_key();
+?>
