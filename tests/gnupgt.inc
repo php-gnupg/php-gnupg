@@ -3,17 +3,79 @@
 require_once __DIR__ . "/vars.inc";
 
 class gnupgt {
+	/**
+     * Get the GnuPG binary path.
+     *
+     * @return string
+     */
+    static public function get_gpg_binary()
+    {
+        return getenv("GNUPGFILENAME") ?: "gpg";
+    }
+
+    /**
+     * Get the GnuPG version.
+     *
+     * @return string|null
+     */
+    static public function get_gpg_version()
+    {
+        $gpgBinary = escapeshellcmd(self::get_gpg_binary());
+        exec("$gpgBinary --version 2>&1", $output, $return_var);
+        if ($return_var !== 0 || empty($output)) {
+            return null;
+        }
+
+        // Extract the version number (typically in the first line like "gpg (GnuPG) 2.3.3")
+        if (preg_match('/\b(\d+\.\d+\.\d+)\b/', $output[0], $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Compare the GnuPG version.
+     *
+     * @param string $version The version to compare against.
+     * @param string $operator One of "lt", "le", "eq", "ne", "ge", "gt".
+     * @return bool|null Returns comparison result or null if version cannot be determined.
+     */
+    static public function gpg_version_compare($version, $operator)
+    {
+        $current_version = self::get_gpg_version();
+        if ($current_version === null) {
+            return null; // Unable to determine GnuPG version
+        }
+
+        return version_compare($current_version, $version, $operator);
+    }
+
+    /**
+     * Create a new gnupg instance.
+     *
+     * @return gnupg
+     */
+    static public function create_instance()
+    {
+        $file_name = self::get_gpg_binary();
+        if ($file_name === "gpg") {
+            return new gnupg();
+        }
+        return new gnupg(['file_name' => $file_name]);
+    }
+
     /**
      * Import all keys
      */
-    static public function import_key()
+    static public function import_key($privkey = null)
     {
         global $testkey;
 
         self::reset_key();
 
-        $gpg = new gnupg();
-        $gpg->import($testkey);
+        $gpg = self::create_instance();
+        $gpg->import($privkey ?? $testkey);
     }
 
     /**
