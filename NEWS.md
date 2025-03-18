@@ -4,6 +4,7 @@ List of all features for the release
 
 ## X.Y.Z
 - The deletekey `allow_secret` made optional again
+- Fixed GH-37: `gnupg_decrypt()` returns false when decrypting an encrypted empty string
 
 ## 1.5.1
 - Fixed compilation with PHP 8.1
