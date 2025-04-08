@@ -90,9 +90,10 @@ class gnupgt {
         if (!is_dir($homeDir)) {
             return;
         }
-        foreach (glob($homeDir . '/*') as $filename) {
-            if (!is_dir($filename)) {
-                unlink($filename);
+        $dir = opendir($homeDir);
+        while ($filename = readdir($dir)) {
+            if (!is_dir("$homeDir/$filename")) {
+                unlink("$homeDir/$filename");
             }
         }
         $privKeyDir = self::get_priv_key_dir($homeDir);
