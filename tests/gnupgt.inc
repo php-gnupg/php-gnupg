@@ -75,7 +75,7 @@ class gnupgt {
         self::reset_key();
 
         $gpg = self::create_instance();
-        $gpg->import($privkey ?? $testkey);
+        $gpg->import(is_null($privkey) ? $testkey : $privkey);
     }
 
     /**
