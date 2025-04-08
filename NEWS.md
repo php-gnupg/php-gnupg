@@ -2,10 +2,10 @@
 
 List of all features for the release
 
-## X.Y.Z
-- The deletekey `allow_secret` made optional again
+## 1.5.2
 - Fixed GH-37: `gnupg_decrypt()` returns false when decrypting an encrypted empty string
 - Fixed GH-46: `gnupg_decrypt()` segfaults when password callback user ID hint is not supplied
+- Fixed 1.5.0 regressition - the deletekey `allow_secret` made optional again
 
 ## 1.5.1
 - Fixed compilation with PHP 8.1

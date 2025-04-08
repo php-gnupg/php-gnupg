@@ -28,10 +28,10 @@
   <email>sean@siobud.com</email>
   <active>no</active>
  </lead>
- <date>2021-12-31</date>
+ <date>2025-04-08</date>
  <version>
-  <release>1.5.1</release>
-  <api>1.5.1</api>
+  <release>1.5.2</release>
+  <api>1.5.2</api>
  </version>
  <stability>
   <release>stable</release>
@@ -39,8 +39,9 @@
  </stability>
  <license>BSD, revised</license>
  <notes><![CDATA[
- * Fixed compilation with PHP 8.1
- * Fixed build with gpgme 1.4
+- Fixed GH-37: gnupg_decrypt() returns false when decrypting an encrypted empty string
+- Fixed GH-46: gnupg_decrypt() segfaults when password callback user ID hint is not supplied
+- Fixed 1.5.0 regressition - the deletekey `allow_secret` made optional again
  ]]></notes>
  <contents>
   <dir name="/">
@@ -59,7 +60,9 @@
    </dir>
    <dir name="tests">
     <file name="gnupg_oo_deletekey.phpt" role="test" />
+	<file name="gnupg_oo_decrypt_no_uid_hint.phpt" role="test" />
     <file name="gnupg_oo_encrypt.phpt" role="test" />
+	<file name="gnupg_oo_encrypt_empty_str.phpt" role="test" />
     <file name="gnupg_oo_encryptsign.phpt" role="test" />
     <file name="gnupg_oo_export.phpt" role="test" />
     <file name="gnupg_oo_getengineinfo.phpt" role="test" />
@@ -110,6 +113,22 @@
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2021-12-31</date>
+   <version>
+	<release>1.5.1</release>
+	<api>1.5.1</api>
+   </version>
+   <stability>
+	<release>stable</release>
+	<api>stable</api>
+   </stability>
+   <license>BSD, revised</license>
+   <notes><![CDATA[
+   * Fixed compilation with PHP 8.1
+   * Fixed build with gpgme 1.4
+   ]]></notes>
+  </release>
   <release>
    <date>2021-04-10</date>
    <version>
