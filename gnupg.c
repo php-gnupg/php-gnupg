@@ -692,10 +692,10 @@ gpgme_error_t passphrase_cb(
 		GNUPG_ERR("Incorrent passphrase");
 		return 1;
 	}
-	for (idx=0; idx < 16; idx++) {
+	for (idx=0; idx < 16 && uid_hint[idx] != '\0'; idx++) {
 		uid[idx] = uid_hint[idx];
 	}
-	uid[16] = '\0';
+	uid[idx] = '\0';
 	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(
 				PHPC_THIS->signkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
@@ -736,10 +736,10 @@ gpgme_error_t passphrase_decrypt_cb (
 		GNUPG_ERR("No user ID hint");
 		return 1;
 	}
-	for (idx=0; idx < 16; idx++) {
+	for (idx=0; idx < 16 && uid_hint[idx] != '\0'; idx++) {
 		uid[idx] = uid_hint[idx];
 	}
-	uid[16] = '\0';
+	uid[idx] = '\0';
 	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(
 				PHPC_THIS->decryptkeys, (char *)uid, passphrase)) {
 		GNUPG_ERR("no passphrase set");
