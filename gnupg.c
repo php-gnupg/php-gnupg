@@ -742,8 +742,10 @@ gpgme_error_t passphrase_decrypt_cb (
 	uid[idx] = '\0';
 	if (!PHPC_HASH_CSTR_FIND_PTR_IN_COND(
 				PHPC_THIS->decryptkeys, (char *)uid, passphrase)) {
-		GNUPG_ERR("no passphrase set");
-		return 1;
+		/* If the requested key is not in decryptkeys, ignore it and return success. It then tries
+		 * to call callback for the next key if the message was encrypted with more than one key. */
+		write(fd, "\n", 1);
+		return 0;
 	}
 	if (!passphrase) {
 		GNUPG_ERR("no passphrase set");
