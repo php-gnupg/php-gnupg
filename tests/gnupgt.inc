@@ -66,7 +66,7 @@ class gnupgt {
     }
 
     /**
-     * Import all keys
+     * Import a single key
      */
     static public function import_key($privkey = null)
     {
@@ -76,6 +76,21 @@ class gnupgt {
 
         $gpg = self::create_instance();
         $gpg->import(is_null($privkey) ? $testkey : $privkey);
+    }
+
+    /**
+     * Import all keys
+     */
+    static public function import_keys()
+    {
+        global $testkey, $testkey2, $testkey3;
+
+        self::reset_key();
+
+        $gpg = self::create_instance();
+        $gpg->import($testkey);
+        $gpg->import($testkey2);
+        $gpg->import($testkey3);
     }
 
     /**
