@@ -28,10 +28,10 @@
   <email>sean@siobud.com</email>
   <active>no</active>
  </lead>
- <date>2025-04-08</date>
+ <date>2025-06-02</date>
  <version>
-  <release>1.5.2</release>
-  <api>1.5.2</api>
+  <release>1.5.3</release>
+  <api>1.5.3</api>
  </version>
  <stability>
   <release>stable</release>
@@ -39,9 +39,7 @@
  </stability>
  <license>BSD, revised</license>
  <notes><![CDATA[
-- Fixed GH-37: gnupg_decrypt() returns false when decrypting an encrypted empty string
-- Fixed GH-46: gnupg_decrypt() segfaults when password callback user ID hint is not supplied
-- Fixed 1.5.0 regressition - the deletekey `allow_secret` made optional again
+ * Fixed GH-32: Decryption of message encrypted with multiple keys
  ]]></notes>
  <contents>
   <dir name="/">
@@ -61,6 +59,7 @@
    <dir name="tests">
     <file name="gnupg_oo_deletekey.phpt" role="test" />
     <file name="gnupg_oo_decrypt_no_uid_hint.phpt" role="test" />
+    <file name="gnupg_oo_decrypt_multi_key.phpt" role="test" />
     <file name="gnupg_oo_encrypt.phpt" role="test" />
     <file name="gnupg_oo_encrypt_empty_str.phpt" role="test" />
     <file name="gnupg_oo_encryptsign.phpt" role="test" />
@@ -114,6 +113,23 @@
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2025-04-08</date>
+   <version>
+	<release>1.5.2</release>
+	<api>1.5.2</api>
+   </version>
+   <stability>
+	<release>stable</release>
+	<api>stable</api>
+   </stability>
+   <license>BSD, revised</license>
+   <notes><![CDATA[
+   * Fixed GH-37: gnupg_decrypt() returns false when decrypting an encrypted empty string
+   * Fixed GH-46: gnupg_decrypt() segfaults when password callback user ID hint is not supplied
+   * Fixed 1.5.0 regressition - the deletekey `allow_secret` made optional again
+   ]]></notes>
+  </release>
   <release>
    <date>2021-12-31</date>
    <version>

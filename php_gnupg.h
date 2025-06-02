@@ -18,7 +18,7 @@
 extern zend_module_entry gnupg_module_entry;
 #define phpext_gnupg_ptr &gnupg_module_entry
 
-#define PHP_GNUPG_VERSION "1.5.2"
+#define PHP_GNUPG_VERSION "1.5.3"
 
 #ifdef PHP_WIN32
 #define PHP_GNUPG_API __declspec(dllexport)

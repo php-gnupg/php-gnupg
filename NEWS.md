@@ -2,6 +2,9 @@
 
 List of all features for the release
 
+## 1.5.3
+- Fixed GH-32: Decryption of message encrypted with multiple keys
+
 ## 1.5.2
 - Fixed GH-37: `gnupg_decrypt()` returns false when decrypting an encrypted empty string
 - Fixed GH-46: `gnupg_decrypt()` segfaults when password callback user ID hint is not supplied
