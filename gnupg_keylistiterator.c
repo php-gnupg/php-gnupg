@@ -201,7 +201,7 @@ PHP_METHOD(gnupg_keylistiterator, rewind)
 
 	if ((PHPC_THIS->err = gpgme_op_keylist_start(
 			 PHPC_THIS->ctx, PHPC_THIS->pattern ? PHPC_THIS->pattern : "", 0)) != GPG_ERR_NO_ERROR){
-		zend_throw_exception(zend_exception_get_default(TSRMLS_C), (char *)gpg_strerror(PHPC_THIS->err), 1 TSRMLS_CC);
+		zend_throw_exception(zend_ce_exception, (char *)gpg_strerror(PHPC_THIS->err), 1 TSRMLS_CC);
 	}
 	if ((PHPC_THIS->err = gpgme_op_keylist_next(PHPC_THIS->ctx, &PHPC_THIS->gpgkey)) != GPG_ERR_NO_ERROR){
 		RETURN_FALSE;

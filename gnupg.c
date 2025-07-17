@@ -64,7 +64,7 @@ PHPC_OBJ_DEFINE_HANDLER_VAR(gnupg);
 				break; \
 			case 2: \
 				zend_throw_exception(\
-					zend_exception_get_default(TSRMLS_C), \
+					zend_ce_exception, \
 					(char*) error, \
 					0 TSRMLS_CC \
 				); \
@@ -169,7 +169,7 @@ static void php_gnupg_this_make(PHPC_THIS_DECLARE(gnupg), zval *options TSRMLS_D
 			if (gpgme_ctx_set_engine_info(
 					ctx, GPGME_PROTOCOL_OpenPGP, file_name, home_dir) != GPG_ERR_NO_ERROR) {
 				zend_throw_exception(
-					zend_exception_get_default(TSRMLS_C),
+					zend_ce_exception,
 					(char*) "Setting engine info failed",
 					0 TSRMLS_CC
 				);
