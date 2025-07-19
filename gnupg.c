@@ -249,27 +249,27 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo for gnupg methods with key parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_method, 0)
-	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg methods with adddecryptkey parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_method, 0)
-	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, passphrase)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg methods with deletekey parameter */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_deletekey_method, 0, 0, 1)
-	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, allow_secret)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg methods with key parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_keyid_method, 0)
-	ZEND_ARG_INFO(0, kyeid)
+	ZEND_ARG_INFO(0, keyid)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -385,14 +385,14 @@ ZEND_END_ARG_INFO()
 /* {{{ arginfo for gnupg functions with key parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_function, 0)
 	ZEND_ARG_INFO(0, res)
-	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with deletekey parameter */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_deletekey_function, 0, 0, 2)
 	ZEND_ARG_INFO(0, res)
-	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, allow_secret)
 ZEND_END_ARG_INFO()
 /* }}} */
@@ -400,7 +400,7 @@ ZEND_END_ARG_INFO()
 /* {{{ arginfo for gnupg functions with adddecryptkey parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_function, 0)
 	ZEND_ARG_INFO(0, res)
-	ZEND_ARG_INFO(0, kye)
+	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, passphrase)
 ZEND_END_ARG_INFO()
 /* }}} */
@@ -408,7 +408,7 @@ ZEND_END_ARG_INFO()
 /* {{{ arginfo for gnupg functions with key parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_keyid_function, 0)
 	ZEND_ARG_INFO(0, res)
-	ZEND_ARG_INFO(0, kyeid)
+	ZEND_ARG_INFO(0, keyid)
 ZEND_END_ARG_INFO()
 /* }}} */
 
