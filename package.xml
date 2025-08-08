@@ -28,10 +28,10 @@
   <email>sean@siobud.com</email>
   <active>no</active>
  </lead>
- <date>2025-06-02</date>
+ <date>2025-08-08</date>
  <version>
-  <release>1.5.3</release>
-  <api>1.5.3</api>
+  <release>1.5.4</release>
+  <api>1.5.4</api>
  </version>
  <stability>
   <release>stable</release>
@@ -39,7 +39,8 @@
  </stability>
  <license>BSD, revised</license>
  <notes><![CDATA[
- * Fixed GH-32: Decryption of message encrypted with multiple keys
+ * Fixed GH-57: PHP 8.5 build failure due to usage of removed zend_exception_get_default()
+ * Fixed GH-59: Failure to build with gpgme >= 2.0.0 due to romoved trustlist
  ]]></notes>
  <contents>
   <dir name="/">
@@ -113,6 +114,21 @@
  <providesextension>gnupg</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2025-06-02</date>
+   <version>
+	<release>1.5.3</release>
+	<api>1.5.3</api>
+   </version>
+   <stability>
+	<release>stable</release>
+	<api>stable</api>
+   </stability>
+   <license>BSD, revised</license>
+   <notes><![CDATA[
+   * Fixed GH-32: Decryption of message encrypted with multiple keys
+   ]]></notes>
+  </release>
   <release>
    <date>2025-04-08</date>
    <version>

@@ -2,6 +2,10 @@
 
 List of all features for the release
 
+## 1.5.4
+- Fixed GH-57: PHP 8.5 build failure due to usage of removed zend_exception_get_default()
+- Fixed GH-59: Failure to build with gpgme >= 2.0.0 due to romoved trustlist
+
 ## 1.5.3
 - Fixed GH-32: Decryption of message encrypted with multiple keys
 
