@@ -1,4 +1,4 @@
---TEST--n
+--TEST--
 sign a text with mode SIG_MODE_DETACH
 --SKIPIF--
 <?php if (!extension_loaded("gnupg")) die("skip"); ?>

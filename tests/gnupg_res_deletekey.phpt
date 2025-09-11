@@ -1,4 +1,4 @@
---TEST--n
+--TEST--
 delete a key from the keyring
 --SKIPIF--
 <?php if (!extension_loaded("gnupg")) die("skip"); ?>

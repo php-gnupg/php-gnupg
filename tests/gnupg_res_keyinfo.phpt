@@ -1,4 +1,4 @@
---TEST--n
+--TEST--
 get keyinfo
 --SKIPIF--
 <?php if (!extension_loaded("gnupg")) die("skip"); ?>
