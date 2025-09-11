@@ -1,4 +1,4 @@
---TEST--n
+--TEST--
 sign a text with sigmode SIG_MODE_CLEAR
 --SKIPIF--
 <?php if(!class_exists("gnupg")) die("skip"); ?>
@@ -20,7 +20,8 @@ $tmp = false;
 $ret = $gpg->verify($ret, false, $tmp);
 
 var_dump($ret);
-var_dump($tmp);
+// Some distros like Arch Linux applied patch to gnupg 2.4.8 removing the new line - see GH-62
+var_dump($tmp == "foo bar\n" || $tmp == "foo bar");
 ?>
 --EXPECTF--
 array(1) {
@@ -38,8 +39,7 @@ array(1) {
     int(0)
   }
 }
-string(8) "foo bar
-"
+bool(true)
 --CLEAN--
 <?php
 require_once "gnupgt.inc";
