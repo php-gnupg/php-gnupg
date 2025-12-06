@@ -15,7 +15,7 @@ Of course PHP has to be installed too. The minimal version that is supported is 
 
 #### PECL
 
-This extension is available on PECL. 
+This extension is available on PECL.
 
 ```
 $ sudo pecl install gnupg
@@ -23,12 +23,11 @@ $ sudo pecl install gnupg
 
 #### Manual Installation
 
-It's important to have a git installed as it's necessary for recursive fetch of
-[phpc](https://github.com/bukka/phpc).
+It's important to have a git installed
 
-First clone recursively the repository
+First clone the repository
 ```
-git clone --recursive https://github.com/php-gnupg/php-gnupg.git
+git clone https://github.com/php-gnupg/php-gnupg.git
 ```
 
 Then go to the created directory and compile the extension. The PHP development package has to be

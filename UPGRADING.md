@@ -2,6 +2,9 @@
 
 This document lists backward incompatible change in the extension
 
+## 1.6.0
+- minimal PHP version bumped to 7.2
+
 ## 1.5.0
 - no backward incompatible changes
 
