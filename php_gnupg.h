@@ -1,4 +1,5 @@
-/*
+
+ /*
   +--------------------------------------------------------------------+
   | PECL :: gnupg                                                      |
   +--------------------------------------------------------------------+
@@ -26,24 +27,27 @@ extern zend_module_entry gnupg_module_entry;
 #define PHP_GNUPG_API
 #endif
 
+#include <gpgme.h>
+
 #ifdef ZTS
 #include "TSRM.h"
 #endif
 
-#include <gpgme.h>
-#include "phpc/phpc.h"
-
-PHPC_OBJ_STRUCT_BEGIN(gnupg)
+/* Object structure */
+typedef struct _gnupg_object {
 	gpgme_ctx_t ctx;
-	gpgme_error_t err;
-	int errormode;
-	char* errortxt;
-	int signmode;
 	gpgme_key_t *encryptkeys;
-	unsigned int encrypt_size;
+	int encrypt_size;
+	gpgme_sig_mode_t signmode;
 	HashTable *signkeys;
 	HashTable *decryptkeys;
-PHPC_OBJ_STRUCT_END()
+	gpgme_error_t err;
+	char *errortxt;
+	int errormode;
+	zend_object std;
+} gnupg_object;
+
+/* The actual structure is defined in gnupg.c to keep it encapsulated */
 
 PHP_MINIT_FUNCTION(gnupg);
 PHP_MSHUTDOWN_FUNCTION(gnupg);
@@ -73,7 +77,9 @@ PHP_FUNCTION(gnupg_addsignkey);
 PHP_FUNCTION(gnupg_addencryptkey);
 PHP_FUNCTION(gnupg_adddecryptkey);
 PHP_FUNCTION(gnupg_deletekey);
+#if GPGME_VERSION_NUMBER < 0x020000  /* GPGME < 2.0.0 */
 PHP_FUNCTION(gnupg_gettrustlist);
+#endif
 PHP_FUNCTION(gnupg_listsignatures);
 PHP_FUNCTION(gnupg_seterrormode);
 
