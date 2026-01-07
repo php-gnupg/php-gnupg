@@ -2,8 +2,9 @@
 
 This document lists backward incompatible change in the extension
 
-## 1.6.0
+## 2.0.0
 - minimal PHP version bumped to 7.2
+- gnupg resource has been removed and the object is used instead in all functions
 
 ## 1.5.0
 - no backward incompatible changes

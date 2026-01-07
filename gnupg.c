@@ -27,8 +27,6 @@
 
 #include "php_gnupg_keylistiterator.h"
 
-static int le_gnupg;
-
 static zend_class_entry *gnupg_class_entry;
 
 static zend_object_handlers gnupg_object_handlers;
@@ -44,7 +42,6 @@ static inline gnupg_object *gnupg_object_from_zobj(zend_object *obj) {
 #define GNUPG_GETOBJ() \
 	zval *this = getThis(); \
 	gnupg_object *intern = NULL; \
-	zval *res = NULL; \
 	do { \
 		if (this) { \
 			intern = Z_GNUPG_P(this); \
@@ -56,9 +53,6 @@ static inline gnupg_object *gnupg_object_from_zobj(zend_object *obj) {
 		} \
 	} while (0)
 /* }}} */
-
-#define GNUPG_RES_FETCH() \
-	intern = (gnupg_object *) zend_fetch_resource(Z_RES_P(res), "ctx", le_gnupg)
 
 /* {{{ GNUPG_ERR */
 #define GNUPG_ERR(error) \
@@ -174,15 +168,6 @@ static void php_gnupg_make(gnupg_object *intern, zval *options)
 		gpgme_set_pinentry_mode(ctx, GPGME_PINENTRY_MODE_LOOPBACK);
 #endif
 	}
-}
-/* }}} */
-
-/* {{{ php_gnupg_res_dtor */
-static void php_gnupg_res_dtor(zend_resource *rsrc)
-{
-	gnupg_object *intern = rsrc->ptr;
-	php_gnupg_free(intern);
-	efree(intern);
 }
 /* }}} */
 
@@ -356,9 +341,9 @@ const zend_function_entry gnupg_methods[] = {
 };
 /* }}} */
 
-/* {{{ arginfo for gnupg function with no parameter */
+/* {{{ arginfo for gnupg function with gnupg parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_void_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -370,35 +355,35 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo for gnupg function with armor parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_armor_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, armor)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with enctext parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_enctext_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, enctext)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with text parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_text_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, text)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with key parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with deletekey parameter */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_deletekey_function, 0, 0, 2)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, allow_secret)
 ZEND_END_ARG_INFO()
@@ -406,7 +391,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo for gnupg functions with adddecryptkey parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, passphrase)
 ZEND_END_ARG_INFO()
@@ -414,14 +399,14 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo for gnupg functions with keyid parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_keyid_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, keyid)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg_keyinfo function */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_keyinfo_function, 0, 0, 2)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, pattern)
 	ZEND_ARG_INFO(0, secret_only)
 ZEND_END_ARG_INFO()
@@ -429,28 +414,28 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo for gnupg functions with pattern parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_pattern_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, pattern)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with errmode parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_errmode_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, errormode)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo for gnupg functions with signmode parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_signmode_function, 0)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, signmode)
 ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ arginfo gnupg_verify_function */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_verify_function, 0, 0, 3)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, text)
 	ZEND_ARG_INFO(0, signature)
 	ZEND_ARG_INFO(1, plaintext)
@@ -459,7 +444,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo gnupg_decryptverify_function */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_decryptverify_function, 0, 0, 3)
-	ZEND_ARG_INFO(0, res)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, enctext)
 	ZEND_ARG_INFO(1, plaintext)
 ZEND_END_ARG_INFO()
@@ -548,9 +533,6 @@ PHP_MINIT_FUNCTION(gnupg)
 	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	gnupg_object_handlers.offset = XtOffsetOf(gnupg_object, std);
 	gnupg_object_handlers.free_obj = gnupg_object_free;
-
-	/* register resource */
-	le_gnupg = zend_register_list_destructors_ex(php_gnupg_res_dtor, NULL, "ctx", module_number);
 
 	if (SUCCESS != gnupg_keylistiterator_init(type, module_number)) {
 		return FAILURE;
@@ -767,7 +749,7 @@ int gnupg_fetchsignatures(gpgme_signature_t gpgme_signatures, zval *main_arr)
 /* }}} */
 
 /* {{{ proto gnupg::__construct(array options = NULL)
- * inits gnupg and returns a resource
+ * construct gnupg object
 */
 PHP_METHOD(gnupg, __construct)
 {
@@ -783,22 +765,20 @@ PHP_METHOD(gnupg, __construct)
 }
 /* }}} */
 
-/* {{{ proto resource gnupg_init(array options = NULL)
- * inits gnupg and returns a resource
+/* {{{ proto object gnupg_init(array options = NULL)
+ * inits gnupg and returns an object
 */
 PHP_FUNCTION(gnupg_init)
 {
 	zval *options = NULL;
-	gnupg_object *intern;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a", &options) == FAILURE) {
 		return;
 	}
 
-	intern = emalloc(sizeof(gnupg_object));
-	php_gnupg_init(intern);
+	object_init_ex(return_value, gnupg_class_entry);
+	gnupg_object *intern = Z_GNUPG_P(return_value);
 	php_gnupg_make(intern, options);
-	RETURN_RES(zend_register_resource(intern, le_gnupg));
 }
 /* }}} */
 
@@ -809,6 +789,7 @@ PHP_FUNCTION(gnupg_init)
  * */
 PHP_FUNCTION(gnupg_setarmor)
 {
+	zval *object = NULL;
 	zend_long armor;
 
 	GNUPG_GETOBJ();
@@ -818,10 +799,10 @@ PHP_FUNCTION(gnupg_setarmor)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rl", &res, &armor) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Ol", &object, gnupg_class_entry, &armor) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	if (armor > 1) {
@@ -836,6 +817,7 @@ PHP_FUNCTION(gnupg_setarmor)
 /* {{{ proto bool gnupg_seterrormode(int errormode) */
 PHP_FUNCTION(gnupg_seterrormode)
 {
+	zval *object = NULL;
 	zend_long errormode;
 
 	GNUPG_GETOBJ();
@@ -845,10 +827,10 @@ PHP_FUNCTION(gnupg_seterrormode)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rl", &res, &errormode) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Ol", &object, gnupg_class_entry, &errormode) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	switch (errormode) {
@@ -871,6 +853,7 @@ PHP_FUNCTION(gnupg_seterrormode)
  */
 PHP_FUNCTION(gnupg_setsignmode)
 {
+	zval *object = NULL;
 	zend_long signmode;
 
 	GNUPG_GETOBJ();
@@ -880,10 +863,10 @@ PHP_FUNCTION(gnupg_setsignmode)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rl", &res, &signmode) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Ol", &object, gnupg_class_entry, &signmode) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	switch (signmode) {
 		case GPGME_SIG_MODE_NORMAL:
@@ -906,14 +889,15 @@ PHP_FUNCTION(gnupg_setsignmode)
  */
 PHP_FUNCTION(gnupg_getengineinfo)
 {
+	zval *object = NULL;
 	gpgme_engine_info_t info;
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &object, gnupg_class_entry) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	info = gpgme_ctx_get_engine_info(intern->ctx);
@@ -930,13 +914,14 @@ PHP_FUNCTION(gnupg_getengineinfo)
  */
 PHP_FUNCTION(gnupg_geterror)
 {
+	zval *object = NULL;
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &object, gnupg_class_entry) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!intern->errortxt) {
 		RETURN_FALSE;
@@ -951,13 +936,14 @@ PHP_FUNCTION(gnupg_geterror)
  */
 PHP_FUNCTION(gnupg_geterrorinfo)
 {
+	zval *object = NULL;
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &object, gnupg_class_entry) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	array_init(return_value);
@@ -987,6 +973,7 @@ PHP_FUNCTION(gnupg_getprotocol) {
  */
 PHP_FUNCTION(gnupg_keyinfo)
 {
+	zval *object = NULL;
 	char *searchkey = NULL;
 	size_t searchkey_len;
 	zval subarr, userid, userids, subkey, subkeys;
@@ -1003,11 +990,11 @@ PHP_FUNCTION(gnupg_keyinfo)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs|b",
-				&res, &searchkey, &searchkey_len, &secret_only) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os|b",
+				&object, gnupg_class_entry, &searchkey, &searchkey_len, &secret_only) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	intern->err = gpgme_op_keylist_start(intern->ctx, searchkey, secret_only);
@@ -1104,6 +1091,7 @@ PHP_FUNCTION(gnupg_keyinfo)
 /* {{{ proto bool gnupg_addsignkey(string key) */
 PHP_FUNCTION(gnupg_addsignkey)
 {
+	zval *object = NULL;
 	char *key_id = NULL;
 	size_t key_id_len;
 	char *passphrase = NULL;
@@ -1119,11 +1107,11 @@ PHP_FUNCTION(gnupg_addsignkey)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs|s",
-				&res, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os|s",
+				&object, gnupg_class_entry, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	if (!PHP_GNUPG_DO(gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1))) {
@@ -1151,6 +1139,7 @@ PHP_FUNCTION(gnupg_addsignkey)
 /* {{{ proto bool gnupg_adddecryptkey(string key) */
 PHP_FUNCTION(gnupg_adddecryptkey)
 {
+	zval *object = NULL;
 	char *key_id = NULL;
 	size_t key_id_len;
 	char *passphrase = NULL;
@@ -1166,11 +1155,11 @@ PHP_FUNCTION(gnupg_adddecryptkey)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rss",
-				&res, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Oss",
+				&object, gnupg_class_entry, &key_id, &key_id_len, &passphrase, &passphrase_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!PHP_GNUPG_DO(gpgme_get_key(intern->ctx, key_id, &gpgme_key, 1))) {
 		GNUPG_ERR("get_key failed");
@@ -1191,6 +1180,7 @@ PHP_FUNCTION(gnupg_adddecryptkey)
 /* {{{ proto bool gnupg_addencryptkey(string key) */
 PHP_FUNCTION(gnupg_addencryptkey)
 {
+	zval *object = NULL;
 	char *key_id = NULL;
 	size_t key_id_len;
 	gpgme_key_t gpgme_key = NULL;
@@ -1204,11 +1194,11 @@ PHP_FUNCTION(gnupg_addencryptkey)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &key_id, &key_id_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &key_id, &key_id_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	if (!PHP_GNUPG_DO(gpgme_get_key(intern->ctx, key_id, &gpgme_key, 0))) {
@@ -1234,13 +1224,14 @@ PHP_FUNCTION(gnupg_addencryptkey)
  */
 PHP_FUNCTION(gnupg_clearsignkeys)
 {
+	zval *object = NULL;
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &object, gnupg_class_entry) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	gpgme_signers_clear(intern->ctx);
@@ -1254,13 +1245,14 @@ PHP_FUNCTION(gnupg_clearsignkeys)
  */
 PHP_FUNCTION(gnupg_clearencryptkeys)
 {
+	zval *object = NULL;
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &object, gnupg_class_entry) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	php_gnupg_free_encryptkeys(intern);
 
@@ -1273,13 +1265,14 @@ PHP_FUNCTION(gnupg_clearencryptkeys)
  */
 PHP_FUNCTION(gnupg_cleardecryptkeys)
 {
+	zval *object = NULL;
 	GNUPG_GETOBJ();
 
 	if (!this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &object, gnupg_class_entry) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	zend_hash_clean(intern->decryptkeys);
@@ -1294,6 +1287,7 @@ PHP_FUNCTION(gnupg_cleardecryptkeys)
  */
 PHP_FUNCTION(gnupg_sign)
 {
+	zval *object = NULL;
 	char *value = NULL;
 	size_t value_len;
 	char *userret;
@@ -1309,11 +1303,11 @@ PHP_FUNCTION(gnupg_sign)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &value, &value_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	gpgme_set_passphrase_cb(intern->ctx, passphrase_cb, intern);
@@ -1365,6 +1359,7 @@ PHP_FUNCTION(gnupg_sign)
  */
 PHP_FUNCTION(gnupg_encrypt)
 {
+	zval *object = NULL;
 	char *value = NULL;
 	size_t value_len;
 	char *userret = NULL;
@@ -1380,11 +1375,11 @@ PHP_FUNCTION(gnupg_encrypt)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &value, &value_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!intern->encryptkeys) {
 		GNUPG_ERR("no key for encryption set");
@@ -1429,6 +1424,7 @@ PHP_FUNCTION(gnupg_encrypt)
  */
 PHP_FUNCTION(gnupg_encryptsign)
 {
+	zval *object = NULL;
 	char *value = NULL;
 	size_t value_len;
 	char *userret = NULL;
@@ -1445,11 +1441,11 @@ PHP_FUNCTION(gnupg_encryptsign)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &value, &value_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &value, &value_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	if (!intern->encryptkeys) {
@@ -1514,6 +1510,7 @@ PHP_FUNCTION(gnupg_encryptsign)
  */
 PHP_FUNCTION(gnupg_verify)
 {
+	zval *object = NULL;
 	gpgme_data_t gpgme_text, gpgme_sig;
 	gpgme_verify_result_t gpgme_result;
 	/* text without the signature, if its a detached one, or the text incl the sig */
@@ -1533,11 +1530,11 @@ PHP_FUNCTION(gnupg_verify)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rzz|z",
-				&res, &signed_text, &signature, &plain_text) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Ozz|z",
+				&object, gnupg_class_entry, &signed_text, &signature, &plain_text) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (Z_TYPE_P(signature) == IS_STRING) { /* detached signature */
 		/* setup signature-databuffer for gpgme */
@@ -1606,6 +1603,7 @@ PHP_FUNCTION(gnupg_verify)
  */
 PHP_FUNCTION(gnupg_decrypt)
 {
+	zval *object = NULL;
 	char *enctxt;
 	size_t enctxt_len;
 	char *userret;
@@ -1621,11 +1619,11 @@ PHP_FUNCTION(gnupg_decrypt)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &enctxt, &enctxt_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &enctxt, &enctxt_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	gpgme_set_passphrase_cb(intern->ctx, passphrase_decrypt_cb, intern);
@@ -1671,6 +1669,7 @@ PHP_FUNCTION(gnupg_decrypt)
  */
 PHP_FUNCTION(gnupg_decryptverify)
 {
+	zval *object = NULL;
 	char *enctxt;
 	size_t enctxt_len;
 	zval *plaintext;
@@ -1688,11 +1687,11 @@ PHP_FUNCTION(gnupg_decryptverify)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rsz",
-				&res, &enctxt, &enctxt_len, &plaintext) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Osz",
+				&object, gnupg_class_entry, &enctxt, &enctxt_len, &plaintext) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	ZVAL_DEREF(plaintext);
 
@@ -1740,6 +1739,7 @@ PHP_FUNCTION(gnupg_decryptverify)
  */
 PHP_FUNCTION(gnupg_export)
 {
+	zval *object = NULL;
 	char *searchkey = NULL;
 	size_t searchkey_len;
 	char *userret;
@@ -1754,11 +1754,11 @@ PHP_FUNCTION(gnupg_export)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &searchkey, &searchkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &searchkey, &searchkey_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!PHP_GNUPG_DO(gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create data buffer");
@@ -1784,6 +1784,7 @@ PHP_FUNCTION(gnupg_export)
  */
 PHP_FUNCTION(gnupg_import)
 {
+	zval *object = NULL;
 	char *importkey = NULL;
 	size_t importkey_len;
 	gpgme_data_t in;
@@ -1797,11 +1798,11 @@ PHP_FUNCTION(gnupg_import)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &importkey, &importkey_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &importkey, &importkey_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, importkey, importkey_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
@@ -1842,6 +1843,7 @@ PHP_FUNCTION(gnupg_import)
  */
 PHP_FUNCTION(gnupg_deletekey)
 {
+	zval *object = NULL;
 	char *key;
 	size_t key_len;
 	zend_bool allow_secret = 0;
@@ -1856,11 +1858,11 @@ PHP_FUNCTION(gnupg_deletekey)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs|b",
-				&res, &key, &key_len, &allow_secret) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os|b",
+				&object, gnupg_class_entry, &key, &key_len, &allow_secret) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 
 	if (!PHP_GNUPG_DO(gpgme_get_key(intern->ctx, key, &gpgme_key, 0))) {
@@ -1887,6 +1889,7 @@ PHP_FUNCTION(gnupg_deletekey)
 */
 PHP_FUNCTION(gnupg_gettrustlist)
 {
+	zval *object = NULL;
 	char *pattern;
 	size_t pattern_len;
 	zval sub_arr;
@@ -1900,11 +1903,11 @@ PHP_FUNCTION(gnupg_gettrustlist)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &pattern, &pattern_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &pattern, &pattern_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!PHP_GNUPG_DO(gpgme_op_trustlist_start(intern->ctx, pattern, 0))) {
 		GNUPG_ERR("could not start trustlist");
@@ -1931,6 +1934,7 @@ PHP_FUNCTION(gnupg_gettrustlist)
 /* {{{ proto array gnupg_listsignatures(string keyid) */
 PHP_FUNCTION(gnupg_listsignatures)
 {
+	zval *object = NULL;
 	char	*keyid;
 	size_t keyid_len;
 
@@ -1949,11 +1953,11 @@ PHP_FUNCTION(gnupg_listsignatures)
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs",
-				&res, &keyid, &keyid_len) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os",
+				&object, gnupg_class_entry, &keyid, &keyid_len) == FAILURE) {
 			return;
 		}
-		GNUPG_RES_FETCH();
+		intern = Z_GNUPG_P(object);
 	}
 	if (!PHP_GNUPG_DO(gpgme_set_keylist_mode(intern->ctx, GPGME_KEYLIST_MODE_SIGS))) {
 		GNUPG_ERR("could not switch to sigmode");
