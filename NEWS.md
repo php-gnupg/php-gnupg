@@ -2,7 +2,8 @@
 
 List of all features for the release
 
-## 1.6.0
+## 2.0.0
+- Convert all functions to use objects and drop resource
 - Removed compatibility with PHP 7.1 and older.
 
 ## 1.5.4
