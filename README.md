@@ -13,6 +13,15 @@ is supported is 1.3.0. The extension supports GnuPG version 1 and 2.
 
 Of course PHP has to be installed too. The minimal version that is supported is 5.3.2.
 
+#### PIE
+
+This extension can be installed with [PIE](https://github.com/php/pie), the modern
+successor to PECL.
+
+```
+$ pie install php-gnupg/gnupg
+```
+
 #### PECL
 
 This extension is available on PECL.
