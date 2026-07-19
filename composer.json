@@ -1,0 +1,34 @@
+{
+    "name": "php-gnupg/gnupg",
+    "description": "A wrapper around the GpgME library that provides access to GnuPG.",
+    "type": "php-ext",
+    "license": "BSD-2-Clause",
+    "keywords": ["gnupg", "gpg", "gpgme", "encryption", "signing", "extension"],
+    "homepage": "https://github.com/php-gnupg/php-gnupg",
+    "support": {
+        "issues": "https://github.com/php-gnupg/php-gnupg/issues",
+        "source": "https://github.com/php-gnupg/php-gnupg",
+        "docs": "https://www.php.net/manual/en/book.gnupg.php"
+    },
+    "require": {
+        "php": "^7.2 || ^8.0"
+    },
+    "php-ext": {
+        "extension-name": "gnupg",
+        "support-zts": true,
+        "support-nts": true,
+        "os-families-exclude": ["windows"],
+        "configure-options": [
+            {
+                "name": "with-gnupg",
+                "description": "Include gnupg support, optionally specifying the path to the GpgME installation (directory containing include/gpgme.h)",
+                "needs-value": true
+            },
+            {
+                "name": "with-gpg",
+                "description": "Path to the gpg v1.x binary",
+                "needs-value": true
+            }
+        ]
+    }
+}
