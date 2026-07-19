@@ -36,3 +36,32 @@ jobs:
       - name: Run tests
         run: |
           make test
+
+  pie-install:
+    runs-on: ubuntu-24.04
+    env:
+      PIE_VERSION: "1.4.8"
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gpg gpgsm libgpgme-dev php-cli php-dev autoconf libtool make gcc
+
+      - name: Checkout php-gnupg
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Download pie.phar
+        run: |
+          curl -fsSL -o pie.phar \
+            "https://github.com/php/pie/releases/download/${PIE_VERSION}/pie.phar"
+
+      - name: Install php-gnupg with PIE
+        # PIE builds as the current user and auto-elevates with sudo (passwordless
+        # in GitHub Actions) only for the final install step.
+        run: php pie.phar install
+
+      - name: Verify the extension is loaded
+        run: php -m | grep -qx gnupg
