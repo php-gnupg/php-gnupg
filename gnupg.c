@@ -533,6 +533,7 @@ PHP_MINIT_FUNCTION(gnupg)
 	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	gnupg_object_handlers.offset = offsetof(gnupg_object, std);
 	gnupg_object_handlers.free_obj = gnupg_object_free;
+	gnupg_object_handlers.clone_obj = NULL;
 
 	if (SUCCESS != gnupg_keylistiterator_init(type, module_number)) {
 		return FAILURE;

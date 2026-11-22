@@ -136,6 +136,7 @@ int gnupg_keylistiterator_init(INIT_FUNC_ARGS)
 	memcpy(&gnupg_keylistiterator_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	gnupg_keylistiterator_handlers.offset = offsetof(gnupg_keylistiterator_object, std);
 	gnupg_keylistiterator_handlers.free_obj = gnupg_keylistiterator_object_free;
+	gnupg_keylistiterator_handlers.clone_obj = NULL;
 
 	zend_class_implements(gnupg_keylistiterator_class_entry, 1, zend_ce_iterator);
 
