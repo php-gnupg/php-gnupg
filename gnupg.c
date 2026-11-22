@@ -258,6 +258,13 @@ ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_method, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
+/* {{{ arginfo for gnupg addsignkey method */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_addsignkey_method, 0, 0, 1)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, passphrase)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ arginfo for gnupg methods with deletekey parameter */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_deletekey_method, 0, 0, 1)
 	ZEND_ARG_INFO(0, key)
@@ -335,7 +342,7 @@ const zend_function_entry gnupg_methods[] = {
 	PHP_GNUPG_FALIAS(sign,              arginfo_gnupg_text_method)
 	PHP_GNUPG_FALIAS(encryptsign,       arginfo_gnupg_text_method)
 	PHP_GNUPG_FALIAS(decryptverify,     arginfo_gnupg_decryptverify_method)
-	PHP_GNUPG_FALIAS(addsignkey,        arginfo_gnupg_key_passphrase_method)
+	PHP_GNUPG_FALIAS(addsignkey,        arginfo_gnupg_addsignkey_method)
 	PHP_GNUPG_FALIAS(addencryptkey,     arginfo_gnupg_key_method)
 	PHP_GNUPG_FALIAS(adddecryptkey,     arginfo_gnupg_key_passphrase_method)
 	PHP_GNUPG_FALIAS(deletekey,         arginfo_gnupg_deletekey_method)
@@ -398,6 +405,14 @@ ZEND_END_ARG_INFO()
 
 /* {{{ arginfo for gnupg functions with adddecryptkey parameter */
 ZEND_BEGIN_ARG_INFO(arginfo_gnupg_key_passphrase_function, 0)
+	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, passphrase)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ arginfo for gnupg addsignkey function */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_addsignkey_function, 0, 0, 2)
 	ZEND_ARG_OBJ_INFO(0, gnupg, gnupg, 0)
 	ZEND_ARG_INFO(0, key)
 	ZEND_ARG_INFO(0, passphrase)
@@ -478,7 +493,7 @@ static const zend_function_entry gnupg_functions[] = {
 	PHP_FE(gnupg_decryptverify,		arginfo_gnupg_decryptverify_function)
 	PHP_FE(gnupg_geterror,			arginfo_gnupg_void_function)
 	PHP_FE(gnupg_geterrorinfo,		arginfo_gnupg_void_function)
-	PHP_FE(gnupg_addsignkey,		arginfo_gnupg_key_passphrase_function)
+	PHP_FE(gnupg_addsignkey,		arginfo_gnupg_addsignkey_function)
 	PHP_FE(gnupg_addencryptkey,		arginfo_gnupg_key_function)
 	PHP_FE(gnupg_adddecryptkey,		arginfo_gnupg_key_passphrase_function)
 	PHP_FE(gnupg_deletekey,			arginfo_gnupg_deletekey_function)
