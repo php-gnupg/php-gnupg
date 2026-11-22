@@ -35,7 +35,7 @@ static zend_object_handlers gnupg_keylistiterator_handlers;
 /* Helper macro to get object from zend_object */
 static inline gnupg_keylistiterator_object *gnupg_keylistiterator_from_obj(zend_object *obj)
 {
-	return (gnupg_keylistiterator_object *)((char *)(obj) - XtOffsetOf(gnupg_keylistiterator_object, std));
+	return (gnupg_keylistiterator_object *)((char *)(obj) - offsetof(gnupg_keylistiterator_object, std));
 }
 
 #define Z_GNUPG_KEYLISTITERATOR_P(zv) gnupg_keylistiterator_from_obj(Z_OBJ_P(zv))
@@ -134,7 +134,7 @@ int gnupg_keylistiterator_init(INIT_FUNC_ARGS)
 	gnupg_keylistiterator_class_entry = zend_register_internal_class(&ce);
 
 	memcpy(&gnupg_keylistiterator_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	gnupg_keylistiterator_handlers.offset = XtOffsetOf(gnupg_keylistiterator_object, std);
+	gnupg_keylistiterator_handlers.offset = offsetof(gnupg_keylistiterator_object, std);
 	gnupg_keylistiterator_handlers.free_obj = gnupg_keylistiterator_object_free;
 
 	zend_class_implements(gnupg_keylistiterator_class_entry, 1, zend_ce_iterator);

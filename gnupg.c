@@ -33,7 +33,7 @@ static zend_object_handlers gnupg_object_handlers;
 
 /* Helper to get object from zend_object */
 static inline gnupg_object *gnupg_object_from_zobj(zend_object *obj) {
-	return (gnupg_object *)((char *)(obj) - XtOffsetOf(gnupg_object, std));
+	return (gnupg_object *)((char *)(obj) - offsetof(gnupg_object, std));
 }
 
 #define Z_GNUPG_P(zv) gnupg_object_from_zobj(Z_OBJ_P(zv))
@@ -531,7 +531,7 @@ PHP_MINIT_FUNCTION(gnupg)
 	gnupg_class_entry = zend_register_internal_class(&ce);
 
 	memcpy(&gnupg_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	gnupg_object_handlers.offset = XtOffsetOf(gnupg_object, std);
+	gnupg_object_handlers.offset = offsetof(gnupg_object, std);
 	gnupg_object_handlers.free_obj = gnupg_object_free;
 
 	if (SUCCESS != gnupg_keylistiterator_init(type, module_number)) {
