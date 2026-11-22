@@ -672,6 +672,10 @@ gpgme_error_t passphrase_cb(
 		GNUPG_ERR("Incorrent passphrase");
 		return 1;
 	}
+	if (uid_hint == NULL) {
+		GNUPG_ERR("No user ID hint");
+		return 1;
+	}
 	for (idx=0; idx < 16 && uid_hint[idx] != '\0'; idx++) {
 		uid[idx] = uid_hint[idx];
 	}
