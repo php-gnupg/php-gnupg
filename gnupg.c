@@ -1326,6 +1326,7 @@ PHP_FUNCTION(gnupg_sign)
 		intern = Z_GNUPG_P(object);
 	}
 
+	intern->errortxt = NULL;
 	gpgme_set_passphrase_cb(intern->ctx, passphrase_cb, intern);
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, value, value_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
@@ -1468,6 +1469,7 @@ PHP_FUNCTION(gnupg_encryptsign)
 		GNUPG_ERR("no key for encryption set");
 		return;
 	}
+	intern->errortxt = NULL;
 	gpgme_set_passphrase_cb(intern->ctx, passphrase_cb, intern);
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem (&in, value, value_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
@@ -1643,6 +1645,7 @@ PHP_FUNCTION(gnupg_decrypt)
 		intern = Z_GNUPG_P(object);
 	}
 
+	intern->errortxt = NULL;
 	gpgme_set_passphrase_cb(intern->ctx, passphrase_decrypt_cb, intern);
 
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
@@ -1713,6 +1716,7 @@ PHP_FUNCTION(gnupg_decryptverify)
 	}
 	ZVAL_DEREF(plaintext);
 
+	intern->errortxt = NULL;
 	gpgme_set_passphrase_cb(intern->ctx, passphrase_decrypt_cb, intern);
 
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
