@@ -1970,6 +1970,8 @@ PHP_FUNCTION(gnupg_listsignatures)
 	gpgme_key_t		gpgme_key;
 	gpgme_user_id_t	gpgme_userid;
 	gpgme_key_sig_t	gpgme_signature;
+	gpgme_keylist_mode_t keylist_mode;
+	gpgme_error_t get_key_err;
 
 	GNUPG_GETOBJ();
 
@@ -1985,11 +1987,15 @@ PHP_FUNCTION(gnupg_listsignatures)
 		}
 		intern = Z_GNUPG_P(object);
 	}
-	if (!PHP_GNUPG_DO(gpgme_set_keylist_mode(intern->ctx, GPGME_KEYLIST_MODE_SIGS))) {
+	keylist_mode = gpgme_get_keylist_mode(intern->ctx);
+	if (!PHP_GNUPG_DO(gpgme_set_keylist_mode(intern->ctx, keylist_mode | GPGME_KEYLIST_MODE_SIGS))) {
 		GNUPG_ERR("could not switch to sigmode");
 		return;
 	}
-	if (!PHP_GNUPG_DO(gpgme_get_key(intern->ctx, keyid, &gpgme_key, 0))) {
+	get_key_err = gpgme_get_key(intern->ctx, keyid, &gpgme_key, 0);
+	/* restore the original mode so other key listing operations are not affected */
+	gpgme_set_keylist_mode(intern->ctx, keylist_mode);
+	if (!PHP_GNUPG_DO(get_key_err)) {
 		GNUPG_ERR("get_key failed. given key not unique?");
 		return;
 	}
