@@ -855,6 +855,7 @@ PHP_FUNCTION(gnupg_seterrormode)
 			break;
 		default:
 			GNUPG_ERR("invalid errormode");
+			return;
 	}
 	RETURN_TRUE;
 }
@@ -889,10 +890,8 @@ PHP_FUNCTION(gnupg_setsignmode)
 			break;
 		default:
 			GNUPG_ERR("invalid signmode");
-			RETVAL_FALSE;
 			break;
 	}
-	RETURN_TRUE;
 }
 /* }}} */
 
