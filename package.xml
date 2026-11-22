@@ -58,6 +58,7 @@
     <file role="src" name="phpc.h"/>
    </dir>
    <dir name="tests">
+    <file name="CONFLICTS" role="test" />
     <file name="gnupg_oo_deletekey.phpt" role="test" />
     <file name="gnupg_oo_decrypt_no_uid_hint.phpt" role="test" />
     <file name="gnupg_oo_decrypt_multi_key.phpt" role="test" />
