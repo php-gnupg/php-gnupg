@@ -1647,6 +1647,7 @@ PHP_FUNCTION(gnupg_decrypt)
 
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
+		return;
 	}
 	if ((intern->err = gpgme_data_new(&out)) != GPG_ERR_NO_ERROR) {
 		GNUPG_ERR("could not create out-data buffer");
@@ -1716,6 +1717,7 @@ PHP_FUNCTION(gnupg_decryptverify)
 
 	if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&in, enctxt, enctxt_len, 0))) {
 		GNUPG_ERR("could not create in-data buffer");
+		return;
 	}
 	if (!PHP_GNUPG_DO(gpgme_data_new(&out))) {
 		GNUPG_ERR("could not create out-data buffer");
