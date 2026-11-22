@@ -1530,7 +1530,8 @@ PHP_FUNCTION(gnupg_verify)
 	gpgme_data_t gpgme_text, gpgme_sig;
 	gpgme_verify_result_t gpgme_result;
 	/* text without the signature, if its a detached one, or the text incl the sig */
-	zval *signed_text = NULL;
+	char *signed_text = NULL;
+	size_t signed_text_len;
 	/* signature, if its a detached one */
 	zval *signature = NULL;
 	/* signed_text without the signature if its not a detached sig */
@@ -1541,13 +1542,13 @@ PHP_FUNCTION(gnupg_verify)
 	GNUPG_GETOBJ();
 
 	if (this) {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "zz|z",
-				&signed_text, &signature, &plain_text) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "sz|z",
+				&signed_text, &signed_text_len, &signature, &plain_text) == FAILURE) {
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Ozz|z",
-				&object, gnupg_class_entry, &signed_text, &signature, &plain_text) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Osz|z",
+				&object, gnupg_class_entry, &signed_text, &signed_text_len, &signature, &plain_text) == FAILURE) {
 			return;
 		}
 		intern = Z_GNUPG_P(object);
@@ -1561,10 +1562,9 @@ PHP_FUNCTION(gnupg_verify)
 		}
 		/* and the text */
 		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(
-				&gpgme_text, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0))) {
+				&gpgme_text, signed_text, signed_text_len, 0))) {
 			GNUPG_ERR("could not create text-databuffer");
 			gpgme_data_release(gpgme_sig);
-			gpgme_data_release(gpgme_text);
 			return;
 		}
 		/* now verify sig + text */
@@ -1576,7 +1576,7 @@ PHP_FUNCTION(gnupg_verify)
 		}
 	} else { /* clearsign or normal signature */
 		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(
-				&gpgme_sig, Z_STRVAL_P(signed_text), Z_STRLEN_P(signed_text), 0))) {
+				&gpgme_sig, signed_text, signed_text_len, 0))) {
 			GNUPG_ERR("could not create signature-databuffer");
 			return;
 		}
@@ -1584,7 +1584,6 @@ PHP_FUNCTION(gnupg_verify)
 		if (!PHP_GNUPG_DO(gpgme_data_new_from_mem(&gpgme_text, NULL, 0, 0))) {
 			GNUPG_ERR("could not create text-databuffer");
 			gpgme_data_release(gpgme_sig);
-			gpgme_data_release(gpgme_text);
 			return;
 		}
 		/* and verify the 'signature' */
@@ -1599,6 +1598,7 @@ PHP_FUNCTION(gnupg_verify)
 	gpgme_result = gpgme_op_verify_result(intern->ctx);
 	if (!gpgme_result->signatures) {
 		GNUPG_ERR("no signature found");
+		gpgme_data_release(gpgme_text);
 	} else {
 		/* fetch all signatures in an array */
 		gnupg_fetchsignatures(gpgme_result->signatures, return_value);
@@ -1606,6 +1606,7 @@ PHP_FUNCTION(gnupg_verify)
 		gpg_plain = gpgme_data_release_and_get_mem(gpgme_text, &gpg_plain_len);
 		if (gpg_plain && gpg_plain_len > 0 && plain_text) {
 			ZVAL_DEREF(plain_text);
+			zval_ptr_dtor(plain_text);
 			ZVAL_STRINGL(plain_text, gpg_plain, gpg_plain_len);
 		}
 		free(gpg_plain);
@@ -1731,6 +1732,7 @@ PHP_FUNCTION(gnupg_decryptverify)
 		return;
 	}
 	userret = gpgme_data_release_and_get_mem(out, &ret_size);
+	zval_ptr_dtor(plaintext);
 	ZVAL_STRINGL(plaintext, userret, ret_size);
 	free(userret);
 	decrypt_result = gpgme_op_decrypt_result(intern->ctx);
