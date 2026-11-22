@@ -8,31 +8,117 @@ on:
     branches:
       - master
 
+env:
+  NO_INTERACTION: 1
+  REPORT_EXIT_STATUS: 1
+  TEST_PHP_ARGS: --show-diff
+
 jobs:
-  build-and-test:
-    runs-on: ${{ matrix.ubuntu }}
+  # All supported PHP versions with gpgme provided by the distribution
+  # (ubuntu-22.04 has gpgme 1.16, ubuntu-24.04 has gpgme 1.18).
+  distro-gpgme:
+    name: PHP ${{ matrix.php }} / distro gpgme / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.php == 'nightly' }}
     strategy:
+      fail-fast: false
       matrix:
-        ubuntu: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-24.04]
+        php: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5', 'nightly']
+        include:
+          - os: ubuntu-22.04
+            php: '7.4'
+          - os: ubuntu-22.04
+            php: '8.4'
 
     steps:
+      - name: Checkout php-gnupg
+        uses: actions/checkout@v4
+
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gpg gpgsm libgpgme-dev php-cli php-dev autoconf libtool make gcc
+          sudo apt-get install -y gpg gpgsm libgpgme-dev
 
-      - name: Checkout php-gnupg
-        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          submodules: true
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
 
-      - name: Build and install php-gnupg
+      - name: Show versions
+        run: |
+          php -v
+          gpg --version | head -n 2
+          dpkg -s libgpgme-dev | grep Version
+
+      - name: Build php-gnupg
         run: |
           phpize
           ./configure
-          make
-          sudo make install
+          make -j"$(nproc)"
 
       - name: Run tests
+        run: make test
+
+  # Selected gpgme versions built from source.
+  source-gpgme:
+    name: PHP ${{ matrix.php }} / gpgme ${{ matrix.gpgme }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        gpgme: ['1.24.3', '2.0.0']
+        php: ['7.2', '8.5']
+    env:
+      GPGME_PREFIX: /opt/gpgme-${{ matrix.gpgme }}
+
+    steps:
+      - name: Checkout php-gnupg
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
         run: |
-          make test
+          sudo apt-get update
+          sudo apt-get install -y gpg gpgsm libgpg-error-dev libassuan-dev
+
+      - name: Cache gpgme
+        id: cache-gpgme
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.GPGME_PREFIX }}
+          key: gpgme-${{ matrix.gpgme }}-${{ runner.os }}-ubuntu-24.04-v1
+
+      - name: Build gpgme
+        if: steps.cache-gpgme.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL -o gpgme.tar.bz2 "https://gnupg.org/ftp/gcrypt/gpgme/gpgme-${{ matrix.gpgme }}.tar.bz2"
+          mkdir gpgme-src
+          tar -xjf gpgme.tar.bz2 -C gpgme-src --strip-components=1
+          cd gpgme-src
+          ./configure --prefix="$GPGME_PREFIX" --enable-languages= --disable-gpg-test --disable-gpgsm-test --disable-gpgconf-test --disable-g13-test
+          make -j"$(nproc)"
+          sudo make install
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
+
+      - name: Build php-gnupg
+        run: |
+          phpize
+          ./configure --with-gnupg="$GPGME_PREFIX"
+          make -j"$(nproc)"
+
+      - name: Show versions
+        run: |
+          php -v
+          gpg --version | head -n 2
+          php -d extension="$PWD/modules/gnupg.so" -r 'echo "gpgme ", GNUPG_GPGME_VERSION, "\n";'
+
+      - name: Run tests
+        run: make test
