@@ -1096,6 +1096,9 @@ PHP_FUNCTION(gnupg_keyinfo)
 		add_next_index_zval(return_value, &subarr);
 		gpgme_key_unref(gpgme_key);
 	}
+	if (gpgme_err_code(intern->err) == GPG_ERR_EOF) {
+		intern->err = GPG_ERR_NO_ERROR;
+	}
 }
 /* }}} */
 
