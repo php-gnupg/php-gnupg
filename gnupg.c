@@ -115,6 +115,13 @@ static void php_gnupg_free(gnupg_object *intern)
 }
 /* }}} */
 
+/* {{{ php_gnupg_passphrase_dtor */
+static void php_gnupg_passphrase_dtor(zval *zv)
+{
+	efree(Z_PTR_P(zv));
+}
+/* }}} */
+
 /* {{{ php_gnupg_init */
 static void php_gnupg_init(gnupg_object *intern)
 {
@@ -131,9 +138,9 @@ static void php_gnupg_init(gnupg_object *intern)
 	intern->errortxt = NULL;
 	intern->errormode = 3;
 	ALLOC_HASHTABLE(intern->signkeys);
-	zend_hash_init(intern->signkeys, 0, NULL, NULL, 0);
+	zend_hash_init(intern->signkeys, 0, NULL, php_gnupg_passphrase_dtor, 0);
 	ALLOC_HASHTABLE(intern->decryptkeys);
-	zend_hash_init(intern->decryptkeys, 0, NULL, NULL, 0);
+	zend_hash_init(intern->decryptkeys, 0, NULL, php_gnupg_passphrase_dtor, 0);
 }
 /* }}} */
 
@@ -1123,7 +1130,9 @@ PHP_FUNCTION(gnupg_addsignkey)
 		gpgme_subkey = gpgme_key->subkeys;
 		while (gpgme_subkey) {
 			if (gpgme_subkey->can_sign == 1) {
-				zend_hash_str_add_ptr(intern->signkeys, gpgme_subkey->keyid, strlen(gpgme_subkey->keyid), passphrase);
+				/* the passphrase has to be copied as it is used after this call returns */
+				zend_hash_str_update_ptr(intern->signkeys, gpgme_subkey->keyid, strlen(gpgme_subkey->keyid),
+						estrndup(passphrase, passphrase_len));
 			}
 			gpgme_subkey = gpgme_subkey->next;
 		}
@@ -1169,7 +1178,9 @@ PHP_FUNCTION(gnupg_adddecryptkey)
 	gpgme_subkey = gpgme_key->subkeys;
 	while (gpgme_subkey) {
 		if (gpgme_subkey->secret == 1) {
-			zend_hash_str_add_ptr(intern->decryptkeys, gpgme_subkey->keyid, strlen(gpgme_subkey->keyid), passphrase);
+			/* the passphrase has to be copied as it is used after this call returns */
+			zend_hash_str_update_ptr(intern->decryptkeys, gpgme_subkey->keyid, strlen(gpgme_subkey->keyid),
+					estrndup(passphrase, passphrase_len));
 		}
 		gpgme_subkey = gpgme_subkey->next;
 	}
