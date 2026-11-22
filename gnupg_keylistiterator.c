@@ -92,8 +92,9 @@ static zend_object *gnupg_keylistiterator_object_create(zend_class_entry *ce)
 }
 /* }}} */
 
-/* {{{ arginfo for gnupg void iterator method */
-ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_void_iterator_method, 0, 0, 0)
+/* {{{ arginfo for gnupg iterator constructor */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gnupg_iterator_construct, 0, 0, 0)
+	ZEND_ARG_INFO(0, pattern)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -112,7 +113,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ method list gnupg_keylistiterator */
 static const zend_function_entry gnupg_keylistiterator_methods[] = {
-	PHP_ME(gnupg_keylistiterator, __construct, arginfo_gnupg_void_iterator_method, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	PHP_ME(gnupg_keylistiterator, __construct, arginfo_gnupg_iterator_construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(gnupg_keylistiterator, current, arginfo_gnupg_current, ZEND_ACC_PUBLIC)
 	PHP_ME(gnupg_keylistiterator, key, arginfo_gnupg_key, ZEND_ACC_PUBLIC)
 	PHP_ME(gnupg_keylistiterator, next, arginfo_gnupg_next, ZEND_ACC_PUBLIC)
@@ -162,7 +163,13 @@ PHP_METHOD(gnupg_keylistiterator, __construct)
 		if (zend_parse_parameters(args, "|s", &pattern, &pattern_len) == FAILURE) {
 			return;
 		}
-		intern->pattern = estrdup(pattern);
+		if (intern->pattern) {
+			efree(intern->pattern);
+			intern->pattern = NULL;
+		}
+		if (pattern) {
+			intern->pattern = estrdup(pattern);
+		}
 	}
 }
 /* }}} */
@@ -171,6 +178,10 @@ PHP_METHOD(gnupg_keylistiterator, __construct)
 PHP_METHOD(gnupg_keylistiterator, current)
 {
 	GNUPG_GET_ITERATOR();
+
+	if (!intern->gpgkey || !intern->gpgkey->uids) {
+		RETURN_NULL();
+	}
 
 	RETURN_STRING(intern->gpgkey->uids[0].uid);
 }
@@ -181,11 +192,15 @@ PHP_METHOD(gnupg_keylistiterator, key)
 {
 	GNUPG_GET_ITERATOR();
 
+	if (!intern->gpgkey || !intern->gpgkey->subkeys || !intern->gpgkey->subkeys[0].fpr) {
+		RETURN_NULL();
+	}
+
 	RETURN_STRING(intern->gpgkey->subkeys[0].fpr);
 }
 /* }}} */
 
-/* {{{ proto bool next() */
+/* {{{ proto void next() */
 PHP_METHOD(gnupg_keylistiterator, next)
 {
 	GNUPG_GET_ITERATOR();
@@ -198,11 +213,10 @@ PHP_METHOD(gnupg_keylistiterator, next)
 		gpgme_key_release(intern->gpgkey);
 		intern->gpgkey = NULL;
 	}
-	RETURN_TRUE;
 }
 /* }}} */
 
-/* {{{ proto bool rewind() */
+/* {{{ proto void rewind() */
 PHP_METHOD(gnupg_keylistiterator, rewind)
 {
 	GNUPG_GET_ITERATOR();
@@ -210,11 +224,15 @@ PHP_METHOD(gnupg_keylistiterator, rewind)
 	if ((intern->err = gpgme_op_keylist_start(
 			 intern->ctx, intern->pattern ? intern->pattern : "", 0)) != GPG_ERR_NO_ERROR) {
 		zend_throw_exception(zend_ce_exception, (char *)gpgme_strerror(intern->err), 1);
+		return;
+	}
+	if (intern->gpgkey) {
+		gpgme_key_release(intern->gpgkey);
+		intern->gpgkey = NULL;
 	}
 	if ((intern->err = gpgme_op_keylist_next(intern->ctx, &intern->gpgkey)) != GPG_ERR_NO_ERROR) {
-		RETURN_FALSE;
+		intern->gpgkey = NULL;
 	}
-	RETURN_TRUE;
 }
 /* }}} */
 
