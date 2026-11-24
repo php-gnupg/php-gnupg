@@ -122,3 +122,37 @@ jobs:
 
       - name: Run tests
         run: make test
+
+  pie-install:
+    runs-on: ubuntu-24.04
+    env:
+      PIE_VERSION: "1.5.0"
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gpg gpgsm libgpgme-dev php-cli php-dev autoconf libtool make gcc
+
+      - name: Checkout php-gnupg
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Download pie.phar
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/pie.phar" \
+            "https://github.com/php/pie/releases/download/${PIE_VERSION}/pie.phar"
+
+      - name: Install php-gnupg with PIE
+        env:
+          INSTALL_ROOT: ${{ runner.temp }}/pie-install
+        run: |
+          mkdir -p "$INSTALL_ROOT$(php-config --extension-dir)"
+          php "$RUNNER_TEMP/pie.phar" repository:add path "$GITHUB_WORKSPACE"
+          php "$RUNNER_TEMP/pie.phar" install --no-interaction --skip-enable-extension 'php-gnupg/gnupg:@dev'
+
+      - name: Verify the extension is loaded
+        env:
+          INSTALL_ROOT: ${{ runner.temp }}/pie-install
+        run: php -n -d "extension=$INSTALL_ROOT$(php-config --extension-dir)/gnupg.so" -m | grep -qx gnupg
